@@ -1,0 +1,2723 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>桌面任务助手与互动宠物 - 双平台高保真交互原型</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script src="https://www.gstatic.com/antigravity/web/dev/tailwindcss.min.js"></script>
+  <style>
+    :root {
+      --background: #f8fafc;
+      --foreground: #0f172a;
+      --card: #ffffff;
+      --card-foreground: #0f172a;
+      --primary: #2563eb;
+      --primary-foreground: #ffffff;
+      --secondary: #f1f5f9;
+      --secondary-foreground: #1e293b;
+      --muted: #f1f5f9;
+      --muted-foreground: #64748b;
+      --accent: #f1f5f9;
+      --accent-foreground: #0f172a;
+      --border: #e2e8f0;
+    }
+    @keyframes petBreathe {
+      0%, 100% { transform: translateY(0px) scale(1); }
+      50% { transform: translateY(-3px) scale(1.02, 0.98); }
+    }
+    @keyframes petJump {
+      0%, 100% { transform: translateY(0px) rotate(0deg); }
+      25% { transform: translateY(-10px) rotate(-4deg); }
+      50% { transform: translateY(0px) rotate(4deg); }
+      75% { transform: translateY(-6px) rotate(-2deg); }
+    }
+    @keyframes petAlert {
+      0%, 100% { transform: translateX(0); }
+      20%, 60% { transform: translateX(-4px) rotate(-3deg); }
+      40%, 80% { transform: translateX(4px) rotate(3deg); }
+    }
+    @keyframes floatHeart {
+      0%, 100% { transform: translateY(0px) scale(1); opacity: 0.9; }
+      50% { transform: translateY(-4px) scale(1.1); opacity: 1; }
+    }
+    @keyframes highlightTask {
+      0%, 100% {
+        box-shadow: inset 0 0 0 0px rgba(98, 152, 188, 0);
+      }
+      25%, 75% {
+        box-shadow: inset 0 0 0 2px #6298bc;
+        background-color: #e8f4fc;
+      }
+    }
+    @keyframes checkPop {
+      0% { transform: scale(0.75); }
+      50% { transform: scale(1.28); }
+      80% { transform: scale(0.94); }
+      100% { transform: scale(1); }
+    }
+    @keyframes drawCheckStroke {
+      0% { stroke-dashoffset: 24; }
+      100% { stroke-dashoffset: 0; }
+    }
+    @keyframes pawStamp {
+      0% { opacity: 0; transform: scale(1.32) rotate(-12deg); }
+      60% { opacity: 1; transform: scale(0.94) rotate(4deg); }
+      100% { opacity: 1; transform: scale(1) rotate(-2deg); }
+    }
+    @keyframes tabBadgeBounce {
+      0%, 100% { transform: scale(1); }
+      40% { transform: scale(1.25); }
+    }
+    @keyframes cupSip {
+      0%, 100% { transform: translate(0px, 0px) rotate(0deg); }
+      35%, 65% { transform: translate(-5px, -7px) rotate(-18deg); }
+    }
+    @keyframes waterDropRise {
+      0% { transform: translateY(4px) scale(0.7); opacity: 0; }
+      50% { opacity: 1; }
+      100% { transform: translateY(-14px) scale(1.05); opacity: 0; }
+    }
+    .anim-idle { animation: petBreathe 3s ease-in-out infinite; }
+    .anim-happy { animation: petJump 0.7s ease-in-out 2; }
+    .anim-alert { animation: petAlert 0.6s ease-in-out 3; }
+    .anim-heart { animation: floatHeart 2.4s ease-in-out infinite; }
+    .anim-cup-sip { animation: cupSip 1.4s ease-in-out infinite; transform-origin: center bottom; }
+    .anim-water-drop { animation: waterDropRise 1.4s ease-out infinite; }
+    .task-highlight { animation: highlightTask 1.8s ease-in-out 2; }
+
+    /* Collapsible Main Task Card (Hide/Expand Menu) */
+    .main-card-collapsible {
+      max-height: 520px;
+      opacity: 1;
+      transform: translateY(0) scale(1);
+      transform-origin: top left;
+      transition:
+        max-height 0.34s cubic-bezier(0.22, 1, 0.36, 1),
+        opacity 0.26s ease,
+        transform 0.32s cubic-bezier(0.22, 1, 0.36, 1),
+        padding 0.3s ease,
+        margin 0.3s ease,
+        border-width 0.3s ease;
+    }
+    .main-card-collapsible.is-menu-hidden {
+      max-height: 0px !important;
+      opacity: 0 !important;
+      transform: translateY(-16px) scale(0.92) !important;
+      padding-top: 0px !important;
+      padding-bottom: 0px !important;
+      margin-top: 0px !important;
+      border-width: 0px !important;
+      overflow: hidden !important;
+      pointer-events: none !important;
+    }
+    .check-pop { animation: checkPop 0.36s cubic-bezier(0.34, 1.56, 0.64, 1) forwards; }
+    .check-stroke {
+      stroke-dasharray: 24;
+      stroke-dashoffset: 24;
+      animation: drawCheckStroke 0.28s ease-out 0.06s forwards;
+    }
+    .paw-stamp { animation: pawStamp 0.32s cubic-bezier(0.34, 1.56, 0.64, 1) forwards; }
+    .badge-bounce { animation: tabBadgeBounce 0.35s ease-out; }
+
+    /* Animated left-to-right strikethrough line */
+    .strike-line {
+      position: relative;
+      display: inline-block;
+    }
+    .strike-line::after {
+      content: '';
+      position: absolute;
+      left: 0;
+      top: 52%;
+      height: 2px;
+      width: 0%;
+      background-color: #6f9bb6;
+      border-radius: 2px;
+      transition: width 0.32s cubic-bezier(0.22, 1, 0.36, 1);
+    }
+    .strike-line.is-struck::after {
+      width: 100%;
+    }
+
+    /* Smooth row exit transition without triggering horizontal overflow */
+    .task-row-item {
+      max-height: 64px;
+      opacity: 1;
+      overflow: hidden;
+      transform: translateY(0) scale(1);
+      transition:
+        max-height 0.28s cubic-bezier(0.4, 0, 0.2, 1),
+        opacity 0.26s ease,
+        transform 0.28s cubic-bezier(0.4, 0, 0.2, 1),
+        margin 0.28s ease,
+        padding 0.28s ease,
+        background-color 0.25s ease,
+        border-color 0.25s ease;
+    }
+    .task-row-item.is-completing {
+      background-color: #eef7fc !important;
+      border-color: #b7d7eb !important;
+    }
+    .task-row-item.is-collapsing {
+      max-height: 0px !important;
+      opacity: 0 !important;
+      transform: translateY(-4px) scale(0.96) !important;
+      margin-top: 0px !important;
+      margin-bottom: 0px !important;
+      padding-top: 0px !important;
+      padding-bottom: 0px !important;
+      border-width: 0px !important;
+      overflow: hidden !important;
+    }
+
+    /* Custom subtle scrollbar matching screenshot */
+    .widget-scroll {
+      overflow-x: hidden;
+    }
+    .widget-scroll::-webkit-scrollbar {
+      width: 6px;
+      height: 0px;
+    }
+    .widget-scroll::-webkit-scrollbar-track {
+      background: #e2e8f0;
+      border-radius: 9999px;
+    }
+    .widget-scroll::-webkit-scrollbar-thumb {
+      background: #b8c4ce;
+      border-radius: 9999px;
+    }
+  </style>
+</head>
+<body class="bg-[var(--background)] text-[var(--foreground)] antialiased p-4 select-none overflow-x-hidden">
+
+  <!-- Top Control Header: Platform Switcher & Scenario Simulator -->
+  <div class="max-w-6xl mx-auto mb-4 bg-[var(--card)] border border-[var(--border)] rounded-xl p-4 shadow-sm">
+    <div class="flex flex-wrap items-center justify-between gap-3">
+      <div>
+        <div class="flex items-center gap-2">
+          <span class="px-2.5 py-0.5 rounded-full text-xs font-medium bg-[var(--primary)] text-[var(--primary-foreground)]">P0 原型设计</span>
+          <h1 class="text-base font-semibold text-[var(--foreground)]">桌面任务助手与互动宠物 · 双平台交互原型</h1>
+        </div>
+        <p class="text-xs text-[var(--muted-foreground)] mt-1">
+          还原参考图治愈系视觉（宠物跨卡片叠放 + 下班倒计时气泡 + 进度条 + 胶囊清單），并补齐双平台托盘/菜单栏、重复计划、跨天移到今天与到点提醒闭环。
+        </p>
+      </div>
+
+      <!-- Platform Switcher -->
+      <div class="flex items-center gap-1.5 bg-[var(--background)] p-1 rounded-lg border border-[var(--border)]">
+        <button id="btn-platform-mac" onclick="switchPlatform('mac')" class="px-3 py-1.5 rounded-md text-xs font-medium transition-all bg-[var(--primary)] text-[var(--primary-foreground)]">
+          🍎 macOS 桌面视图
+        </button>
+        <button id="btn-platform-win" onclick="switchPlatform('win')" class="px-3 py-1.5 rounded-md text-xs font-medium transition-all text-[var(--muted-foreground)] hover:text-[var(--foreground)]">
+          🪟 Windows 11 桌面视图
+        </button>
+      </div>
+    </div>
+
+    <!-- Quick Acceptance Scenario Bar -->
+    <div class="mt-3 pt-3 border-t border-[var(--border)] flex flex-wrap items-center gap-2">
+      <span class="text-xs font-medium text-[var(--muted-foreground)]">验收场景演练：</span>
+      <button onclick="simulateWaterGifReminder()" class="px-2.5 py-1 rounded-md text-xs bg-sky-600 text-white hover:bg-sky-700 transition font-medium shadow-2xs">
+        💧 模拟「请喝水 GIF」语音提醒
+      </button>
+      <button onclick="toggleTaskMenuCard()" id="btn-sim-collapse" class="px-2.5 py-1 rounded-md text-xs bg-teal-600 text-white hover:bg-teal-700 transition font-medium shadow-2xs">
+        🔼 隐藏下方菜单 (仅留桌宠)
+      </button>
+      <button onclick="simulateSingleReminder()" class="px-2.5 py-1 rounded-md text-xs bg-[var(--secondary)] text-[var(--secondary-foreground)] hover:opacity-90 transition">
+        🙆‍♂️ 模拟运动拉伸提醒 (A06)
+      </button>
+      <button onclick="simulateResumeBatchReminder()" class="px-2.5 py-1 rounded-md text-xs bg-[var(--secondary)] text-[var(--secondary-foreground)] hover:opacity-90 transition">
+        💤 休眠恢复汇总 (A09)
+      </button>
+      <button onclick="toggleHistoryDate()" id="btn-sim-history" class="px-2.5 py-1 rounded-md text-xs bg-[var(--secondary)] text-[var(--secondary-foreground)] hover:opacity-90 transition">
+        📅 昨日未完成移到今天 (A05)
+      </button>
+      <button onclick="openModal('pets')" class="px-2.5 py-1 rounded-md text-xs bg-[var(--primary)] text-[var(--primary-foreground)] hover:opacity-90 transition font-medium">
+        🐾 宠物资源库
+      </button>
+      <button onclick="openModal('close')" class="px-2.5 py-1 rounded-md text-xs bg-[var(--secondary)] text-[var(--secondary-foreground)] hover:opacity-90 transition">
+        ✖️ 关闭弹窗 (A08)
+      </button>
+    </div>
+  </div>
+
+  <!-- Main Workspace: Simulated Desktop + Inspector Sidebar -->
+  <div class="max-w-6xl mx-auto grid grid-cols-1 lg:grid-cols-12 gap-4">
+
+    <!-- Simulated OS Desktop Canvas (8 cols) -->
+    <div class="lg:col-span-8 relative rounded-2xl overflow-hidden border border-[var(--border)] shadow-lg" style="min-height: 680px; background: linear-gradient(145deg, #d4eaef 0%, #c3e0e8 50%, #bad8e3 100%);">
+
+      <!-- macOS Top Menu Bar -->
+      <div id="mac-menubar" class="h-7 px-3 bg-white/75 backdrop-blur-md border-b border-black/5 flex items-center justify-between text-xs text-slate-800 z-30 relative">
+        <div class="flex items-center gap-3 font-medium">
+          <span></span>
+          <span class="font-semibold">Finder</span>
+          <span class="text-slate-600">文件</span>
+          <span class="text-slate-600">编辑</span>
+          <span class="text-slate-600">显示</span>
+        </div>
+        <div class="flex items-center gap-3">
+          <!-- App Menu Bar Icon -->
+          <button onclick="toggleSystemMenu()" class="flex items-center gap-1 px-2 py-0.5 rounded bg-sky-600/15 text-sky-900 font-medium hover:bg-sky-600/25 transition" title="点击展开 macOS 菜单栏入口">
+            <span>🐱</span>
+            <span id="menubar-progress-text">1/6</span>
+          </button>
+          <span>🔋 92%</span>
+          <span>Wi-Fi</span>
+          <span id="os-top-clock">11月02日 周一 11:43</span>
+        </div>
+      </div>
+
+      <!-- System Tray / Menu Bar Dropdown Menu -->
+      <div id="system-menu-popup" class="hidden absolute z-40 w-56 rounded-xl bg-white/95 backdrop-blur-md shadow-xl border border-slate-200/80 p-1.5 text-xs text-slate-700" style="top: 34px; right: 110px;">
+        <div class="px-2.5 py-1.5 border-b border-slate-100 flex items-center justify-between">
+          <span class="font-semibold text-slate-800">桌面任务助手</span>
+          <span id="menu-platform-badge" class="text-xs px-1.5 py-0.5 rounded bg-slate-100 text-slate-600">macOS 菜单栏</span>
+        </div>
+        <div class="py-1 space-y-0.5">
+          <button onclick="restoreWidgetFromHidden(); toggleSystemMenu(false)" class="w-full text-left px-2.5 py-1.5 rounded-lg hover:bg-sky-50 hover:text-sky-700 flex items-center justify-between">
+            <span>显示 / 置于前台</span>
+            <span class="text-slate-400">点击唤起</span>
+          </button>
+          <button onclick="toggleAlwaysOnTop()" class="w-full text-left px-2.5 py-1.5 rounded-lg hover:bg-sky-50 hover:text-sky-700 flex items-center justify-between">
+            <span>窗口始终置顶</span>
+            <span id="menu-pin-status" class="text-sky-600 font-medium">✓ 已开启</span>
+          </button>
+          <button onclick="openNewTaskModal(); toggleSystemMenu(false)" class="w-full text-left px-2.5 py-1.5 rounded-lg hover:bg-sky-50 hover:text-sky-700 flex items-center justify-between">
+            <span>新增任务 / 重复计划...</span>
+            <span class="text-slate-400">＋</span>
+          </button>
+          <button onclick="openModal('settings'); toggleSystemMenu(false)" class="w-full text-left px-2.5 py-1.5 rounded-lg hover:bg-sky-50 hover:text-sky-700 flex items-center justify-between">
+            <span>偏好设置...</span>
+            <span class="text-slate-400">⌘,</span>
+          </button>
+        </div>
+        <div class="pt-1 border-t border-slate-100">
+          <button onclick="quitAppDirectly()" class="w-full text-left px-2.5 py-1.5 rounded-lg hover:bg-rose-50 text-rose-600 font-medium flex items-center justify-between">
+            <span>退出软件（停止提醒）</span>
+            <span id="menu-quit-shortcut" class="text-rose-400">⌘Q</span>
+          </button>
+        </div>
+      </div>
+
+      <!-- OS Native Notification Banner (macOS Top-Right / Windows Bottom-Right) -->
+      <div id="os-notification" class="hidden absolute z-40 w-72 rounded-2xl bg-white/95 backdrop-blur-md shadow-xl border border-slate-200 p-3 text-slate-800 transition-all cursor-pointer" style="top: 40px; right: 16px;" onclick="handleNotificationClick()">
+        <div class="flex items-start gap-2.5">
+          <div class="w-9 h-9 rounded-xl bg-sky-100 flex items-center justify-center text-lg shrink-0">🐱</div>
+          <div class="flex-1 min-w-0">
+            <div class="flex items-center justify-between">
+              <span class="text-xs font-semibold text-slate-900">桌面任务助手 · 到点提醒</span>
+              <span class="text-xs text-slate-400">现在</span>
+            </div>
+            <p id="os-notif-body" class="text-xs text-slate-600 mt-0.5 truncate">⏰ 15:00 起身运动（点击定位任务）</p>
+            <p class="text-xs text-sky-600 mt-1 font-medium">点击打开窗口并定位 · 关闭通知不完成任务</p>
+          </div>
+          <button onclick="event.stopPropagation(); dismissNotificationOnly()" class="text-slate-400 hover:text-slate-600 text-xs px-1" title="仅关闭通知，不标记任务完成">✕</button>
+        </div>
+      </div>
+
+      <!-- Hidden / Exited State Banner -->
+      <div id="widget-hidden-banner" class="hidden absolute inset-0 flex items-center justify-center z-20 pointer-events-none">
+        <div class="bg-white/90 backdrop-blur-md rounded-2xl p-6 shadow-xl border border-white max-w-sm text-center pointer-events-auto">
+          <div id="hidden-state-icon" class="text-3xl mb-2">📥</div>
+          <h3 id="hidden-state-title" class="text-sm font-semibold text-slate-800">窗口已隐藏到系统托盘 / 菜单栏</h3>
+          <p id="hidden-state-desc" class="text-xs text-slate-600 mt-1">
+            主进程提醒调度仍在后台运行，宠物待机动画已暂停以节省 CPU。到点时依然会发送系统通知。
+          </p>
+          <button onclick="restoreWidgetFromHidden()" class="mt-4 px-4 py-2 rounded-xl text-xs font-medium text-white shadow-sm transition hover:opacity-95" style="background-color: #6c98b4;">
+            重新显示桌面组件
+          </button>
+        </div>
+      </div>
+
+      <!-- ========================================================= -->
+      <!-- THE TRANSPARENT DESKTOP WIDGET (360px wide container)     -->
+      <!-- ========================================================= -->
+      <div id="desktop-widget" class="relative mx-auto my-6 w-[356px] transition-all duration-200">
+
+        <!-- Transparent Bounds Indicator (Toggleable for Dev Inspection) -->
+        <div id="wireframe-box" class="hidden absolute -inset-2 border border-dashed border-sky-700/50 rounded-3xl pointer-events-none z-30">
+          <span class="absolute -top-5 left-2 text-xs text-sky-900 bg-sky-100/90 px-1.5 rounded">透明无边框窗口边界 (356 × 560 px)</span>
+        </div>
+
+        <!-- 1. TOP PET & SPEECH BUBBLE LAYER (Overlapping top of white card) -->
+        <div class="relative h-[112px] select-none z-20">
+
+          <!-- Interactive Pet Character (Top-Left: Supports 60fps Dragging + Click Interaction + Double-Click Menu Toggle) -->
+          <div
+            id="pet-container"
+            onpointerdown="startWidgetDrag(event, 'pet')"
+            ondblclick="event.stopPropagation(); toggleTaskMenuCard()"
+            oncontextmenu="openPetContextMenu(event)"
+            class="absolute left-3 -bottom-5 w-[132px] h-[126px] cursor-grab active:cursor-grabbing group touch-none"
+            title="按住可自由拖动宠物与窗口 · 单击互动 · 双击收起/展开菜单 · 右键快捷菜单"
+          >
+            <!-- GIF Scene Badge (Shown when playing scene GIF like drink_water.gif) -->
+            <div id="pet-gif-badge" class="hidden absolute -top-3 left-1/2 -translate-x-1/2 z-30 px-2 py-0.5 rounded-full bg-sky-600 text-white text-xs font-medium shadow-sm whitespace-nowrap">
+              🎬 drink_water.gif
+            </div>
+
+            <!-- SVG Hachiware/Chiikawa-inspired Cute Cat-Bear Pet -->
+            <div id="pet-sprite" class="w-full h-full anim-idle relative">
+              <svg viewBox="0 0 150 140" class="w-full h-full drop-shadow-md">
+                <!-- Thought bubble top-left -->
+                <g id="pet-thought-bubble" transform="translate(4, 6)">
+                  <ellipse cx="20" cy="16" rx="16" ry="12" fill="#ffffff" stroke="#231f20" stroke-width="2.8"/>
+                  <circle cx="33" cy="29" r="3" fill="#ffffff" stroke="#231f20" stroke-width="2.2"/>
+                  <line x1="13" y1="14" x2="15" y2="19" stroke="#d98a8a" stroke-width="2" stroke-linecap="round"/>
+                  <line x1="18" y1="13" x2="20" y2="18" stroke="#d98a8a" stroke-width="2" stroke-linecap="round"/>
+                  <line x1="23" y1="13" x2="25" y2="18" stroke="#d98a8a" stroke-width="2" stroke-linecap="round"/>
+                </g>
+
+                <!-- Floating Pink Hearts (Right of pet) -->
+                <g class="anim-heart">
+                  <path d="M126 24 C123 19, 116 21, 118 27 C119 31, 125 34, 126 35 C127 34, 133 31, 134 27 C136 21, 129 19, 126 24 Z" fill="#e58787" stroke="#c86b6b" stroke-width="1"/>
+                  <path d="M129 44 C127 40, 122 42, 123 46 C124 49, 128 51, 129 52 C130 51, 134 49, 135 46 C136 42, 131 40, 129 44 Z" fill="#e58787" stroke="#c86b6b" stroke-width="1"/>
+                </g>
+
+                <!-- Tail wagging on left -->
+                <path d="M35 108 C22 106, 18 114, 29 117 C35 118, 40 116, 42 114" fill="#7aa4bf" stroke="#231f20" stroke-width="3" stroke-linecap="round"/>
+                <path d="M16 105 C14 109, 14 113, 16 116" stroke="#231f20" stroke-width="2" stroke-linecap="round" fill="none"/>
+
+                <!-- Main Body & Head White Base -->
+                <path d="M40 52 C32 32, 48 18, 58 32 C66 28, 84 28, 92 32 C102 18, 118 32, 110 52 C120 66, 118 92, 104 102 C106 114, 100 124, 90 124 C86 124, 83 128, 78 128 C73 128, 72 122, 70 122 C67 122, 65 128, 60 128 C54 128, 52 122, 46 118 C36 112, 36 98, 42 94 C32 84, 32 64, 40 52 Z" fill="#ffffff" stroke="#231f20" stroke-width="3.2" stroke-linejoin="round"/>
+
+                <!-- Blue Ear & Forehead Pattern (Hachiware style) -->
+                <path d="M41 51 C34 33, 48 20, 58 32 C63 30, 68 30, 74 37 C64 43, 52 49, 41 51 Z" fill="#77a2bd" stroke="#231f20" stroke-width="2.8" stroke-linejoin="round"/>
+                <path d="M109 51 C116 33, 102 20, 92 32 C87 30, 82 30, 76 37 C86 43, 98 49, 109 51 Z" fill="#77a2bd" stroke="#231f20" stroke-width="2.8" stroke-linejoin="round"/>
+
+                <!-- Pink Cheeks -->
+                <ellipse cx="51" cy="76" rx="8" ry="5" fill="#f3b2b7"/>
+                <line x1="48" y1="74" x2="46" y2="78" stroke="#d97b84" stroke-width="1.6" stroke-linecap="round"/>
+                <line x1="52" y1="74" x2="50" y2="78" stroke="#d97b84" stroke-width="1.6" stroke-linecap="round"/>
+                <ellipse cx="99" cy="76" rx="8" ry="5" fill="#f3b2b7"/>
+                <line x1="97" y1="74" x2="95" y2="78" stroke="#d97b84" stroke-width="1.6" stroke-linecap="round"/>
+                <line x1="101" y1="74" x2="99" y2="78" stroke="#d97b84" stroke-width="1.6" stroke-linecap="round"/>
+
+                <!-- Happy Closed Eyes / Blinking -->
+                <path id="pet-eye-l" d="M56 66 Q61 61 65 66" stroke="#231f20" stroke-width="3" stroke-linecap="round" fill="none"/>
+                <path id="pet-eye-r" d="M85 66 Q89 61 94 66" stroke="#231f20" stroke-width="3" stroke-linecap="round" fill="none"/>
+
+                <!-- Cute Mouth / Nose -->
+                <path d="M72 71 Q75 74 78 71" stroke="#231f20" stroke-width="2.6" stroke-linecap="round" fill="none"/>
+                <path d="M69 76 Q72 80 75 75 Q78 80 81 76" stroke="#231f20" stroke-width="2.6" stroke-linecap="round" fill="none"/>
+
+                <!-- Paws holding together -->
+                <path d="M63 94 C57 90, 57 102, 65 102 C71 102, 73 95, 68 92" fill="#ffffff" stroke="#231f20" stroke-width="2.8" stroke-linecap="round"/>
+                <path d="M87 94 C93 90, 93 102, 85 102 C79 102, 77 95, 82 92" fill="#ffffff" stroke="#231f20" stroke-width="2.8" stroke-linecap="round"/>
+
+                <!-- SCENE GIF OVERLAY 1: DRINK WATER CUP & DROPLETS (Hidden by default) -->
+                <g id="pet-gif-prop-water" class="hidden">
+                  <g class="anim-cup-sip">
+                    <!-- Pink Straw -->
+                    <path d="M86 84 L77 73" stroke="#e57373" stroke-width="3.2" stroke-linecap="round"/>
+                    <!-- Cup Body -->
+                    <rect x="78" y="82" width="24" height="28" rx="5" fill="#e8f6fd" stroke="#231f20" stroke-width="2.5"/>
+                    <!-- Water Fill -->
+                    <rect x="80" y="90" width="20" height="18" rx="3" fill="#63b8ee"/>
+                    <!-- Cup Handle -->
+                    <path d="M102 87 C109 87, 109 103, 102 103" stroke="#231f20" stroke-width="2.4" fill="none"/>
+                  </g>
+                  <!-- Floating Water Droplets -->
+                  <g class="anim-water-drop">
+                    <path d="M116 68 C116 68, 121 75, 116 78 C111 75, 116 68, 116 68 Z" fill="#4fa8e0"/>
+                    <circle cx="108" cy="60" r="2.8" fill="#63b8ee"/>
+                  </g>
+                </g>
+
+                <!-- SCENE GIF OVERLAY 2: STRETCH / EXERCISE DUMBBELLS (Hidden by default) -->
+                <g id="pet-gif-prop-stretch" class="hidden">
+                  <g class="anim-cup-sip">
+                    <rect x="44" y="84" width="16" height="5" rx="2" fill="#6f9bb6" stroke="#231f20" stroke-width="2"/>
+                    <circle cx="43" cy="86.5" r="5.5" fill="#5282a1" stroke="#231f20" stroke-width="2"/>
+                    <circle cx="61" cy="86.5" r="5.5" fill="#5282a1" stroke="#231f20" stroke-width="2"/>
+                  </g>
+                </g>
+              </svg>
+            </div>
+          </div>
+
+          <!-- Pet Right-Click Context Menu (For quick hide/expand menu & actions) -->
+          <div id="pet-context-menu" class="hidden absolute left-28 top-2 z-50 w-44 rounded-2xl bg-white/95 backdrop-blur-md shadow-xl border border-slate-200/90 p-1.5 text-xs text-slate-700">
+            <button onclick="toggleTaskMenuCard(); closePetContextMenu()" class="w-full text-left px-2.5 py-1.5 rounded-xl hover:bg-sky-50 hover:text-sky-700 flex items-center justify-between font-medium">
+              <span id="ctx-menu-toggle-label">🔼 隐藏下方菜单</span>
+              <span class="text-slate-400">双击</span>
+            </button>
+            <button onclick="simulateWaterGifReminder(); closePetContextMenu()" class="w-full text-left px-2.5 py-1.5 rounded-xl hover:bg-sky-50 hover:text-sky-700 flex items-center justify-between">
+              <span>💧 演示请喝水动画</span>
+              <span class="text-slate-400">GIF</span>
+            </button>
+            <button onclick="openModal('pets'); closePetContextMenu()" class="w-full text-left px-2.5 py-1.5 rounded-xl hover:bg-sky-50 hover:text-sky-700 flex items-center justify-between">
+              <span>🐾 切换宠物角色</span>
+              <span class="text-slate-400">▸</span>
+            </button>
+            <div class="my-1 border-t border-slate-100"></div>
+            <button onclick="hideWidgetToTray(); closePetContextMenu()" class="w-full text-left px-2.5 py-1.5 rounded-xl hover:bg-rose-50 text-rose-600 flex items-center justify-between">
+              <span>📥 隐藏到托盘</span>
+            </button>
+          </div>
+
+          <!-- Pet-Only Mode Floating Mini Dock (Positioned directly below the pet with a clean 16px gap, never covering its feet!) -->
+          <div id="pet-mini-dock" class="hidden absolute left-2 -bottom-14 z-30 flex items-center gap-1.5 bg-white/95 hover:bg-white backdrop-blur-md px-3.5 py-1.5 rounded-full shadow-md border border-white/90 transition-all cursor-pointer whitespace-nowrap" onclick="toggleTaskMenuCard()">
+            <span class="w-2 h-2 rounded-full bg-emerald-400 shrink-0"></span>
+            <span id="mini-dock-progress" class="text-xs font-semibold text-slate-700">待办 1/6</span>
+            <span class="text-slate-300">|</span>
+            <span class="text-xs font-medium text-sky-700 flex items-center gap-0.5">展开菜单 ▾</span>
+          </div>
+
+          <!-- Right Speech Bubble (Off-work Countdown / Pet-Voiced Reminder / Pet Feedback) -->
+          <div class="absolute right-1 top-3 z-30 flex flex-col items-end">
+            <div id="pet-bubble" onclick="handleBubbleClick()" class="relative bg-white/95 rounded-2xl px-3.5 py-2.5 shadow-md border border-white/90 cursor-pointer transition-all hover:scale-[1.01]" style="min-width: 184px; max-width: 204px;">
+              <!-- Left pointer triangle -->
+              <div class="absolute -left-2 top-5 w-0 h-0 border-t-[6px] border-t-transparent border-r-[8px] border-r-white/95 border-b-[6px] border-b-transparent"></div>
+              <div id="bubble-text" class="text-xs font-medium text-slate-700 text-center tracking-wide leading-relaxed">
+                离下班还有 <span id="countdown-timer" class="font-semibold text-slate-800">06:16:28</span>
+              </div>
+              <!-- Inline Reminder Action Buttons inside Bubble (Shown during Pet-Voiced Reminder) -->
+              <div id="bubble-actions" class="hidden mt-2 pt-1.5 border-t border-slate-100 flex items-center justify-center gap-1.5">
+                <button onclick="event.stopPropagation(); completeActiveReminderFromBubble()" class="px-2.5 py-1 rounded-lg bg-[#6f9bb6] text-white text-xs font-medium hover:opacity-90 transition whitespace-nowrap">
+                  ✓ <span id="bubble-btn-done-text">我喝完啦</span>
+                </button>
+                <button onclick="event.stopPropagation(); expandAndLocateReminderTask()" class="px-2 py-1 rounded-lg bg-slate-100 text-slate-600 hover:bg-slate-200 text-xs whitespace-nowrap transition">
+                  <span id="bubble-btn-secondary-text">清单 ▾</span>
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- 2. MAIN WHITE ROUNDED WIDGET CARD (Collapsible via toggleTaskMenuCard) -->
+        <div id="main-task-card" class="main-card-collapsible relative rounded-[28px] p-5 pt-4 shadow-xl border border-white/90" style="background-color: #f4f6f9;">
+
+          <!-- Notification Disabled Warning Strip (A14, hidden by default) -->
+          <div id="notif-disabled-strip" class="hidden mb-2.5 px-3 py-1.5 rounded-xl bg-amber-50 border border-amber-200/80 flex items-center justify-between text-xs text-amber-800">
+            <span>⚠️ 系统通知未开启，仅显示气泡提醒</span>
+            <button onclick="toggleNotificationPermission()" class="underline font-medium ml-2">去开启</button>
+          </div>
+
+          <!-- Sleep Resume Batch Reminder Strip (A09, hidden by default) -->
+          <div id="batch-reminder-strip" class="hidden mb-2.5 px-3 py-1.5 rounded-xl bg-sky-50 border border-sky-200 flex items-center justify-between text-xs text-sky-900">
+            <span id="batch-reminder-text">⏰ 休眠期间有 2 项任务已到点</span>
+            <button onclick="dismissBatchStrip()" class="text-sky-700 font-medium ml-2 hover:underline">知道了</button>
+          </div>
+
+          <!-- Top Bar: Window Controls (Left) + Clock & Date (Right) - Blank area supports dragging! -->
+          <div onpointerdown="startWidgetDrag(event, 'header')" class="flex items-start justify-between gap-2 mb-2 cursor-grab active:cursor-grabbing touch-none">
+            <!-- Left Control Circles (Matching reference screenshot) + Compact Icon-Only Entry -->
+            <div class="flex items-center gap-2 pt-2.5 shrink-0">
+              <!-- Minimize / Collapse Menu Button (Blue circle with minus: collapses task card into Pet-Only Mode!) -->
+              <button onclick="toggleTaskMenuCard()" class="w-5 h-5 rounded-full flex items-center justify-center text-white shadow-xs hover:opacity-85 transition shrink-0" style="background-color: #7ea7c0;" title="收起任务面板（仅在桌面保留宠物与气泡）">
+                <span class="text-xs font-bold leading-none">−</span>
+              </button>
+              <!-- Close Button (Coral red circle with x, matching reference screenshot) -->
+              <button onclick="openModal('close')" class="w-5 h-5 rounded-full flex items-center justify-center text-white shadow-xs hover:opacity-85 transition shrink-0" style="background-color: #d67a73;" title="关闭（选择隐藏到托盘或退出软件）">
+                <span class="text-xs font-bold leading-none">×</span>
+              </button>
+
+              <!-- Clean Icon-Only Buttons (No cramped vertical text wrapping!) -->
+              <div class="ml-1 flex items-center gap-1">
+                <button onclick="toggleHistoryDate()" id="btn-header-date" class="w-6 h-6 rounded-full bg-slate-200/70 hover:bg-slate-300/80 flex items-center justify-center text-xs text-slate-600 transition" title="查看昨日历史记录 (F05)">
+                  📅
+                </button>
+                <button onclick="openModal('pets')" class="w-6 h-6 rounded-full bg-slate-200/70 hover:bg-slate-300/80 flex items-center justify-center text-xs text-slate-600 transition" title="宠物资源库与配置 (切换角色/导入素材包)">
+                  🐾
+                </button>
+                <button onclick="openModal('settings')" class="w-6 h-6 rounded-full bg-slate-200/70 hover:bg-slate-300/80 flex items-center justify-center text-xs text-slate-600 transition" title="偏好设置 (下班时间/窗口置顶)">
+                  ⚙
+                </button>
+              </div>
+            </div>
+
+            <!-- Right Clock & Date (Matching reference screenshot, never wraps!) -->
+            <div class="text-right shrink-0 whitespace-nowrap">
+              <div id="widget-clock" class="text-3xl font-bold tracking-tight text-slate-800 leading-none">11:43</div>
+              <div id="widget-date" class="text-xs text-slate-500 mt-1 font-medium whitespace-nowrap">11月02日 星期一</div>
+            </div>
+          </div>
+
+          <!-- Date Switcher & History Mode Banner (Supports Yesterday / Today / Tomorrow & custom date) -->
+          <div id="history-mode-banner" class="hidden mb-2.5 px-2.5 py-1.5 rounded-xl bg-indigo-50/90 border border-indigo-200/80 flex items-center justify-between gap-1 text-xs text-indigo-900">
+            <div class="flex items-center gap-1 flex-wrap">
+              <button onclick="switchSelectedDate('2026-11-01')" id="date-pill-yesterday" class="px-2 py-0.5 rounded-md font-medium transition">11-01 昨天</button>
+              <button onclick="switchSelectedDate('2026-11-02')" id="date-pill-today" class="px-2 py-0.5 rounded-md font-medium transition">11-02 今天</button>
+              <button onclick="switchSelectedDate('2026-11-03')" id="date-pill-tomorrow" class="px-2 py-0.5 rounded-md font-medium transition">11-03 明天</button>
+              <input id="header-custom-date" type="date" value="2026-11-02" onchange="switchSelectedDate(this.value)" class="px-1.5 py-0.2 rounded border border-indigo-200 bg-white text-indigo-900 text-xs" title="选择任意日期查看"/>
+            </div>
+            <button onclick="switchSelectedDate('2026-11-02', true)" class="px-2 py-0.5 rounded bg-indigo-600 text-white font-medium hover:bg-indigo-700 shrink-0 whitespace-nowrap">返回今天</button>
+          </div>
+
+          <!-- Progress Row (Matching reference screenshot: 待办进度 1/6 ... 17%) -->
+          <div class="mt-2 mb-3">
+            <div class="flex items-center justify-between text-xs font-medium mb-1.5">
+              <span id="progress-label" class="text-slate-500">待办进度 1/6</span>
+              <span id="progress-percent" style="color: #6c98b4;" class="font-semibold">17%</span>
+            </div>
+            <div class="w-full h-2 rounded-full overflow-hidden" style="background-color: #dce2e8;">
+              <div id="progress-bar-fill" class="h-full rounded-full transition-all duration-300" style="width: 17%; background-color: #749eb8;"></div>
+            </div>
+          </div>
+
+          <!-- Segmented 3-Tab Pill Bar (待办 | 已完成 | 重复计划) -->
+          <!-- Note: Reference screenshot had "打卡" as 3rd tab; per requirements.md 1.1 "打卡首版不做", replaced with "重复计划" (F02/F03) -->
+          <div class="p-1 rounded-full grid grid-cols-3 text-xs font-medium mb-3.5" style="background-color: #e6eaef;">
+            <button id="tab-todo" onclick="switchTab('todo')" class="py-1.5 rounded-full transition-all text-white shadow-xs" style="background-color: #6f9bb6;">
+              待办 <span id="badge-todo" class="ml-0.5 opacity-90">(5)</span>
+            </button>
+            <button id="tab-done" onclick="switchTab('done')" class="py-1.5 rounded-full transition-all text-slate-500 hover:text-slate-700">
+              已完成 <span id="badge-done" class="ml-0.5 opacity-80">(1)</span>
+            </button>
+            <button id="tab-plans" onclick="switchTab('plans')" class="py-1.5 rounded-full transition-all text-slate-500 hover:text-slate-700">
+              重复计划 <span id="badge-plans" class="ml-0.5 opacity-80">(2)</span>
+            </button>
+          </div>
+
+          <!-- Task List Container (with custom right scrollbar matching screenshot) -->
+          <div id="task-list-container" class="widget-scroll overflow-y-auto overflow-x-hidden pr-1.5 space-y-2.5" style="height: 230px;">
+            <!-- Populated dynamically via JS -->
+          </div>
+
+          <!-- Bottom Quick Input Row (Matching reference screenshot: Rounded white pill input + circular blue '+' button) -->
+          <div class="mt-3.5 flex items-center gap-2.5">
+            <div class="flex-1 relative flex items-center bg-white rounded-full shadow-xs border border-slate-200/70 px-3.5 py-2">
+              <input
+                id="quick-task-input"
+                type="text"
+                placeholder="新增待办"
+                maxlength="60"
+                onkeydown="if(event.key==='Enter') handleQuickAdd()"
+                class="w-full bg-transparent text-xs text-slate-700 placeholder-slate-400 focus:outline-none text-left pr-20"
+              />
+              <button onclick="openNewTaskModal()" class="absolute right-2.5 text-xs text-slate-400 hover:text-sky-600 px-1.5 py-0.5 rounded-full bg-slate-100 hover:bg-sky-50 transition" title="设置执行日期、提醒时间或每日重复计划">
+                🕒 定时/重复
+              </button>
+            </div>
+            <button onclick="handleQuickAddOrModal()" class="w-9 h-9 rounded-full flex items-center justify-center text-white shadow-md hover:opacity-90 active:scale-95 transition shrink-0" style="background-color: #6f9bb6;" title="快捷新增今日待办（输入框为空时打开详细面板）">
+              <span class="text-lg font-medium leading-none">＋</span>
+            </button>
+          </div>
+
+        </div>
+      </div>
+
+      <!-- ========================================================= -->
+      <!-- MODALS OVERLAY (Close Choice / Add & Edit Plan / Settings)-->
+      <!-- ========================================================= -->
+      <div id="modal-backdrop" class="hidden absolute inset-0 bg-slate-900/35 backdrop-blur-xs z-50 flex items-center justify-center p-4">
+
+        <!-- 1. Close Behavior Selection Modal (F10 / A08) -->
+        <div id="modal-close" class="hidden bg-white rounded-2xl p-5 w-80 shadow-2xl border border-slate-100 text-slate-800">
+          <h3 class="text-sm font-semibold text-slate-900">关闭桌面小组件</h3>
+          <p class="text-xs text-slate-500 mt-1">
+            隐藏后将继续在后台运行并按时发送提醒；退出软件后将停止所有提醒调度。
+          </p>
+          <div class="mt-4 space-y-2">
+            <button onclick="hideWidgetToTray(); closeModal()" class="w-full py-2 px-3 rounded-xl text-xs font-medium text-white transition hover:opacity-95" style="background-color: #6f9bb6;">
+              📥 隐藏到<span id="close-modal-tray-name">菜单栏</span>（推荐，保持提醒）
+            </button>
+            <button onclick="quitAppDirectly(); closeModal()" class="w-full py-2 px-3 rounded-xl text-xs font-medium bg-rose-50 text-rose-600 hover:bg-rose-100 transition">
+              🚪 退出软件（停止后台提醒）
+            </button>
+            <button onclick="closeModal()" class="w-full py-2 px-3 rounded-xl text-xs font-medium bg-slate-100 text-slate-600 hover:bg-slate-200 transition">
+              取消
+            </button>
+          </div>
+        </div>
+
+        <!-- 2. Task / Repeating Plan Editor Modal (F01 / F02 / F03) -->
+        <div id="modal-plan" class="hidden bg-white rounded-2xl p-5 w-80 shadow-2xl border border-slate-100 text-slate-800">
+          <div class="flex items-center justify-between mb-3">
+            <h3 id="plan-modal-title" class="text-sm font-semibold text-slate-900">新增任务与重复计划</h3>
+            <button onclick="closeModal()" class="text-slate-400 hover:text-slate-600 text-xs">✕</button>
+          </div>
+
+          <div class="space-y-3 text-xs">
+            <!-- Task Type Switch -->
+            <div class="grid grid-cols-2 gap-1 bg-slate-100 p-1 rounded-xl">
+              <button id="type-btn-once" onclick="setEditorTaskType('once')" class="py-1.5 rounded-lg font-medium bg-white text-slate-800 shadow-xs">
+                一次性任务 (F01)
+              </button>
+              <button id="type-btn-repeat" onclick="setEditorTaskType('repeat')" class="py-1.5 rounded-lg font-medium text-slate-500">
+                每日重复计划 (F02)
+              </button>
+            </div>
+
+            <div>
+              <label class="block text-slate-600 mb-1 font-medium">任务名称</label>
+              <input id="editor-title" type="text" placeholder="例如：起身运动 / 饭后吃药" class="w-full px-3 py-1.5 rounded-lg border border-slate-200 focus:outline-none focus:border-sky-500"/>
+            </div>
+
+            <!-- One-off Task Fields -->
+            <div id="editor-once-fields" class="grid grid-cols-2 gap-2">
+              <div>
+                <label class="block text-slate-600 mb-1 font-medium">执行日期</label>
+                <input id="editor-date" type="date" value="2026-11-02" class="w-full px-2.5 py-1.5 rounded-lg border border-slate-200"/>
+              </div>
+              <div>
+                <label class="block text-slate-600 mb-1 font-medium">提醒时间 (可选)</label>
+                <input id="editor-time" type="time" value="16:00" class="w-full px-2.5 py-1.5 rounded-lg border border-slate-200"/>
+              </div>
+            </div>
+
+            <!-- Repeating Plan Fields (Multi-time slots with add & remove) -->
+            <div id="editor-repeat-fields" class="hidden space-y-2">
+              <div>
+                <div class="flex items-center justify-between mb-1">
+                  <label class="block text-slate-600 font-medium">每天执行时间槽（可增删，独立打卡）</label>
+                  <span id="editor-slot-hint" class="text-slate-400">点击 × 可移除</span>
+                </div>
+                <div id="editor-timeslots" class="flex flex-wrap gap-1.5 mb-1.5 min-h-[26px]">
+                  <!-- Populated dynamically by renderEditorTimeSlots() -->
+                </div>
+                <div class="flex gap-1.5">
+                  <input id="editor-new-slot" type="time" value="18:00" class="flex-1 px-2.5 py-1 rounded-lg border border-slate-200"/>
+                  <button type="button" onclick="addEditorTimeSlot()" class="px-2.5 py-1 rounded-lg bg-slate-100 hover:bg-slate-200 text-slate-700 font-medium whitespace-nowrap">+ 添加时间</button>
+                </div>
+              </div>
+              <div class="grid grid-cols-2 gap-2">
+                <div>
+                  <label class="block text-slate-600 mb-1 font-medium">开始日期</label>
+                  <input id="editor-start-date" type="date" value="2026-11-02" class="w-full px-2 py-1 rounded-lg border border-slate-200"/>
+                </div>
+                <div>
+                  <label class="block text-slate-600 mb-1 font-medium">结束日期 (可选)</label>
+                  <input id="editor-end-date" type="date" class="w-full px-2 py-1 rounded-lg border border-slate-200"/>
+                </div>
+              </div>
+            </div>
+
+            <label class="flex items-center justify-between pt-1 cursor-pointer">
+              <span class="text-slate-700 font-medium">到点发送系统通知与宠物气泡提醒</span>
+              <input id="editor-remind" type="checkbox" checked class="rounded text-sky-600"/>
+            </label>
+          </div>
+
+          <div class="mt-4 flex gap-2">
+            <button onclick="closeModal()" class="flex-1 py-2 rounded-xl text-xs font-medium bg-slate-100 text-slate-600 hover:bg-slate-200">取消</button>
+            <button onclick="saveTaskFromModal()" class="flex-1 py-2 rounded-xl text-xs font-medium text-white hover:opacity-95" style="background-color: #6f9bb6;">保存安排</button>
+          </div>
+        </div>
+
+        <!-- 3. Settings Modal (F09 / F13) -->
+        <div id="modal-settings" class="hidden bg-white rounded-2xl p-5 w-80 shadow-2xl border border-slate-100 text-slate-800">
+          <div class="flex items-center justify-between mb-3">
+            <h3 class="text-sm font-semibold text-slate-900">组件偏好设置 (F13)</h3>
+            <button onclick="closeModal()" class="text-slate-400 hover:text-slate-600 text-xs">✕</button>
+          </div>
+          <div class="space-y-3 text-xs">
+            <div>
+              <div class="flex items-center justify-between mb-1">
+                <label class="block text-slate-600 font-medium">固定下班时间 (F09 倒计时基准)</label>
+                <div class="flex items-center gap-1">
+                  <button type="button" onclick="updateOffworkTime('18:00')" class="px-1.5 py-0.5 rounded bg-slate-100 hover:bg-slate-200 text-slate-600">18:00</button>
+                  <button type="button" onclick="updateOffworkTime('11:00')" class="px-1.5 py-0.5 rounded bg-emerald-50 hover:bg-emerald-100 text-emerald-700" title="测试已到下班时间 (A12)">测已下班</button>
+                  <button type="button" onclick="updateOffworkTime('')" class="px-1.5 py-0.5 rounded bg-amber-50 hover:bg-amber-100 text-amber-700" title="测试未设置下班时间">清空</button>
+                </div>
+              </div>
+              <input id="setting-offwork" type="time" value="18:00" oninput="updateOffworkTime(this.value)" onchange="updateOffworkTime(this.value)" class="w-full px-3 py-1.5 rounded-lg border border-slate-200"/>
+              <p class="text-xs text-slate-400 mt-1">基于组件当前时间 (<span id="setting-cur-clock">11:43</span>) 实时计算差值，到点后显示“已下班 🎉”</p>
+            </div>
+            <label class="flex items-center justify-between py-1 cursor-pointer">
+              <span class="text-slate-700 font-medium">窗口始终置顶 (Always on Top)</span>
+              <input id="setting-ontop" type="checkbox" checked onchange="toggleAlwaysOnTop()" class="rounded text-sky-600"/>
+            </label>
+            <label class="flex items-center justify-between py-1 cursor-pointer">
+              <span class="text-slate-700 font-medium">新建任务默认开启到点提醒</span>
+              <input type="checkbox" checked class="rounded text-sky-600"/>
+            </label>
+            <label class="flex items-center justify-between py-1 cursor-pointer">
+              <span class="text-slate-700 font-medium">显示透明窗口边界辅助线 (开发视图)</span>
+              <input type="checkbox" onchange="document.getElementById('wireframe-box').classList.toggle('hidden', !this.checked)" class="rounded text-sky-600"/>
+            </label>
+          </div>
+          <div class="mt-4">
+            <button onclick="closeModal()" class="w-full py-2 rounded-xl text-xs font-medium text-white" style="background-color: #6f9bb6;">完成</button>
+          </div>
+        </div>
+
+        <!-- 4. Configurable Pet Resource Library & Manifest Modal (F08 / F15) -->
+        <div id="modal-pets" class="hidden bg-white rounded-3xl p-5 w-[348px] shadow-2xl border border-slate-100 text-slate-800 flex flex-col">
+          <!-- Fixed Modal Header -->
+          <div class="flex items-center justify-between mb-3 shrink-0">
+            <div>
+              <h3 class="text-sm font-semibold text-slate-900">🐾 宠物资源库</h3>
+              <p class="text-xs text-slate-400 mt-0.5">支持切换角色、微调坐标与外部导入</p>
+            </div>
+            <button onclick="closeModal()" class="w-6 h-6 rounded-full bg-slate-100 hover:bg-slate-200 flex items-center justify-center text-slate-500 text-xs transition">✕</button>
+          </div>
+
+          <!-- Fixed Sub-tabs -->
+          <div class="grid grid-cols-2 gap-1 bg-slate-100 p-1 rounded-xl text-xs mb-3 shrink-0">
+            <button id="pet-tab-btn-packs" onclick="switchPetModalTab('packs')" class="py-1.5 rounded-lg font-medium bg-white text-slate-800 shadow-xs whitespace-nowrap">
+              角色资源包
+            </button>
+            <button id="pet-tab-btn-config" onclick="switchPetModalTab('config')" class="py-1.5 rounded-lg font-medium text-slate-500 whitespace-nowrap">
+              参数与 Manifest
+            </button>
+          </div>
+
+          <!-- Scrollable Middle Content Area -->
+          <div class="widget-scroll overflow-y-auto overflow-x-hidden pr-1.5" style="height: 228px;">
+            <!-- Sub-tab 1: Installed Pet Packs List -->
+            <div id="pet-modal-packs" class="space-y-2.5 text-xs">
+              <div id="pet-pack-list" class="space-y-2.5">
+                <!-- Populated dynamically via renderPetPackList() -->
+              </div>
+            </div>
+
+            <!-- Sub-tab 2: Live Anchor / Scale / FPS Tuning & Manifest Schema -->
+            <div id="pet-modal-config" class="hidden space-y-3.5 text-xs pb-1">
+              <div class="p-3 rounded-2xl bg-slate-50 border border-slate-200/70 space-y-3">
+                <div>
+                  <div class="flex items-center justify-between mb-1">
+                    <span class="text-slate-600 font-medium">显示缩放比例</span>
+                    <span id="label-pet-scale" class="text-sky-700 font-semibold">100%</span>
+                  </div>
+                  <input id="input-pet-scale" type="range" min="80" max="120" value="100" oninput="updatePetTransformConfig()" class="w-full accent-sky-600"/>
+                </div>
+                <div>
+                  <div class="flex items-center justify-between mb-1">
+                    <span class="text-slate-600 font-medium">卡片顶边叠压偏移 (Anchor Y)</span>
+                    <span id="label-pet-offset" class="text-sky-700 font-semibold">-20px</span>
+                  </div>
+                  <input id="input-pet-offset" type="range" min="-32" max="-4" value="-20" oninput="updatePetTransformConfig()" class="w-full accent-sky-600"/>
+                </div>
+                <div class="flex items-center justify-between pt-1">
+                  <span class="text-slate-600 font-medium">待机帧率 (Idle FPS)</span>
+                  <select id="select-pet-fps" onchange="updatePetFpsConfig(this.value)" class="px-2.5 py-1 rounded-lg border border-slate-200 bg-white text-slate-700">
+                    <option value="6">6 FPS (省电推荐)</option>
+                    <option value="8">8 FPS (均衡流畅)</option>
+                    <option value="12">12 FPS (高帧率)</option>
+                  </select>
+                </div>
+              </div>
+
+              <div>
+                <div class="flex items-center justify-between mb-1.5">
+                  <span class="text-slate-600 font-medium">资源包 <code class="text-sky-700">manifest.json</code></span>
+                  <span class="text-slate-400">PNG / WebP 精灵图</span>
+                </div>
+                <pre id="pet-manifest-preview" class="bg-slate-900 text-slate-100 p-3 rounded-2xl text-xs font-mono overflow-x-auto leading-relaxed"></pre>
+              </div>
+            </div>
+          </div>
+
+          <!-- Unified Single Bottom Action Bar -->
+          <div class="mt-3.5 pt-3 border-t border-slate-100 flex items-center justify-between gap-2 shrink-0 text-xs">
+            <div class="flex items-center gap-1.5">
+              <button onclick="simulateImportCustomPet()" class="py-2 px-3 rounded-xl font-medium bg-sky-50 text-sky-700 hover:bg-sky-100 border border-sky-200/80 transition whitespace-nowrap">
+                ＋ 导入资源包
+              </button>
+              <button onclick="appendLog('调用 shell.openPath 打开本地宠物目录: <userData>/pets/'); closeModal();" class="py-2 px-2.5 rounded-xl font-medium bg-slate-100 text-slate-600 hover:bg-slate-200 transition whitespace-nowrap" title="在 Finder / 资源管理器中打开本地 pets 目录">
+                📂 目录
+              </button>
+            </div>
+            <button onclick="closeModal()" class="py-2 px-4 rounded-xl font-medium text-white hover:opacity-95 transition whitespace-nowrap" style="background-color: #6f9bb6;">
+              完成
+            </button>
+          </div>
+        </div>
+
+      </div>
+
+      <!-- Windows 11 Bottom Taskbar (Hidden in macOS mode) -->
+      <div id="win-taskbar" class="hidden absolute bottom-0 inset-x-0 h-10 px-4 bg-slate-900/85 backdrop-blur-md border-t border-white/10 items-center justify-between text-xs text-white z-30">
+        <div class="flex items-center gap-2">
+          <span class="text-sky-400">☀️ 22°C</span>
+        </div>
+        <div class="flex items-center gap-3">
+          <span class="px-2 py-1 rounded bg-white/10">🪟</span>
+          <span class="px-2 py-1 rounded hover:bg-white/10">🔍</span>
+          <span class="px-2 py-1 rounded hover:bg-white/10">📁</span>
+        </div>
+        <div class="flex items-center gap-2.5">
+          <!-- Windows System Tray Icon -->
+          <button onclick="toggleSystemMenu()" class="flex items-center gap-1 px-2 py-1 rounded bg-sky-500/25 border border-sky-400/40 text-sky-200 hover:bg-sky-500/40 transition" title="点击展开 Windows 系统托盘菜单">
+            <span>🐱</span>
+            <span>托盘</span>
+          </button>
+          <span>🔊</span>
+          <span>🌐</span>
+          <div class="text-right leading-tight">
+            <div>11:43</div>
+            <div class="text-slate-300">2026/11/02</div>
+          </div>
+        </div>
+      </div>
+
+    </div>
+
+    <!-- Right Column: Design Specs & Interactive State Log (4 cols) -->
+    <div class="lg:col-span-4 flex flex-col gap-4">
+
+      <!-- Platform & Architecture Summary Card -->
+      <div class="bg-[var(--card)] border border-[var(--border)] rounded-xl p-4 shadow-sm">
+        <h2 class="text-sm font-semibold text-[var(--foreground)] flex items-center justify-between">
+          <span>📐 原型设计规格与边界</span>
+          <span id="spec-platform-tag" class="text-xs px-2 py-0.5 rounded bg-[var(--secondary)] text-[var(--secondary-foreground)]">当前：macOS</span>
+        </h2>
+
+        <div class="mt-3 space-y-2.5 text-xs text-[var(--muted-foreground)]">
+          <div class="p-2.5 rounded-lg bg-[var(--background)] border border-[var(--border)]">
+            <div class="font-medium text-[var(--foreground)]">1. 透明无边框单窗口结构</div>
+            <p class="mt-0.5">总窗口 <code class="text-[var(--foreground)]">356 × 560 px</code>，上方预留 <code class="text-[var(--foreground)]">112px</code> 透明出血层供宠物动画与气泡展开，下方为 <code class="text-[var(--foreground)]">28px</code> 大圆角任务卡片，拖动时整体移动。</p>
+          </div>
+
+          <div class="p-2.5 rounded-lg bg-[var(--background)] border border-[var(--border)]">
+            <div class="font-medium text-[var(--foreground)]">2. 参考图差异收敛（已按需求文档对齐）</div>
+            <ul class="mt-1 list-disc list-inside space-y-0.5">
+              <li>移除参考图顶部的社交平台头像/关注/页码水印</li>
+              <li>第 3 个标签由参考图“打卡”调整为<strong>“重复计划”</strong>（对应 F02/F03 每日多时间槽计划管理）</li>
+              <li>补充<strong>历史日期切换</strong>与昨日未完成<strong>「移到今天」</strong>操作</li>
+            </ul>
+          </div>
+
+          <div class="p-2.5 rounded-lg bg-[var(--background)] border border-[var(--border)]">
+            <div class="font-medium text-[var(--foreground)]" id="platform-diff-title">3. macOS 专属交互规范</div>
+            <p class="mt-0.5" id="platform-diff-desc">
+              驻留顶部 Menu Bar（显示实时完成比 1/6）；点击卡片内 <code class="text-[var(--foreground)]">×</code> 弹出 3 选 1 确认框，而按系统快捷键 <code class="text-[var(--foreground)]">⌘Q</code> 直接遵循退出语义，不二次弹窗拦截。
+            </p>
+          </div>
+        </div>
+      </div>
+
+      <!-- Pet Animation State Switcher & Configurable Library Entry -->
+      <div class="bg-[var(--card)] border border-[var(--border)] rounded-xl p-4 shadow-sm">
+        <div class="flex items-center justify-between">
+          <h2 class="text-sm font-semibold text-[var(--foreground)]">🐾 宠物状态机与资源库 (F08)</h2>
+          <button onclick="openModal('pets')" class="text-xs px-2 py-0.5 rounded-md bg-[var(--primary)] text-[var(--primary-foreground)] hover:opacity-90 transition">
+            切换/配置宠物 ▸
+          </button>
+        </div>
+        <p class="text-xs text-[var(--muted-foreground)] mt-0.5">当前角色：<strong id="inspector-pet-name" class="text-[var(--foreground)]">小八猫 (hachiware)</strong> · 点击按钮体验动作：</p>
+        <div class="grid grid-cols-2 gap-2 mt-2.5 text-xs">
+          <button onclick="clearActiveReminder(); setPetState('idle')" class="px-2.5 py-1.5 rounded-lg border border-[var(--border)] bg-[var(--background)] hover:border-[var(--primary)] text-left">
+            😌 <strong>idle</strong> 待机呼吸
+          </button>
+          <button onclick="interactWithPet()" class="px-2.5 py-1.5 rounded-lg border border-[var(--border)] bg-[var(--background)] hover:border-[var(--primary)] text-left">
+            💬 <strong>react</strong> 点击回应
+          </button>
+          <button onclick="setPetState('happy', '完成一项！继续保持 ✨')" class="px-2.5 py-1.5 rounded-lg border border-[var(--border)] bg-[var(--background)] hover:border-[var(--primary)] text-left">
+            ✨ <strong>celebrate</strong> 单项庆祝
+          </button>
+          <button onclick="setPetState('happy', '🎉 太棒啦！今日任务全部达成！')" class="px-2.5 py-1.5 rounded-lg border border-[var(--border)] bg-[var(--background)] hover:border-[var(--primary)] text-left">
+            🏆 <strong>all_done</strong> 全部完成
+          </button>
+          <button onclick="simulateWaterGifReminder()" class="px-2.5 py-1.5 rounded-lg border border-sky-400/60 bg-sky-500/10 hover:border-sky-500 text-left">
+            💧 <strong>drink_gif</strong> 请喝水提醒
+          </button>
+          <button onclick="toggleTaskMenuCard()" class="px-2.5 py-1.5 rounded-lg border border-teal-400/60 bg-teal-500/10 hover:border-teal-500 text-left">
+            🔼 <strong>mini_mode</strong> 收起/展开菜单
+          </button>
+        </div>
+      </div>
+
+      <!-- Real-time Event & IPC Command Log -->
+      <div class="bg-[var(--card)] border border-[var(--border)] rounded-xl p-4 shadow-sm flex-1 flex flex-col">
+        <div class="flex items-center justify-between mb-2">
+          <h2 class="text-sm font-semibold text-[var(--foreground)]">⚡ 交互与主进程 IPC 事件日志</h2>
+          <button onclick="clearLog()" class="text-xs text-[var(--muted-foreground)] hover:text-[var(--foreground)]">清空</button>
+        </div>
+        <div id="ipc-log" class="flex-1 bg-[var(--background)] border border-[var(--border)] rounded-lg p-2.5 text-xs font-mono space-y-1.5 overflow-y-auto" style="max-height: 210px;">
+          <div class="text-[var(--muted-foreground)]">[11:43:00] 主进程启动，生成今日 (11-02) 任务实例，共 6 项</div>
+          <div class="text-[var(--muted-foreground)]">[11:43:00] 宠物进入 idle 待机循环，下班倒计时目标 18:00</div>
+        </div>
+      </div>
+
+    </div>
+  </div>
+
+  <script>
+    // =========================================================================
+    // STATE DATA (Aligned with docs/requirements.md & docs/technical-selection.md)
+    // =========================================================================
+    const TODAY_DATE = '2026-11-02';
+    let selectedDate = '2026-11-02';
+    let dateBarVisible = false;
+    let currentPlatform = 'mac'; // 'mac' | 'win'
+    let currentTab = 'todo';     // 'todo' | 'done' | 'plans'
+    let viewingYesterday = false;
+    let alwaysOnTop = true;
+    let notifPermissionGranted = true;
+    let offworkTime = '18:00';
+    let currentCountdownStr = '06:16:28';
+    let activeReminderTaskId = null;
+    let activeReminderState = null; // Stores P0 reminder snapshot so P1 clicks cannot overwrite it
+    let editorTaskType = 'once';
+    let editorSlots = ['10:00', '15:00'];
+    let editingTargetId = null;     // null = creating new, string = editing existing taskId or planId
+    let bubbleResetTimer = null;
+
+    let isMenuCardHidden = false;
+    let activeSceneProp = null; // null | 'water' | 'stretch'
+
+    // All task occurrences across dates (keyed by scheduledDate, supporting Yesterday / Today / Tomorrow & custom dates)
+    let allTasks = [
+      // Today (2026-11-02): 4 one-off + 2 repeating instances = 6 total, 1 done => 1/6 = 17%
+      { id: 't1', scheduledDate: '2026-11-02', title: '回一下上午那条消息', time: '10:30', remind: true, done: false, doneAt: null, isRepeat: false, planId: null, originDate: null, scene: 'water', petVoice: '咕嘟咕嘟～今天要记得多喝水哦！快端起杯子陪我喝口水吧 💧' },
+      { id: 't2', scheduledDate: '2026-11-02', title: '整理素材文件夹', time: null, remind: true, done: false, doneAt: null, isRepeat: false, planId: null, originDate: null },
+      { id: 't3', scheduledDate: '2026-11-02', title: '喝一杯温水补充水分', time: '15:00', remind: true, done: false, doneAt: null, isRepeat: true, planId: 'p1', originDate: null, scene: 'water', petVoice: '咕嘟咕嘟～主人今天要喝水啦！快端起杯子陪我喝口温水吧 💧' },
+      { id: 't4', scheduledDate: '2026-11-02', title: '下班前发日报', time: '17:30', remind: true, done: false, doneAt: null, isRepeat: false, planId: null, originDate: null },
+      { id: 't5', scheduledDate: '2026-11-02', title: '10条demo递交', time: null, remind: true, done: false, doneAt: null, isRepeat: false, planId: null, originDate: null },
+      { id: 't6', scheduledDate: '2026-11-02', title: '起身运动拉伸 5 分钟', time: '10:00', remind: true, done: true, doneAt: '10:05', isRepeat: true, planId: 'p1', originDate: null, scene: 'stretch' },
+
+      // Yesterday (2026-11-01): For F05 / A04 / A05 verification
+      { id: 'y1', scheduledDate: '2026-11-01', title: '核对上周报销单据', time: '16:00', remind: true, done: false, doneAt: null, isRepeat: false, planId: null, originDate: '11-01', movedToToday: false },
+      { id: 'y2', scheduledDate: '2026-11-01', title: '准备早饭与维生素', time: '08:30', remind: true, done: true, doneAt: '08:35', isRepeat: true, planId: 'p2', originDate: '11-01', movedToToday: false },
+      { id: 'y3', scheduledDate: '2026-11-01', title: '起身运动拉伸 5 分钟', time: '15:00', remind: true, done: true, doneAt: '15:10', isRepeat: true, planId: 'p1', originDate: '11-01', movedToToday: false }
+    ];
+
+    // Repeating Plans (F02 / F03)
+    let repeatPlans = [
+      { id: 'p1', title: '起身运动拉伸 5 分钟', slots: ['10:00', '15:00'], status: 'active', startDate: '2026-10-20', endDate: null, remind: true },
+      { id: 'p2', title: '准备早饭与饭后维生素', slots: ['08:30'], status: 'active', startDate: '2026-10-15', endDate: '2026-11-01', remind: true }
+    ];
+
+    // Ensure repeating plan instances are generated for a date if within [startDate, endDate] inclusive (Rule 4.1)
+    function isDateWithinPlan(dateStr, plan) {
+      if (plan.status !== 'active') return false;
+      if (plan.startDate && dateStr < plan.startDate) return false;
+      if (plan.endDate && dateStr > plan.endDate) return false;
+      return true;
+    }
+
+    function syncRepeatPlanInstancesForDate(dateStr) {
+      repeatPlans.forEach(plan => {
+        const inRange = isDateWithinPlan(dateStr, plan);
+        if (inRange) {
+          plan.slots.forEach(slot => {
+            const exists = allTasks.some(t =>
+              t.scheduledDate === dateStr &&
+              t.planId === plan.id &&
+              t.time === slot &&
+              !t.removedOccurrence
+            );
+            if (!exists) {
+              allTasks.push({
+                id: `rep_${plan.id}_${dateStr}_${slot.replace(':', '')}`,
+                scheduledDate: dateStr,
+                title: plan.title,
+                time: slot,
+                remind: plan.remind !== false,
+                done: false,
+                doneAt: null,
+                isRepeat: true,
+                planId: plan.id,
+                originDate: null,
+                scene: plan.title.includes('喝') ? 'water' : 'stretch'
+              });
+            }
+          });
+        }
+        // Remove unfinished occurrences on >=TODAY_DATE if slot was removed or date fell out of [startDate, endDate]
+        if (dateStr >= TODAY_DATE) {
+          for (let i = allTasks.length - 1; i >= 0; i--) {
+            const t = allTasks[i];
+            if (t.scheduledDate === dateStr && t.planId === plan.id && !t.done) {
+              if (!inRange || !plan.slots.includes(t.time)) {
+                allTasks.splice(i, 1);
+              } else {
+                t.title = plan.title;
+                t.remind = plan.remind !== false;
+              }
+            }
+          }
+        }
+      });
+    }
+
+    function getTasksForDate(dateStr) {
+      syncRepeatPlanInstancesForDate(dateStr);
+      return allTasks.filter(t => t.scheduledDate === dateStr && !t.movedToToday && !t.removedOccurrence);
+    }
+
+    function formatShortDateLabel(dateStr) {
+      if (dateStr === '2026-11-01') return '11月01日 (昨天)';
+      if (dateStr === '2026-11-02') return '11月02日 (今天)';
+      if (dateStr === '2026-11-03') return '11月03日 (明天)';
+      const parts = dateStr.split('-');
+      return parts.length === 3 ? `${parts[1]}月${parts[2]}日` : dateStr;
+    }
+
+    // =========================================================================
+    // RENDER & PROGRESS LOGIC
+    // =========================================================================
+    function renderAll() {
+      viewingYesterday = (selectedDate === '2026-11-01');
+      const sourceList = getTasksForDate(selectedDate);
+      const todayList = getTasksForDate(TODAY_DATE);
+
+      // Sort Todo: timed tasks ascending first, untimed tasks after (Rule 4.1)
+      const todoItems = sourceList
+        .filter(t => !t.done)
+        .sort((a, b) => {
+          if (a.time && b.time) return a.time.localeCompare(b.time);
+          if (a.time && !b.time) return -1;
+          if (!a.time && b.time) return 1;
+          return 0;
+        });
+
+      const doneItems = sourceList.filter(t => t.done);
+      const totalCount = sourceList.length;
+      const doneCount = doneItems.length;
+      const pct = totalCount === 0 ? 0 : Math.round((doneCount / totalCount) * 100);
+
+      // Update Date Switcher pills & Widget Date subtitle
+      const pillYesterday = document.getElementById('date-pill-yesterday');
+      const pillToday = document.getElementById('date-pill-today');
+      const pillTomorrow = document.getElementById('date-pill-tomorrow');
+      const customDateInput = document.getElementById('header-custom-date');
+      if (customDateInput) customDateInput.value = selectedDate;
+      [
+        [pillYesterday, '2026-11-01'],
+        [pillToday, '2026-11-02'],
+        [pillTomorrow, '2026-11-03']
+      ].forEach(([el, d]) => {
+        if (!el) return;
+        el.className = selectedDate === d
+          ? 'px-2 py-0.5 rounded-md font-semibold bg-indigo-600 text-white transition'
+          : 'px-2 py-0.5 rounded-md font-medium bg-white/80 text-indigo-800 hover:bg-white transition';
+      });
+
+      const widgetDateEl = document.getElementById('widget-date');
+      if (widgetDateEl) {
+        const weekMap = ['星期日', '星期一', '星期二', '星期三', '星期四', '星期五', '星期六'];
+        const dt = new Date(selectedDate + 'T00:00:00');
+        const wk = isNaN(dt.getTime()) ? '星期一' : weekMap[dt.getDay()];
+        const [, mm, dd] = selectedDate.split('-');
+        widgetDateEl.textContent = `${mm || '11'}月${dd || '02'}日 ${wk}`;
+      }
+
+      // Update Progress Bar (Rule 1.3 & 4.2)
+      const labelEl = document.getElementById('progress-label');
+      const pctEl = document.getElementById('progress-percent');
+      const fillEl = document.getElementById('progress-bar-fill');
+
+      const prefixLabel = selectedDate === TODAY_DATE
+        ? '待办进度'
+        : `${formatShortDateLabel(selectedDate)} 进度`;
+
+      if (totalCount === 0) {
+        labelEl.textContent = `${prefixLabel} 0/0 · 暂无任务安排`;
+        pctEl.textContent = '0%';
+        fillEl.style.width = '0%';
+      } else {
+        labelEl.textContent = `${prefixLabel} ${doneCount}/${totalCount}`;
+        pctEl.textContent = `${pct}%`;
+        fillEl.style.width = `${pct}%`;
+      }
+
+      // Menu bar & mini dock always reflect Today's live progress
+      const todayDoneCount = todayList.filter(t => t.done).length;
+      const todayTotalCount = todayList.length;
+      document.getElementById('menubar-progress-text').textContent = `${todayDoneCount}/${todayTotalCount}`;
+      const miniDockProg = document.getElementById('mini-dock-progress');
+      if (miniDockProg) miniDockProg.textContent = `待办 ${todayDoneCount}/${todayTotalCount}`;
+      document.getElementById('badge-todo').textContent = `(${todoItems.length})`;
+      document.getElementById('badge-done').textContent = `(${doneItems.length})`;
+      document.getElementById('badge-plans').textContent = `(${repeatPlans.length})`;
+
+      // Update Tab button styles
+      ['todo', 'done', 'plans'].forEach(tab => {
+        const btn = document.getElementById('tab-' + tab);
+        if (tab === currentTab) {
+          btn.style.backgroundColor = '#6f9bb6';
+          btn.className = 'py-1.5 rounded-full transition-all text-white shadow-xs';
+        } else {
+          btn.style.backgroundColor = 'transparent';
+          btn.className = 'py-1.5 rounded-full transition-all text-slate-500 hover:text-slate-700';
+        }
+      });
+
+      const container = document.getElementById('task-list-container');
+      container.innerHTML = '';
+
+      if (currentTab === 'todo') {
+        if (todoItems.length === 0) {
+          container.innerHTML = `
+            <div class="h-full flex flex-col items-center justify-center text-slate-400 text-xs py-10">
+              <div class="text-2xl mb-1">🎉</div>
+              <div>${totalCount === 0 ? `${formatShortDateLabel(selectedDate)}还没有安排任务哦` : '太棒啦！待办事项已全部完成'}</div>
+            </div>`;
+          return;
+        }
+        todoItems.forEach(item => {
+          const row = document.createElement('div');
+          row.id = 'task-row-' + item.id;
+          row.className = 'task-row-item bg-white rounded-2xl px-3.5 py-2.5 flex items-center justify-between shadow-xs border border-slate-100/80 hover:border-slate-200 group';
+          const isHistorical = selectedDate < TODAY_DATE;
+          row.innerHTML = `
+            <div class="flex items-center gap-2.5 min-w-0 flex-1" ondblclick="openEditTaskModal('${item.id}')" title="双击可编辑该任务">
+              <button
+                id="check-btn-${item.id}"
+                onclick="toggleTaskDone('${item.id}', event)"
+                class="relative w-5 h-5 rounded-full border-2 border-slate-300 hover:border-[#6f9bb6] hover:scale-110 flex items-center justify-center shrink-0 transition-all cursor-pointer"
+                title="点击完成任务（动画期间再次点击可取消）"
+              ></button>
+              <div class="min-w-0 flex-1">
+                <div class="flex items-center gap-1.5 flex-wrap">
+                  <span id="title-span-${item.id}" class="strike-line text-xs font-medium text-slate-700 truncate transition-colors duration-200">${escapeHtml(item.title)}</span>
+                  ${item.time ? `<span class="text-xs px-1.5 py-0.2 rounded bg-slate-100 text-slate-500">${item.time}</span>` : ''}
+                  ${item.isRepeat ? `<span class="text-xs px-1.5 py-0.2 rounded bg-sky-50 text-sky-700" title="每日重复计划实例">↻ 每日</span>` : ''}
+                  ${item.originDate ? `<span class="text-xs px-1.5 py-0.2 rounded bg-amber-50 text-amber-700" title="从历史未完成迁移至今天">原 ${item.originDate}</span>` : ''}
+                </div>
+              </div>
+            </div>
+            <div class="flex items-center gap-1 shrink-0 ml-2">
+              <span id="stamp-slot-${item.id}" class="hidden text-xs font-semibold px-2 py-0.5 rounded-full bg-sky-100/90 text-[#5282a1]">🐾 完成!</span>
+              ${isHistorical ? `
+                <button onclick="moveYesterdayTaskToToday('${item.id}')" class="px-2 py-0.5 rounded-lg bg-indigo-50 text-indigo-700 hover:bg-indigo-100 text-xs font-medium transition">
+                  移到今天
+                </button>
+              ` : ''}
+              <button id="edit-btn-${item.id}" onclick="openEditTaskModal('${item.id}')" class="text-slate-400 hover:text-sky-600 text-xs px-1 leading-none transition" title="${item.isRepeat ? '编辑所属每日重复计划 (F03)' : '编辑任务名称/日期/时间 (F01)'}">✎</button>
+              <button id="del-btn-${item.id}" onclick="deleteTaskInstance('${item.id}')" class="text-slate-400 hover:text-rose-500 text-sm px-1 leading-none transition" title="${item.isRepeat ? '仅删除今天本次安排，不影响后续重复计划' : '删除任务'}">×</button>
+            </div>
+          `;
+          container.appendChild(row);
+        });
+      } else if (currentTab === 'done') {
+        if (doneItems.length === 0) {
+          container.innerHTML = `
+            <div class="h-full flex flex-col items-center justify-center text-slate-400 text-xs py-10">
+              <div>还没有已完成的任务</div>
+            </div>`;
+          return;
+        }
+        doneItems.forEach(item => {
+          const row = document.createElement('div');
+          row.id = 'task-row-' + item.id;
+          row.className = 'task-row-item bg-white/75 rounded-2xl px-3.5 py-2.5 flex items-center justify-between border border-slate-100';
+          row.innerHTML = `
+            <div class="flex items-center gap-2.5 min-w-0 flex-1">
+              <button onclick="toggleTaskDone('${item.id}', event)" class="w-5 h-5 rounded-full flex items-center justify-center text-white text-xs shrink-0 hover:opacity-85 transition" style="background-color: #6f9bb6;" title="点击撤销完成">✓</button>
+              <div class="min-w-0 flex-1">
+                <span class="text-xs text-slate-400 line-through truncate">${escapeHtml(item.title)}</span>
+                ${item.doneAt ? `<span class="ml-1.5 text-xs text-slate-400">(${item.doneAt} 完成)</span>` : ''}
+              </div>
+            </div>
+            <button onclick="toggleTaskDone('${item.id}', event)" class="text-xs text-slate-400 hover:text-sky-700">撤销</button>
+          `;
+          container.appendChild(row);
+        });
+      } else if (currentTab === 'plans') {
+        repeatPlans.forEach(plan => {
+          const row = document.createElement('div');
+          row.className = 'bg-white rounded-2xl px-3.5 py-2.5 border border-slate-100 shadow-xs space-y-1.5';
+          const isPaused = plan.status === 'paused';
+          const dateRangeLabel = plan.endDate
+            ? `${plan.startDate.slice(5)} ~ ${plan.endDate.slice(5)}`
+            : `${plan.startDate.slice(5)} 起`;
+          row.innerHTML = `
+            <div class="flex items-center justify-between gap-2">
+              <span class="text-xs font-semibold text-slate-700 truncate ${isPaused ? 'line-through text-slate-400' : ''}">↻ ${escapeHtml(plan.title)}</span>
+              <div class="flex items-center gap-1 shrink-0">
+                <span class="text-xs px-1.5 py-0.2 rounded bg-slate-100 text-slate-500">${dateRangeLabel}</span>
+                <span class="text-xs px-2 py-0.5 rounded-full ${isPaused ? 'bg-amber-50 text-amber-700' : 'bg-emerald-50 text-emerald-700'}">
+                  ${isPaused ? '已暂停' : '生效中'}
+                </span>
+              </div>
+            </div>
+            <div class="flex items-center justify-between text-xs text-slate-500">
+              <span class="truncate pr-2">每日：${plan.slots.join('、')}</span>
+              <div class="flex items-center gap-2 shrink-0">
+                <button onclick="openEditPlanModal('${plan.id}')" class="text-sky-700 hover:underline font-medium">编辑</button>
+                <button onclick="togglePlanPause('${plan.id}')" class="text-slate-600 hover:text-sky-700 hover:underline">${isPaused ? '恢复' : '暂停'}</button>
+                <button onclick="endRepeatPlan('${plan.id}')" class="text-rose-600 hover:underline" title="停止后续生成，保留历史记录">结束</button>
+              </div>
+            </div>
+          `;
+          container.appendChild(row);
+        });
+      }
+    }
+
+    // =========================================================================
+    // TASK INTERACTIONS & 5-STAGE COMPLETION MICRO-ANIMATION
+    // =========================================================================
+    const pendingCompleteTimers = new Map();
+
+    function spawnCheckParticles(originEl) {
+      if (!originEl) return;
+      const rect = originEl.getBoundingClientRect();
+      const cx = rect.left + rect.width / 2;
+      const cy = rect.top + rect.height / 2;
+      const colors = ['#6f9bb6', '#f3b2b7', '#f6c465', '#7cc6a6', '#8ab8d6', '#e58787'];
+      const symbols = ['✦', '★', '•', '♥', '✦', '•', '★', '♥'];
+
+      for (let i = 0; i < 8; i++) {
+        const p = document.createElement('span');
+        p.textContent = symbols[i % symbols.length];
+        p.style.position = 'fixed';
+        p.style.left = `${cx}px`;
+        p.style.top = `${cy}px`;
+        p.style.color = colors[i % colors.length];
+        p.style.fontSize = i % 2 === 0 ? '12px' : '10px';
+        p.style.pointerEvents = 'none';
+        p.style.zIndex = '9999';
+        p.style.transform = 'translate(-50%, -50%) scale(0.5)';
+        p.style.transition = 'transform 0.52s cubic-bezier(0.16, 1, 0.3, 1), opacity 0.52s ease-out';
+        document.body.appendChild(p);
+
+        const angle = (Math.PI * 2 * i) / 8 + (Math.random() * 0.3 - 0.15);
+        const dist = 20 + Math.random() * 14;
+        const tx = Math.cos(angle) * dist;
+        const ty = Math.sin(angle) * dist - 4;
+
+        requestAnimationFrame(() => {
+          p.style.transform = `translate(calc(-50% + ${tx}px), calc(-50% + ${ty}px)) scale(1.15) rotate(${Math.round(Math.random()*60 - 30)}deg)`;
+          p.style.opacity = '0';
+        });
+
+        setTimeout(() => p.remove(), 550);
+      }
+    }
+
+    function flyStarToPet(originEl) {
+      const petEl = document.getElementById('pet-sprite');
+      if (!originEl || !petEl) return;
+
+      const sRect = originEl.getBoundingClientRect();
+      const eRect = petEl.getBoundingClientRect();
+
+      const startX = sRect.left + sRect.width / 2;
+      const startY = sRect.top + sRect.height / 2;
+      const endX = eRect.left + eRect.width * 0.55;
+      const endY = eRect.top + eRect.height * 0.55;
+
+      const star = document.createElement('div');
+      star.innerHTML = '✨';
+      star.style.position = 'fixed';
+      star.style.left = `${startX}px`;
+      star.style.top = `${startY}px`;
+      star.style.fontSize = '15px';
+      star.style.pointerEvents = 'none';
+      star.style.zIndex = '9999';
+      star.style.transform = 'translate(-50%, -50%) scale(0.9)';
+      star.style.transition = 'left 0.46s cubic-bezier(0.22, 1, 0.36, 1), top 0.46s cubic-bezier(0.34, 1.45, 0.64, 1), transform 0.46s ease, opacity 0.46s ease';
+      document.body.appendChild(star);
+
+      requestAnimationFrame(() => {
+        star.style.left = `${endX}px`;
+        star.style.top = `${endY}px`;
+        star.style.transform = 'translate(-50%, -50%) scale(1.35) rotate(25deg)';
+      });
+
+      setTimeout(() => {
+        star.style.opacity = '0';
+        setTimeout(() => star.remove(), 150);
+      }, 430);
+    }
+
+    function toggleTaskDone(taskId, evt) {
+      const item = allTasks.find(t => t.id === taskId);
+      if (!item) return;
+      const list = getTasksForDate(item.scheduledDate);
+
+      // Case 1: If user clicks checkbox again while completion animation is playing -> Cancel completion!
+      if (pendingCompleteTimers.has(taskId)) {
+        const timers = pendingCompleteTimers.get(taskId);
+        timers.forEach(t => clearTimeout(t));
+        pendingCompleteTimers.delete(taskId);
+
+        const row = document.getElementById('task-row-' + taskId);
+        const btn = document.getElementById('check-btn-' + taskId);
+        const titleSpan = document.getElementById('title-span-' + taskId);
+        const stamp = document.getElementById('stamp-slot-' + taskId);
+        const editBtn = document.getElementById('edit-btn-' + taskId);
+        const delBtn = document.getElementById('del-btn-' + taskId);
+
+        if (row) row.classList.remove('is-completing', 'is-collapsing');
+        if (btn) {
+          btn.style.backgroundColor = 'transparent';
+          btn.style.borderColor = '';
+          btn.classList.remove('check-pop');
+          btn.innerHTML = '';
+        }
+        if (titleSpan) {
+          titleSpan.classList.remove('is-struck', 'text-slate-400');
+          titleSpan.classList.add('text-slate-700');
+        }
+        if (stamp) stamp.classList.add('hidden');
+        if (editBtn) editBtn.classList.remove('hidden');
+        if (delBtn) delBtn.classList.remove('hidden');
+
+        appendLog(`已取消勾选「${item.title}」（防手滑中断）`);
+        return;
+      }
+
+      // Case 2: Completing an unfinished task from the Todo tab -> Play 5-stage animation
+      if (!item.done) {
+        const row = document.getElementById('task-row-' + taskId);
+        const btn = document.getElementById('check-btn-' + taskId);
+        const titleSpan = document.getElementById('title-span-' + taskId);
+        const stamp = document.getElementById('stamp-slot-' + taskId);
+        const editBtn = document.getElementById('edit-btn-' + taskId);
+        const delBtn = document.getElementById('del-btn-' + taskId);
+
+        // Stage 1 (0ms): Bouncy blue circle + SVG stroke draw + particle burst
+        if (btn) {
+          btn.style.backgroundColor = '#6f9bb6';
+          btn.style.borderColor = '#6f9bb6';
+          btn.classList.add('check-pop');
+          btn.innerHTML = `
+            <svg viewBox="0 0 16 16" class="w-3.5 h-3.5 text-white fill-none stroke-current" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round">
+              <path class="check-stroke" d="M3.2 8.3 L6.6 11.6 L12.8 4.6"></path>
+            </svg>
+          `;
+          spawnCheckParticles(btn);
+        }
+
+        // Stage 2 (90ms): Left-to-right strikethrough + soft card glow + cute paw stamp
+        const t1 = setTimeout(() => {
+          if (row) row.classList.add('is-completing');
+          if (titleSpan) {
+            titleSpan.classList.add('is-struck', 'text-slate-400');
+            titleSpan.classList.remove('text-slate-700');
+          }
+          if (editBtn) editBtn.classList.add('hidden');
+          if (delBtn) delBtn.classList.add('hidden');
+          if (stamp) {
+            stamp.classList.remove('hidden');
+            stamp.classList.add('paw-stamp');
+          }
+        }, 90);
+
+        // Stage 3 (240ms): Flying star trail to pet
+        const t2 = setTimeout(() => {
+          if (btn) flyStarToPet(btn);
+        }, 240);
+
+        // Stage 4 (620ms): Collapse row smoothly so user clearly saw the checkmark & strikethrough
+        const t3 = setTimeout(() => {
+          if (row) row.classList.add('is-collapsing');
+
+          // Bounce the "已完成" tab badge
+          const doneTabBtn = document.getElementById('tab-done');
+          if (doneTabBtn) {
+            doneTabBtn.classList.remove('badge-bounce');
+            void doneTabBtn.offsetWidth;
+            doneTabBtn.classList.add('badge-bounce');
+          }
+        }, 620);
+
+        // Stage 5 (880ms): Commit data state & update progress bar and pet reaction
+        const t4 = setTimeout(() => {
+          pendingCompleteTimers.delete(taskId);
+          const wasAllDone = list.length > 0 && list.every(t => t.done);
+          item.done = true;
+          item.doneAt = formatClockHHMM();
+          const updatedList = getTasksForDate(item.scheduledDate);
+          const isNowAllDone = updatedList.length > 0 && updatedList.every(t => t.done);
+
+          // If this completed task was the active P0 reminder task, clear the P0 reminder lock
+          if (activeReminderTaskId === taskId) {
+            clearActiveReminder();
+          }
+
+          renderAll();
+
+          const pack = getCurrentPetPack();
+          if (!wasAllDone && isNowAllDone && item.scheduledDate === TODAY_DATE) {
+            setPetState('happy', pack.allDoneQuote);
+            appendLog(`任务「${item.title}」完成 -> 触发【全部完成】庆祝动画 (${pack.id})`);
+          } else {
+            setPetState('happy', pack.celebrateQuote);
+            appendLog(`任务「${item.title}」标记为已完成，进度更新`);
+          }
+        }, 880);
+
+        pendingCompleteTimers.set(taskId, [t1, t2, t3, t4]);
+        return;
+      }
+
+      // Case 3: Undoing a completed task from the Done tab
+      const row = document.getElementById('task-row-' + taskId);
+      if (row) {
+        row.classList.add('is-collapsing');
+      }
+      setTimeout(() => {
+        item.done = false;
+        item.doneAt = null;
+        renderAll();
+        appendLog(`撤销任务「${item.title}」完成状态（已提醒过的实例不重复提醒）`);
+      }, 240);
+    }
+
+    function deleteTaskInstance(taskId) {
+      const idx = allTasks.findIndex(t => t.id === taskId);
+      if (idx === -1) return;
+      const removed = allTasks[idx];
+      const row = document.getElementById('task-row-' + taskId);
+      if (row) {
+        row.classList.add('is-collapsing');
+      }
+      setTimeout(() => {
+        if (activeReminderTaskId === taskId) {
+          clearActiveReminder();
+        }
+        if (removed.isRepeat) {
+          // Mark occurrence as removed for this date so syncRepeatPlanInstancesForDate won't recreate it
+          removed.removedOccurrence = true;
+          renderAll();
+          appendLog(`仅删除 ${removed.scheduledDate} 重复实例「${removed.title} (${removed.time})」，后续日期计划不受影响 (Rule 4.3)`);
+        } else {
+          const curIdx = allTasks.findIndex(t => t.id === taskId);
+          if (curIdx !== -1) allTasks.splice(curIdx, 1);
+          renderAll();
+          appendLog(`删除一次性任务「${removed.title}」，重新计算进度`);
+        }
+      }, 250);
+    }
+
+    function handleQuickAdd() {
+      const input = document.getElementById('quick-task-input');
+      const title = input.value.trim();
+      if (!title) return;
+
+      // Quick add creates task on the currently selected date (or Today if viewing history)
+      const targetDate = selectedDate < TODAY_DATE ? TODAY_DATE : selectedDate;
+      if (selectedDate < TODAY_DATE) {
+        switchSelectedDate(TODAY_DATE, true);
+      }
+
+      const newTask = {
+        id: 't_' + Date.now(),
+        scheduledDate: targetDate,
+        title,
+        time: null,
+        remind: true,
+        done: false,
+        doneAt: null,
+        isRepeat: false,
+        planId: null,
+        originDate: null
+      };
+      allTasks.push(newTask);
+      input.value = '';
+      currentTab = 'todo';
+      renderAll();
+      setPetState('happy', `已添加「${title.slice(0, 8)}」✨`);
+      appendLog(`快捷新增一次性任务：「${title}」（执行日期：${targetDate}）`);
+    }
+
+    function handleQuickAddOrModal() {
+      const input = document.getElementById('quick-task-input');
+      if (input.value.trim()) {
+        handleQuickAdd();
+      } else {
+        openNewTaskModal();
+      }
+    }
+
+    function moveYesterdayTaskToToday(taskId) {
+      const item = allTasks.find(t => t.id === taskId);
+      if (!item || item.movedToToday) return;
+      const origShort = item.scheduledDate.slice(5);
+      item.movedToToday = true;
+
+      // Rule 4.4: Keep instance identity & original date badge, do not duplicate
+      allTasks.push({
+        ...item,
+        id: item.id + '_moved',
+        scheduledDate: TODAY_DATE,
+        originDate: item.originDate || origShort,
+        movedToToday: false
+      });
+
+      switchSelectedDate(TODAY_DATE, true);
+      currentTab = 'todo';
+      renderAll();
+      setPetState('happy', '已将历史未完成任务移到今天 📋');
+      appendLog(`将历史任务「${item.title}」移到今天，保留原计划日期标签 [原 ${origShort}] (A05)`);
+    }
+
+    function switchSelectedDate(dateStr, hideBarIfToday = false) {
+      if (!dateStr) return;
+      selectedDate = dateStr;
+      viewingYesterday = (selectedDate === '2026-11-01');
+      const banner = document.getElementById('history-mode-banner');
+      const simBtn = document.getElementById('btn-sim-history');
+
+      if (selectedDate === TODAY_DATE && hideBarIfToday) {
+        dateBarVisible = false;
+        banner.classList.add('hidden');
+      } else {
+        dateBarVisible = true;
+        banner.classList.remove('hidden');
+      }
+
+      if (simBtn) {
+        simBtn.textContent = selectedDate === '2026-11-01'
+          ? '📅 返回今日清单'
+          : '📅 查看昨日未完成并移到今天 (A04/A05)';
+      }
+
+      appendLog(`切换日期视图至：${formatShortDateLabel(selectedDate)}`);
+      renderAll();
+    }
+
+    function toggleHistoryDate() {
+      const banner = document.getElementById('history-mode-banner');
+      if (!dateBarVisible && selectedDate === TODAY_DATE) {
+        // Switch directly to Yesterday and show the date switcher bar
+        switchSelectedDate('2026-11-01');
+      } else {
+        // Return to Today and hide bar
+        switchSelectedDate(TODAY_DATE, true);
+      }
+    }
+
+    // =========================================================================
+    // TASK & REPEATING PLAN ADD / EDIT WORKFLOW (F01 / F02 / F03)
+    // =========================================================================
+    function togglePlanPause(planId) {
+      const plan = repeatPlans.find(p => p.id === planId);
+      if (!plan) return;
+      plan.status = plan.status === 'active' ? 'paused' : 'active';
+      renderAll();
+      appendLog(`重复计划「${plan.title}」已${plan.status === 'paused' ? '暂停（取消后续未到点提醒）' : '恢复调度'} (A03)`);
+    }
+
+    function endRepeatPlan(planId) {
+      const idx = repeatPlans.findIndex(p => p.id === planId);
+      if (idx === -1) return;
+      const plan = repeatPlans[idx];
+      repeatPlans.splice(idx, 1);
+      // Remove unfinished occurrences from today onwards, keep completed history (Rule 4.3)
+      for (let i = allTasks.length - 1; i >= 0; i--) {
+        if (allTasks[i].planId === planId && !allTasks[i].done && allTasks[i].scheduledDate >= TODAY_DATE) {
+          allTasks.splice(i, 1);
+        }
+      }
+      renderAll();
+      appendLog(`已结束重复计划「${plan.title}」，未完成后续安排已清理，历史已完成记录保留 (Rule 4.3)`);
+    }
+
+    function setEditorTaskType(type) {
+      editorTaskType = type;
+      const btnOnce = document.getElementById('type-btn-once');
+      const btnRepeat = document.getElementById('type-btn-repeat');
+      const onceFields = document.getElementById('editor-once-fields');
+      const repeatFields = document.getElementById('editor-repeat-fields');
+
+      if (type === 'once') {
+        btnOnce.className = 'py-1.5 rounded-lg font-medium bg-white text-slate-800 shadow-xs';
+        btnRepeat.className = 'py-1.5 rounded-lg font-medium text-slate-500';
+        onceFields.classList.remove('hidden');
+        repeatFields.classList.add('hidden');
+      } else {
+        btnRepeat.className = 'py-1.5 rounded-lg font-medium bg-white text-slate-800 shadow-xs';
+        btnOnce.className = 'py-1.5 rounded-lg font-medium text-slate-500';
+        onceFields.classList.add('hidden');
+        repeatFields.classList.remove('hidden');
+        renderEditorTimeSlots();
+      }
+    }
+
+    function renderEditorTimeSlots() {
+      const box = document.getElementById('editor-timeslots');
+      if (!box) return;
+      if (editorSlots.length === 0) {
+        box.innerHTML = `<span class="text-xs text-rose-500 py-0.5">请至少保留或添加 1 个时间槽</span>`;
+        return;
+      }
+      box.innerHTML = editorSlots.map(s => `
+        <span class="inline-flex items-center gap-1 px-2 py-0.5 rounded-md bg-sky-50 text-sky-700 border border-sky-200">
+          <span>${s}</span>
+          <button type="button" onclick="removeEditorTimeSlot('${s}')" class="text-sky-400 hover:text-rose-600 font-bold leading-none ml-0.5 cursor-pointer" title="移除 ${s}">×</button>
+        </span>
+      `).join('');
+    }
+
+    function removeEditorTimeSlot(slot) {
+      editorSlots = editorSlots.filter(s => s !== slot);
+      renderEditorTimeSlots();
+    }
+
+    function addEditorTimeSlot() {
+      const val = document.getElementById('editor-new-slot').value;
+      if (!val || editorSlots.includes(val)) return;
+      editorSlots.push(val);
+      editorSlots.sort();
+      renderEditorTimeSlots();
+    }
+
+    function openNewTaskModal() {
+      editingTargetId = null;
+      document.getElementById('plan-modal-title').textContent = '新增任务与重复计划';
+      document.getElementById('type-btn-once').disabled = false;
+      document.getElementById('type-btn-repeat').disabled = false;
+
+      const quickInputVal = document.getElementById('quick-task-input').value.trim();
+      document.getElementById('editor-title').value = quickInputVal;
+      document.getElementById('editor-date').value = selectedDate < TODAY_DATE ? TODAY_DATE : selectedDate;
+      document.getElementById('editor-time').value = '16:00';
+      document.getElementById('editor-start-date').value = TODAY_DATE;
+      document.getElementById('editor-end-date').value = '';
+      document.getElementById('editor-remind').checked = true;
+      editorSlots = ['10:00', '15:00'];
+      setEditorTaskType('once');
+      renderEditorTimeSlots();
+      openModal('plan');
+    }
+
+    function openEditTaskModal(taskId) {
+      const item = allTasks.find(t => t.id === taskId);
+      if (!item) return;
+
+      // If this task is an instance of a repeating plan, open the repeating plan editor (F03)
+      if (item.isRepeat && item.planId) {
+        openEditPlanModal(item.planId);
+        return;
+      }
+
+      editingTargetId = item.id;
+      document.getElementById('plan-modal-title').textContent = '编辑一次性任务 (F01)';
+      setEditorTaskType('once');
+      document.getElementById('editor-title').value = item.title;
+      document.getElementById('editor-date').value = item.scheduledDate || TODAY_DATE;
+      document.getElementById('editor-time').value = item.time || '';
+      document.getElementById('editor-remind').checked = item.remind !== false;
+      openModal('plan');
+    }
+
+    function openEditPlanModal(planId) {
+      const plan = repeatPlans.find(p => p.id === planId);
+      if (!plan) return;
+
+      editingTargetId = plan.id;
+      document.getElementById('plan-modal-title').textContent = '编辑每日重复计划 (F03)';
+      editorSlots = [...plan.slots];
+      setEditorTaskType('repeat');
+      document.getElementById('editor-title').value = plan.title;
+      document.getElementById('editor-start-date').value = plan.startDate || TODAY_DATE;
+      document.getElementById('editor-end-date').value = plan.endDate || '';
+      document.getElementById('editor-remind').checked = plan.remind !== false;
+      renderEditorTimeSlots();
+      openModal('plan');
+    }
+
+    function saveTaskFromModal() {
+      const titleInput = document.getElementById('editor-title');
+      const title = titleInput.value.trim() || (editorTaskType === 'repeat' ? '每日喝水提醒' : '下午茶休息');
+      const remind = document.getElementById('editor-remind').checked;
+
+      if (editorTaskType === 'once') {
+        const scheduledDate = document.getElementById('editor-date').value || TODAY_DATE;
+        const time = document.getElementById('editor-time').value || null;
+
+        if (editingTargetId && !editingTargetId.startsWith('p')) {
+          const existing = allTasks.find(t => t.id === editingTargetId);
+          if (existing) {
+            existing.title = title;
+            existing.scheduledDate = scheduledDate;
+            existing.time = time;
+            existing.remind = remind;
+            appendLog(`已更新一次性任务：「${title}」（日期：${scheduledDate}，时间：${time || '无时间'}）`);
+          }
+        } else {
+          allTasks.push({
+            id: 't_' + Date.now(),
+            scheduledDate,
+            title,
+            time,
+            remind,
+            done: false,
+            doneAt: null,
+            isRepeat: false,
+            planId: null,
+            originDate: null
+          });
+          appendLog(`新增一次性任务：「${title}」（执行日期：${scheduledDate}，时间：${time || '无时间'}）`);
+        }
+
+        // Switch to the task's scheduledDate so user immediately sees where it went!
+        currentTab = 'todo';
+        if (scheduledDate !== selectedDate) {
+          switchSelectedDate(scheduledDate);
+          setPetState('happy', `已安排至 ${formatShortDateLabel(scheduledDate)} ✨`);
+        } else {
+          renderAll();
+          setPetState('happy', editingTargetId ? '任务修改已保存 ✨' : '新任务已安排好啦 ✨');
+        }
+      } else {
+        if (editorSlots.length === 0) {
+          editorSlots = ['10:00'];
+        }
+        const startDate = document.getElementById('editor-start-date').value || TODAY_DATE;
+        const endDate = document.getElementById('editor-end-date').value || null;
+
+        if (endDate && endDate < startDate) {
+          alert('结束日期不能早于开始日期');
+          return;
+        }
+
+        if (editingTargetId && repeatPlans.some(p => p.id === editingTargetId)) {
+          const plan = repeatPlans.find(p => p.id === editingTargetId);
+          plan.title = title;
+          plan.slots = [...editorSlots];
+          plan.startDate = startDate;
+          plan.endDate = endDate;
+          plan.remind = remind;
+          syncRepeatPlanInstancesForDate(TODAY_DATE);
+          syncRepeatPlanInstancesForDate(selectedDate);
+          appendLog(`已更新重复计划「${title}」：时间槽 [${editorSlots.join(', ')}]，有效期 ${startDate} ~ ${endDate || '长期'}`);
+        } else {
+          const planId = 'p_' + Date.now();
+          const newPlan = {
+            id: planId,
+            title,
+            slots: [...editorSlots],
+            status: 'active',
+            startDate,
+            endDate,
+            remind
+          };
+          repeatPlans.push(newPlan);
+          syncRepeatPlanInstancesForDate(TODAY_DATE);
+          syncRepeatPlanInstancesForDate(selectedDate);
+          const generatedToday = isDateWithinPlan(TODAY_DATE, newPlan) ? editorSlots.length : 0;
+          appendLog(`新增每日重复计划「${title}」（有效期 ${startDate} ~ ${endDate || '长期'}），今日生成 ${generatedToday} 个实例`);
+        }
+
+        currentTab = editingTargetId ? 'plans' : 'todo';
+        renderAll();
+        setPetState('happy', editingTargetId ? '重复计划已更新 ✨' : '新重复计划已生效 ✨');
+      }
+
+      document.getElementById('quick-task-input').value = '';
+      editingTargetId = null;
+      closeModal();
+    }
+
+    // =========================================================================
+    // REMINDERS (P0 PRIORITY LOCK), PET-VOICED GIF SCENES & MENU COLLAPSE
+    // =========================================================================
+    function showSceneGifProp(sceneType, badgeText) {
+      activeSceneProp = sceneType;
+      const waterProp = document.getElementById('pet-gif-prop-water');
+      const stretchProp = document.getElementById('pet-gif-prop-stretch');
+      const badge = document.getElementById('pet-gif-badge');
+
+      if (waterProp) waterProp.classList.toggle('hidden', sceneType !== 'water');
+      if (stretchProp) stretchProp.classList.toggle('hidden', sceneType !== 'stretch');
+      if (badge) {
+        if (sceneType) {
+          badge.textContent = badgeText || '🎬 remind.gif';
+          badge.classList.remove('hidden');
+        } else {
+          badge.classList.add('hidden');
+        }
+      }
+    }
+
+    function activateP0ReminderState(stateObj) {
+      activeReminderTaskId = stateObj.taskId;
+      activeReminderState = stateObj;
+      restoreActiveReminderUI();
+    }
+
+    function restoreActiveReminderUI() {
+      if (!activeReminderState) return;
+      showSceneGifProp(activeReminderState.sceneType, activeReminderState.badgeText);
+
+      const sprite = document.getElementById('pet-sprite');
+      const bubbleText = document.getElementById('bubble-text');
+      if (sprite) {
+        sprite.classList.remove('anim-idle', 'anim-happy', 'anim-alert');
+        sprite.classList.add(activeReminderState.petAnimState === 'alert' ? 'anim-alert' : 'anim-idle');
+      }
+      if (bubbleText) {
+        bubbleText.innerHTML = activeReminderState.petLine;
+      }
+
+      const actionsEl = document.getElementById('bubble-actions');
+      const doneBtnText = document.getElementById('bubble-btn-done-text');
+      const secBtnText = document.getElementById('bubble-btn-secondary-text');
+      if (actionsEl) actionsEl.classList.remove('hidden');
+      if (doneBtnText) doneBtnText.textContent = activeReminderState.doneBtnLabel;
+      if (secBtnText) secBtnText.textContent = isMenuCardHidden ? '展开清单 ▾' : '定位任务 ▾';
+    }
+
+    function clearActiveReminder() {
+      activeReminderTaskId = null;
+      activeReminderState = null;
+      showSceneGifProp(null);
+      const actionsEl = document.getElementById('bubble-actions');
+      if (actionsEl) actionsEl.classList.add('hidden');
+      document.getElementById('os-notification').classList.add('hidden');
+    }
+
+    function simulateWaterGifReminder() {
+      const todayList = getTasksForDate(TODAY_DATE);
+      let waterTask = todayList.find(t => !t.done && t.title.includes('喝'));
+      if (!waterTask) {
+        waterTask = {
+          id: 't_water_' + Date.now(),
+          scheduledDate: TODAY_DATE,
+          title: '喝一杯温水补充水分',
+          time: '14:30',
+          remind: true,
+          done: false,
+          doneAt: null,
+          isRepeat: true,
+          planId: 'p1',
+          originDate: null,
+          scene: 'water'
+        };
+        allTasks.unshift(waterTask);
+        renderAll();
+      }
+
+      const pack = getCurrentPetPack();
+      const petLine = `“咕嘟咕嘟～主人今天要喝水啦！快端起杯子陪我喝口温水吧 💧”`;
+
+      activateP0ReminderState({
+        taskId: waterTask.id,
+        petLine,
+        sceneType: 'water',
+        badgeText: '🎬 drink_water.gif',
+        doneBtnLabel: '我喝完啦',
+        petAnimState: 'idle'
+      });
+
+      if (notifPermissionGranted) {
+        const notif = document.getElementById('os-notification');
+        document.getElementById('os-notif-body').textContent = `${pack.icon} ${pack.name}：${petLine}`;
+        notif.classList.remove('hidden');
+      }
+      appendLog(`触发【请喝水】P0 宠物语音提醒：播放 drink_water.gif 动画 + 气泡台词 ${petLine}（P0 优先级锁定，不被普通点击覆盖）`);
+    }
+
+    function simulateSingleReminder() {
+      const todayList = getTasksForDate(TODAY_DATE);
+      const target = todayList.find(t => !t.done && t.time) || todayList.find(t => !t.done);
+      if (!target) {
+        setPetState('happy', '今天任务都完成啦，无需提醒 🎉');
+        return;
+      }
+      const isWater = target.title.includes('喝');
+      if (isWater) {
+        simulateWaterGifReminder();
+        return;
+      }
+
+      const pack = getCurrentPetPack();
+      const petLine = `“主人久坐好久啦～到了「${target.title}」的时间，起来陪我活动一下吧 🙆‍♂️”`;
+
+      activateP0ReminderState({
+        taskId: target.id,
+        petLine,
+        sceneType: 'stretch',
+        badgeText: '🎬 stretch.gif',
+        doneBtnLabel: '完成了',
+        petAnimState: 'alert'
+      });
+
+      if (notifPermissionGranted) {
+        const notif = document.getElementById('os-notification');
+        document.getElementById('os-notif-body').textContent = `${pack.icon} ${pack.name}：${petLine}`;
+        notif.classList.remove('hidden');
+        appendLog(`到点提醒触发：宠物展示 stretch.gif 动画并说出「${petLine}」 (A06)`);
+      } else {
+        document.getElementById('notif-disabled-strip').classList.remove('hidden');
+        appendLog(`到点提醒触发：系统通知权限被拒，仅展示组件内宠物语音气泡与 GIF 动画 (A14)`);
+      }
+    }
+
+    function completeActiveReminderFromBubble() {
+      const taskId = activeReminderTaskId;
+      clearActiveReminder();
+
+      const petEl = document.getElementById('pet-sprite');
+      if (petEl) spawnCheckParticles(petEl);
+
+      if (taskId) {
+        const item = allTasks.find(t => t.id === taskId);
+        if (item && !item.done) {
+          if (!isMenuCardHidden && currentTab === 'todo' && selectedDate === item.scheduledDate) {
+            toggleTaskDone(taskId);
+            return;
+          }
+          // If menu card is currently hidden (Pet-Only Mode), complete directly and celebrate!
+          item.done = true;
+          item.doneAt = formatClockHHMM();
+          renderAll();
+          setPetState('happy', '真乖！补充水分超棒的，继续保持哦 ✨');
+          appendLog(`在气泡上直接完成提醒任务「${item.title}」（无需展开大面板即可一键打卡完成）`);
+          return;
+        }
+      }
+      setPetState('happy', '太棒啦！继续保持好习惯 ✨');
+    }
+
+    function expandAndLocateReminderTask() {
+      const taskId = activeReminderTaskId;
+      clearActiveReminder();
+
+      if (isMenuCardHidden) {
+        toggleTaskMenuCard(true);
+      }
+      currentTab = 'todo';
+      switchSelectedDate(TODAY_DATE, true);
+
+      setTimeout(() => {
+        if (taskId) {
+          const row = document.getElementById('task-row-' + taskId);
+          if (row) {
+            row.scrollIntoView({ behavior: 'smooth', block: 'center' });
+            row.classList.add('task-highlight');
+            setTimeout(() => row.classList.remove('task-highlight'), 3600);
+          }
+        }
+        updateCountdownDisplay();
+      }, isMenuCardHidden ? 320 : 50);
+
+      appendLog('从宠物提醒气泡展开任务菜单，并高亮定位到对应待办项');
+    }
+
+    function toggleTaskMenuCard(forceExpand) {
+      const card = document.getElementById('main-task-card');
+      const miniDock = document.getElementById('pet-mini-dock');
+      const simBtn = document.getElementById('btn-sim-collapse');
+      const ctxLabel = document.getElementById('ctx-menu-toggle-label');
+      const secBtnText = document.getElementById('bubble-btn-secondary-text');
+
+      if (typeof forceExpand === 'boolean') {
+        isMenuCardHidden = !forceExpand;
+      } else {
+        isMenuCardHidden = !isMenuCardHidden;
+      }
+
+      if (isMenuCardHidden) {
+        card.classList.add('is-menu-hidden');
+        if (miniDock) miniDock.classList.remove('hidden');
+        if (simBtn) simBtn.textContent = '🔽 展开下方任务菜单';
+        if (ctxLabel) ctxLabel.textContent = '🔽 展开下方菜单';
+        if (secBtnText) secBtnText.textContent = '展开清单 ▾';
+        appendLog('已收起下方任务卡片 -> 进入【仅桌宠模式】（可通过宠物脚下胶囊、双击宠物或右键菜单重新展开）');
+      } else {
+        card.classList.remove('is-menu-hidden');
+        if (miniDock) miniDock.classList.add('hidden');
+        if (simBtn) simBtn.textContent = '🔼 隐藏下方菜单 (仅留桌宠)';
+        if (ctxLabel) ctxLabel.textContent = '🔼 隐藏下方菜单';
+        if (secBtnText) secBtnText.textContent = '定位任务 ▾';
+        appendLog('已展开下方任务卡片 -> 恢复完整清单模式');
+      }
+    }
+
+    function openPetContextMenu(e) {
+      e.preventDefault();
+      e.stopPropagation();
+      const menu = document.getElementById('pet-context-menu');
+      if (menu) menu.classList.toggle('hidden');
+    }
+
+    function closePetContextMenu() {
+      const menu = document.getElementById('pet-context-menu');
+      if (menu) menu.classList.add('hidden');
+    }
+
+    // =========================================================================
+    // POINTER DRAG VS CLICK GESTURE (Rule 6: >=5px drags widget, <5px clicks pet)
+    // =========================================================================
+    let widgetOffsetX = 0;
+    let widgetOffsetY = 0;
+    let dragState = null;
+
+    function startWidgetDrag(e, source) {
+      // Only left mouse button or touch
+      if (e.button !== undefined && e.button !== 0) return;
+      // Ignore interactive child buttons when dragging from header
+      if (source === 'header' && e.target.closest('button')) return;
+
+      closePetContextMenu();
+      const widget = document.getElementById('desktop-widget');
+      if (!widget) return;
+
+      dragState = {
+        source,
+        startX: e.clientX,
+        startY: e.clientY,
+        initialX: widgetOffsetX,
+        initialY: widgetOffsetY,
+        hasMoved: false
+      };
+
+      widget.style.transition = 'none';
+    }
+
+    window.addEventListener('pointermove', (e) => {
+      if (!dragState) return;
+      const dx = e.clientX - dragState.startX;
+      const dy = e.clientY - dragState.startY;
+      const dist = Math.hypot(dx, dy);
+
+      if (!dragState.hasMoved && dist >= 5) {
+        dragState.hasMoved = true;
+      }
+
+      if (dragState.hasMoved) {
+        // Clamp within desktop canvas bounds so widget is never lost
+        widgetOffsetX = Math.max(-180, Math.min(180, dragState.initialX + dx));
+        widgetOffsetY = Math.max(-24, Math.min(240, dragState.initialY + dy));
+        const widget = document.getElementById('desktop-widget');
+        if (widget) {
+          widget.style.transform = `translate(${widgetOffsetX}px, ${widgetOffsetY}px)`;
+        }
+      }
+    });
+
+    window.addEventListener('pointerup', () => {
+      if (!dragState) return;
+      const { source, hasMoved } = dragState;
+      dragState = null;
+
+      const widget = document.getElementById('desktop-widget');
+      if (widget) {
+        widget.style.transition = '';
+      }
+
+      if (hasMoved) {
+        appendLog(`窗口拖动释放：已保存窗口坐标偏移 (${Math.round(widgetOffsetX)}, ${Math.round(widgetOffsetY)})，不触发额外点击 (Rule 6 / A10)`);
+      } else if (source === 'pet') {
+        interactWithPet();
+      }
+    });
+
+    document.addEventListener('click', () => {
+      closePetContextMenu();
+    });
+
+    function simulateResumeBatchReminder() {
+      if (isMenuCardHidden) toggleTaskMenuCard(true);
+      document.getElementById('batch-reminder-strip').classList.remove('hidden');
+      setPetState('alert', '“主人欢迎回来～休眠期间有 2 项任务到点啦 ⏰”', false);
+      appendLog('电脑从休眠恢复：主进程重新校对时钟，汇总当日 2 项遗漏提醒，不逐条连续弹窗轰炸 (A09)');
+    }
+
+    function dismissBatchStrip() {
+      document.getElementById('batch-reminder-strip').classList.add('hidden');
+      setPetState('idle', `离下班还有 ${currentCountdownStr}`);
+    }
+
+    function handleNotificationClick() {
+      expandAndLocateReminderTask();
+    }
+
+    function dismissNotificationOnly() {
+      document.getElementById('os-notification').classList.add('hidden');
+      appendLog('用户关闭系统通知：任务保持“待办”状态，不自动标为完成 (Rule 4.2)');
+    }
+
+    function handleBubbleClick() {
+      if (activeReminderTaskId) {
+        expandAndLocateReminderTask();
+      } else {
+        openModal('settings');
+      }
+    }
+
+    function toggleNotificationPermission() {
+      notifPermissionGranted = !notifPermissionGranted;
+      const strip = document.getElementById('notif-disabled-strip');
+      const btn = document.getElementById('btn-sim-perm');
+      if (!notifPermissionGranted) {
+        strip.classList.remove('hidden');
+        btn.textContent = '✅ 恢复系统通知权限';
+        appendLog('模拟系统通知权限被拒绝：显示非阻塞提示条，任务与宠物气泡继续可用 (A14)');
+      } else {
+        strip.classList.add('hidden');
+        btn.textContent = '⚠️ 模拟系统通知被拒 (A14)';
+        appendLog('系统通知权限已恢复正常');
+      }
+    }
+
+    // =========================================================================
+    // CONFIGURABLE PET RESOURCE LIBRARY & ANIMATION SYSTEM (F08 / F15)
+    // =========================================================================
+    let petPacks = [
+      {
+        id: 'hachiware',
+        name: '小八猫',
+        badge: '默认',
+        source: 'builtin://pets/hachiware',
+        earColor: '#77a2bd',
+        cheekColor: '#f3b2b7',
+        tailColor: '#7aa4bf',
+        icon: '🐱',
+        scale: 100,
+        anchorY: -20,
+        idleFps: 6,
+        quotes: [
+          '今天也要加油呀～ 🐾',
+          '摸摸头，万事不愁 ✨',
+          '喝口水休息一下吧 🍵',
+          '按时完成任务超棒的！💖'
+        ],
+        celebrateQuote: '完成一项！继续保持 ✨',
+        allDoneQuote: '🎉 太棒啦！今日任务全部达成！'
+      },
+      {
+        id: 'chiikawa',
+        name: '糯米团仓鼠',
+        badge: '内置',
+        source: 'builtin://pets/chiikawa',
+        earColor: '#ffffff',
+        cheekColor: '#f59ca9',
+        tailColor: '#ffffff',
+        icon: '🐹',
+        scale: 96,
+        anchorY: -18,
+        idleFps: 6,
+        quotes: [
+          '哇…！今天也在努力呢 🌸',
+          '一步一步慢慢来就好啦 🍡',
+          '给你小花花，不要太累哦 🌷'
+        ],
+        celebrateQuote: '呀哈！又搞定一件啦 🌸',
+        allDoneQuote: '🎊 全部完成啦！今晚奖励吃大餐！'
+      },
+      {
+        id: 'usagi',
+        name: '元气黄耳兔',
+        badge: '内置',
+        source: 'builtin://pets/usagi',
+        earColor: '#f4d378',
+        cheekColor: '#f5a896',
+        tailColor: '#f4d378',
+        icon: '🐰',
+        scale: 104,
+        anchorY: -22,
+        idleFps: 8,
+        quotes: [
+          '乌拉！！冲呀冲呀 ⚡',
+          '哈？这点小事难不倒你！🔥',
+          '咿呀哈～快下班啦！🎸'
+        ],
+        celebrateQuote: '乌拉！干得漂亮 ⚡',
+        allDoneQuote: '🔥 乌拉拉！今日清单被你清空啦！'
+      },
+      {
+        id: 'kurimanju',
+        name: '栗子馒头水獭',
+        badge: '内置',
+        source: 'builtin://pets/kurimanju',
+        earColor: '#b8824c',
+        cheekColor: '#f2b1a5',
+        tailColor: '#b8824c',
+        icon: '🦦',
+        scale: 98,
+        anchorY: -19,
+        idleFps: 6,
+        quotes: [
+          '哈——！（抿一口热茶）🍵',
+          '忙完这一阵，好好犒劳自己 🍢',
+          '稳住节奏，不急不躁 ✨'
+        ],
+        celebrateQuote: '哈——！舒坦，又完成一件 🍵',
+        allDoneQuote: '🍻 全部搞定！下班模式启动！'
+      }
+    ];
+
+    let currentPetId = 'hachiware';
+    let quoteIdx = 0;
+
+    function getCurrentPetPack() {
+      return petPacks.find(p => p.id === currentPetId) || petPacks[0];
+    }
+
+    function applyPetPackToWidget(pack) {
+      const petContainer = document.getElementById('pet-container');
+      const sprite = document.getElementById('pet-sprite');
+      if (!petContainer || !sprite) return;
+
+      // Update ear & tail colors inside SVG to reflect selected pet pack
+      const paths = sprite.querySelectorAll('svg path');
+      paths.forEach(p => {
+        const fill = p.getAttribute('fill');
+        if (fill === '#77a2bd' || fill === '#ffffff' || fill === '#f4d378' || fill === '#e39d54') {
+          if (p.getAttribute('stroke-width') === '2.8' && p.getAttribute('d').includes('C34 33')) {
+            p.setAttribute('fill', pack.earColor);
+          }
+          if (p.getAttribute('stroke-width') === '2.8' && p.getAttribute('d').includes('C116 33')) {
+            p.setAttribute('fill', pack.earColor);
+          }
+        }
+        if (p.getAttribute('d') && p.getAttribute('d').startsWith('M35 108')) {
+          p.setAttribute('fill', pack.tailColor);
+        }
+      });
+
+      // Apply configurable anchorY & scale from manifest
+      petContainer.style.bottom = `${pack.anchorY}px`;
+      petContainer.style.transform = `scale(${pack.scale / 100})`;
+      petContainer.style.transformOrigin = 'bottom center';
+
+      // Adjust idle breathe speed based on FPS
+      const dur = pack.idleFps >= 10 ? '2.1s' : pack.idleFps >= 8 ? '2.5s' : '3.2s';
+      sprite.style.animationDuration = dur;
+
+      // Update inspector label
+      const nameEl = document.getElementById('inspector-pet-name');
+      if (nameEl) nameEl.textContent = pack.name;
+
+      // Sync sliders & manifest preview
+      const scaleInput = document.getElementById('input-pet-scale');
+      const offsetInput = document.getElementById('input-pet-offset');
+      const fpsSelect = document.getElementById('select-pet-fps');
+      if (scaleInput) {
+        scaleInput.value = pack.scale;
+        document.getElementById('label-pet-scale').textContent = `${pack.scale}%`;
+      }
+      if (offsetInput) {
+        offsetInput.value = pack.anchorY;
+        document.getElementById('label-pet-offset').textContent = `${pack.anchorY}px`;
+      }
+      if (fpsSelect) fpsSelect.value = String(pack.idleFps);
+
+      updateManifestPreview(pack);
+    }
+
+    function updateManifestPreview(pack) {
+      const pre = document.getElementById('pet-manifest-preview');
+      if (!pre) return;
+      const manifestObj = {
+        id: pack.id,
+        name: pack.name,
+        version: '1.0.0',
+        canvasSize: [256, 256],
+        displaySize: [132, 126],
+        scale: Number((pack.scale / 100).toFixed(2)),
+        anchorOffset: { x: 12, y: pack.anchorY },
+        states: {
+          idle:      { src: 'idle.webp', frames: 8, fps: pack.idleFps, loop: true },
+          react:     { src: 'react.webp', frames: 10, fps: 12, loop: false },
+          celebrate: { src: 'celebrate.webp', frames: 12, fps: 12, loop: false },
+          all_done:  { src: 'all_done.webp', frames: 16, fps: 12, loop: false },
+          remind:    { src: 'remind.webp', frames: 8, fps: 10, loop: true }
+        },
+        quotes: {
+          react: pack.quotes,
+          celebrate: pack.celebrateQuote,
+          allDone: pack.allDoneQuote
+        }
+      };
+      pre.textContent = JSON.stringify(manifestObj, null, 2);
+    }
+
+    function renderPetPackList() {
+      const listEl = document.getElementById('pet-pack-list');
+      if (!listEl) return;
+      listEl.innerHTML = '';
+
+      petPacks.forEach(pack => {
+        const active = pack.id === currentPetId;
+        const item = document.createElement('div');
+        item.onclick = () => selectPetPack(pack.id);
+        item.className = `p-3 rounded-2xl border transition cursor-pointer flex items-center justify-between gap-3 ${
+          active ? 'bg-sky-50/90 border-sky-400 shadow-2xs' : 'bg-slate-50/70 border-slate-200/80 hover:border-slate-300 hover:bg-slate-50'
+        }`;
+        item.innerHTML = `
+          <div class="flex items-center gap-3 min-w-0 flex-1">
+            <div class="w-10 h-10 rounded-xl bg-white border border-slate-200/90 flex items-center justify-center text-xl shadow-2xs shrink-0">
+              ${pack.icon}
+            </div>
+            <div class="min-w-0 flex-1">
+              <div class="flex items-center gap-1.5">
+                <span class="font-semibold text-slate-800 truncate">${escapeHtml(pack.name)}</span>
+                <span class="text-xs px-1.5 py-0.2 rounded-md whitespace-nowrap shrink-0 ${pack.badge.includes('导入') ? 'bg-amber-100 text-amber-800' : 'bg-slate-200/80 text-slate-600'}">${pack.badge}</span>
+              </div>
+              <div class="text-xs text-slate-400 mt-0.5 truncate">${pack.id} · 待机 ${pack.idleFps}fps · 5组动作</div>
+            </div>
+          </div>
+          <div class="shrink-0">
+            ${active
+              ? `<span class="inline-flex items-center px-3 py-1.5 rounded-xl bg-[#6f9bb6] text-white font-medium text-xs whitespace-nowrap">✓ 使用中</span>`
+              : `<button class="px-3 py-1.5 rounded-xl bg-white border border-slate-200 text-slate-600 hover:border-sky-400 hover:text-sky-700 font-medium text-xs whitespace-nowrap transition">使用</button>`
+            }
+          </div>
+        `;
+        listEl.appendChild(item);
+      });
+    }
+
+    function selectPetPack(packId) {
+      currentPetId = packId;
+      const pack = getCurrentPetPack();
+      applyPetPackToWidget(pack);
+      renderPetPackList();
+      setPetState('happy', `${pack.icon} 已切换为「${pack.name.split(' ')[0]}」！`);
+      appendLog(`宠物资源库切换：加载 ${pack.source}/manifest.json (${pack.name})`);
+    }
+
+    function simulateImportCustomPet() {
+      if (!petPacks.some(p => p.id === 'shiba-custom')) {
+        petPacks.push({
+          id: 'shiba-custom',
+          name: '柴犬波奇',
+          badge: '已导入',
+          source: 'userData://pets/shiba-custom',
+          earColor: '#e39d54',
+          cheekColor: '#f3b2b7',
+          tailColor: '#e39d54',
+          icon: '🐕',
+          scale: 102,
+          anchorY: -20,
+          idleFps: 8,
+          quotes: [
+            '汪呜！今天工作超认真 🦴',
+            '摸摸狗头，效率翻倍 ✨',
+            '摇尾巴～等你下班一起散步 🐾'
+          ],
+          celebrateQuote: '汪！搞定一项任务 🦴',
+          allDoneQuote: '🐕 汪汪！今日任务全部清空，奖励肉骨头！'
+        });
+      }
+      switchPetModalTab('packs');
+      selectPetPack('shiba-custom');
+      const listEl = document.getElementById('pet-pack-list');
+      if (listEl && listEl.lastElementChild) {
+        listEl.lastElementChild.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+      }
+      appendLog('成功从本地导入自定义宠物包：userData://pets/shiba-custom/manifest.json');
+    }
+
+    function switchPetModalTab(tab) {
+      const btnPacks = document.getElementById('pet-tab-btn-packs');
+      const btnConfig = document.getElementById('pet-tab-btn-config');
+      const panelPacks = document.getElementById('pet-modal-packs');
+      const panelConfig = document.getElementById('pet-modal-config');
+
+      if (tab === 'packs') {
+        btnPacks.className = 'py-1.5 rounded-lg font-medium bg-white text-slate-800 shadow-xs';
+        btnConfig.className = 'py-1.5 rounded-lg font-medium text-slate-500';
+        panelPacks.classList.remove('hidden');
+        panelConfig.classList.add('hidden');
+      } else {
+        btnConfig.className = 'py-1.5 rounded-lg font-medium bg-white text-slate-800 shadow-xs';
+        btnPacks.className = 'py-1.5 rounded-lg font-medium text-slate-500';
+        panelPacks.classList.add('hidden');
+        panelConfig.classList.remove('hidden');
+        updateManifestPreview(getCurrentPetPack());
+      }
+    }
+
+    function updatePetTransformConfig() {
+      const pack = getCurrentPetPack();
+      pack.scale = Number(document.getElementById('input-pet-scale').value);
+      pack.anchorY = Number(document.getElementById('input-pet-offset').value);
+      applyPetPackToWidget(pack);
+    }
+
+    function updatePetFpsConfig(val) {
+      const pack = getCurrentPetPack();
+      pack.idleFps = Number(val);
+      applyPetPackToWidget(pack);
+      renderPetPackList();
+      appendLog(`更新宠物「${pack.name}」待机动画帧率为 ${pack.idleFps} FPS`);
+    }
+
+    function interactWithPet() {
+      // P0 Priority Lock (Rule 3.1 / 5.4): Active due reminder cannot be overwritten by ordinary pet clicks!
+      if (activeReminderTaskId && activeReminderState) {
+        const sprite = document.getElementById('pet-sprite');
+        if (sprite) {
+          sprite.classList.remove('anim-alert');
+          void sprite.offsetWidth;
+          sprite.classList.add('anim-alert');
+        }
+        appendLog(`[P0 提醒保护] 当前存在未处理的到点提醒，普通点击宠物不覆盖提醒台词与操作按钮（请点击气泡内按钮处理）`);
+        return;
+      }
+
+      const pack = getCurrentPetPack();
+      const quote = pack.quotes[quoteIdx % pack.quotes.length];
+      quoteIdx++;
+      setPetState('happy', quote);
+      appendLog(`点击互动宠物 (${pack.id})：播放 react 动作与专属台词「${quote}」 (A10)`);
+    }
+
+    function setPetState(state, bubbleMessage, autoReset = true) {
+      const sprite = document.getElementById('pet-sprite');
+      const bubbleText = document.getElementById('bubble-text');
+
+      // Only hide scene props & bubble buttons if there is NO active P0 reminder lock
+      if (autoReset && !activeReminderTaskId) {
+        showSceneGifProp(null);
+        const actionsEl = document.getElementById('bubble-actions');
+        if (actionsEl) actionsEl.classList.add('hidden');
+      }
+
+      sprite.classList.remove('anim-idle', 'anim-happy', 'anim-alert');
+      void sprite.offsetWidth; // trigger reflow
+
+      if (state === 'happy') {
+        sprite.classList.add('anim-happy');
+      } else if (state === 'alert') {
+        sprite.classList.add('anim-alert');
+      } else {
+        sprite.classList.add('anim-idle');
+      }
+
+      if (bubbleMessage) {
+        bubbleText.innerHTML = bubbleMessage;
+      } else if (state === 'idle' && !activeReminderTaskId) {
+        updateCountdownDisplay();
+      }
+
+      if (bubbleResetTimer) {
+        clearTimeout(bubbleResetTimer);
+        bubbleResetTimer = null;
+      }
+      if (autoReset && state !== 'idle') {
+        bubbleResetTimer = setTimeout(() => {
+          bubbleResetTimer = null;
+          // If an unhandled P0 reminder still exists, restore its UI instead of clearing it!
+          if (activeReminderTaskId && activeReminderState) {
+            restoreActiveReminderUI();
+            return;
+          }
+          sprite.classList.remove('anim-happy', 'anim-alert');
+          sprite.classList.add('anim-idle');
+          updateCountdownDisplay();
+        }, 2800);
+      }
+    }
+
+    // =========================================================================
+    // REAL-TIME CLOCK & DYNAMIC OFF-WORK COUNTDOWN CALCULATION (F09 / A11 / A12)
+    // =========================================================================
+    // Baseline clock starts at 11:43:32 (so 18:00 offwork = 06:16:28 matching reference screenshot)
+    let simClockSeconds = 11 * 3600 + 43 * 60 + 32;
+
+    function formatClockHHMM() {
+      const h = String(Math.floor(simClockSeconds / 3600) % 24).padStart(2, '0');
+      const m = String(Math.floor((simClockSeconds % 3600) / 60)).padStart(2, '0');
+      return `${h}:${m}`;
+    }
+
+    function computeOffworkState() {
+      if (!offworkTime || !offworkTime.includes(':')) {
+        return { mode: 'unconfigured', countdownStr: '--:--:--' };
+      }
+      const [oh, om] = offworkTime.split(':').map(Number);
+      if (isNaN(oh) || isNaN(om)) {
+        return { mode: 'unconfigured', countdownStr: '--:--:--' };
+      }
+      const targetSeconds = oh * 3600 + om * 60;
+      const diff = targetSeconds - simClockSeconds;
+      if (diff <= 0) {
+        return { mode: 'offwork', countdownStr: '00:00:00' };
+      }
+      const h = String(Math.floor(diff / 3600)).padStart(2, '0');
+      const m = String(Math.floor((diff % 3600) / 60)).padStart(2, '0');
+      const s = String(diff % 60).padStart(2, '0');
+      return { mode: 'counting', countdownStr: `${h}:${m}:${s}` };
+    }
+
+    function updateOffworkTime(val) {
+      offworkTime = (val || '').trim();
+      const inputEl = document.getElementById('setting-offwork');
+      if (inputEl && inputEl.value !== offworkTime) {
+        inputEl.value = offworkTime;
+      }
+      const state = computeOffworkState();
+      currentCountdownStr = state.countdownStr;
+      updateCountdownDisplay();
+
+      if (state.mode === 'unconfigured') {
+        appendLog('已清空固定下班时间 -> 气泡切换为「点击设置下班时间 ⚙」 (F09)');
+      } else if (state.mode === 'offwork') {
+        appendLog(`修改固定下班时间为 ${offworkTime}（早于或等于当前时间 ${formatClockHHMM()}）-> 气泡立即显示「已下班，辛苦啦 🎉」 (A12)`);
+      } else {
+        appendLog(`修改固定下班时间为 ${offworkTime} -> 基于当前时间 (${formatClockHHMM()}) 重新计算倒计时为 ${currentCountdownStr} (A11)`);
+      }
+    }
+
+    function updateCountdownDisplay() {
+      if (activeReminderTaskId) return;
+      const bubbleText = document.getElementById('bubble-text');
+      if (!bubbleText) return;
+
+      const state = computeOffworkState();
+      currentCountdownStr = state.countdownStr;
+
+      if (state.mode === 'unconfigured') {
+        bubbleText.innerHTML = `<span class="text-sky-700 underline">点击设置下班时间 ⚙</span>`;
+      } else if (state.mode === 'offwork') {
+        bubbleText.innerHTML = `<span class="font-semibold text-emerald-700">已下班，辛苦啦 🎉</span>`;
+      } else {
+        bubbleText.innerHTML = `离下班还有 <span id="countdown-timer" class="font-semibold text-slate-800">${currentCountdownStr}</span>`;
+      }
+    }
+
+    // Tick clock and recalculate countdown every second
+    setInterval(() => {
+      simClockSeconds = (simClockSeconds + 1) % 86400;
+      const hhmm = formatClockHHMM();
+
+      const clockEl = document.getElementById('widget-clock');
+      if (clockEl) clockEl.textContent = hhmm;
+      const settingClockEl = document.getElementById('setting-cur-clock');
+      if (settingClockEl) settingClockEl.textContent = hhmm;
+
+      const state = computeOffworkState();
+      currentCountdownStr = state.countdownStr;
+
+      // If bubble is currently in normal P2 countdown mode (no active P0 reminder & no temporary P1 quote timer)
+      if (!activeReminderTaskId && !bubbleResetTimer) {
+        const timerEl = document.getElementById('countdown-timer');
+        if (state.mode === 'counting' && timerEl) {
+          timerEl.textContent = currentCountdownStr;
+        } else {
+          updateCountdownDisplay();
+        }
+      }
+    }, 1000);
+
+    // =========================================================================
+    // PLATFORM SWITCHING & WINDOW LIFECYCLE (Windows 11 vs macOS)
+    // =========================================================================
+    function switchPlatform(platform) {
+      currentPlatform = platform;
+      const btnMac = document.getElementById('btn-platform-mac');
+      const btnWin = document.getElementById('btn-platform-win');
+      const macBar = document.getElementById('mac-menubar');
+      const winBar = document.getElementById('win-taskbar');
+      const menuPopup = document.getElementById('system-menu-popup');
+      const notif = document.getElementById('os-notification');
+
+      if (platform === 'mac') {
+        btnMac.className = 'px-3 py-1.5 rounded-md text-xs font-medium transition-all bg-[var(--primary)] text-[var(--primary-foreground)]';
+        btnWin.className = 'px-3 py-1.5 rounded-md text-xs font-medium transition-all text-[var(--muted-foreground)] hover:text-[var(--foreground)]';
+        macBar.classList.remove('hidden');
+        winBar.classList.add('hidden');
+        winBar.classList.remove('flex');
+
+        menuPopup.style.top = '34px';
+        menuPopup.style.bottom = 'auto';
+        menuPopup.style.right = '110px';
+        notif.style.top = '40px';
+        notif.style.bottom = 'auto';
+
+        document.getElementById('menu-platform-badge').textContent = 'macOS 菜单栏';
+        document.getElementById('menu-quit-shortcut').textContent = '⌘Q';
+        document.getElementById('close-modal-tray-name').textContent = '菜单栏';
+        document.getElementById('spec-platform-tag').textContent = '当前：macOS';
+        document.getElementById('platform-diff-title').textContent = '3. macOS 专属交互规范';
+        document.getElementById('platform-diff-desc').innerHTML = '驻留顶部 Menu Bar（显示实时完成比 1/6）；点击卡片内 <code>×</code> 弹出 3 选 1 确认框，而按系统快捷键 <code>⌘Q</code> 直接遵循退出语义，不二次弹窗拦截。';
+        appendLog('切换至 macOS 桌面视图（顶部 Menu Bar 入口 + 右上角签名应用通知）');
+      } else {
+        btnWin.className = 'px-3 py-1.5 rounded-md text-xs font-medium transition-all bg-[var(--primary)] text-[var(--primary-foreground)]';
+        btnMac.className = 'px-3 py-1.5 rounded-md text-xs font-medium transition-all text-[var(--muted-foreground)] hover:text-[var(--foreground)]';
+        macBar.classList.add('hidden');
+        winBar.classList.remove('hidden');
+        winBar.classList.add('flex');
+
+        menuPopup.style.top = 'auto';
+        menuPopup.style.bottom = '46px';
+        menuPopup.style.right = '70px';
+        notif.style.top = 'auto';
+        notif.style.bottom = '52px';
+
+        document.getElementById('menu-platform-badge').textContent = 'Windows 托盘';
+        document.getElementById('menu-quit-shortcut').textContent = 'Alt+F4';
+        document.getElementById('close-modal-tray-name').textContent = '系统托盘';
+        document.getElementById('spec-platform-tag').textContent = '当前：Windows 11';
+        document.getElementById('platform-diff-title').textContent = '3. Windows 11 专属交互规范';
+        document.getElementById('platform-diff-desc').innerHTML = '驻留右下角系统托盘（System Tray）；覆盖窗口 <code>Alt+F4</code> 关闭路径展示选择框；使用带 AppUserModelID 的原生 Toast 通知点击定位。';
+        appendLog('切换至 Windows 11 桌面视图（右下角系统托盘菜单 + 右下角 Toast 通知）');
+      }
+    }
+
+    function toggleSystemMenu(forceState) {
+      const popup = document.getElementById('system-menu-popup');
+      if (typeof forceState === 'boolean') {
+        popup.classList.toggle('hidden', !forceState);
+      } else {
+        popup.classList.toggle('hidden');
+      }
+    }
+
+    function hideWidgetToTray() {
+      document.getElementById('desktop-widget').classList.add('opacity-0', 'pointer-events-none', 'scale-95');
+      const banner = document.getElementById('widget-hidden-banner');
+      document.getElementById('hidden-state-icon').textContent = '📥';
+      document.getElementById('hidden-state-title').textContent = `窗口已隐藏到${currentPlatform === 'mac' ? ' macOS 菜单栏' : ' Windows 系统托盘'}`;
+      document.getElementById('hidden-state-desc').textContent = '主进程提醒调度仍在后台运行，宠物待机动画已暂停以节省 CPU。到点时依然会发送系统通知 (Rule 6 / F10)。';
+      banner.classList.remove('hidden');
+      appendLog(`隐藏窗口到${currentPlatform === 'mac' ? '菜单栏' : '系统托盘'}：暂停渲染层宠物动画，后台提醒调度继续运行 (A08)`);
+    }
+
+    function quitAppDirectly() {
+      document.getElementById('desktop-widget').classList.add('opacity-0', 'pointer-events-none', 'scale-95');
+      document.getElementById('system-menu-popup').classList.add('hidden');
+      const banner = document.getElementById('widget-hidden-banner');
+      document.getElementById('hidden-state-icon').textContent = '🛑';
+      document.getElementById('hidden-state-title').textContent = '应用已退出（后台提醒已停止）';
+      document.getElementById('hidden-state-desc').textContent = '所有数据已持久化写入本地 SQLite。退出期间不再产生新提醒，下次启动时将恢复数据并执行当日遗漏检查 (Rule 5 / A08)。';
+      banner.classList.remove('hidden');
+      appendLog('用户执行退出软件：完成本地 SQLite 持久化并终止主进程提醒调度器 (A08)');
+    }
+
+    function restoreWidgetFromHidden() {
+      document.getElementById('desktop-widget').classList.remove('opacity-0', 'pointer-events-none', 'scale-95');
+      document.getElementById('widget-hidden-banner').classList.add('hidden');
+      appendLog('重新显示桌面小组件：恢复当前任务列表状态与宠物待机动画');
+    }
+
+    function toggleAlwaysOnTop() {
+      alwaysOnTop = !alwaysOnTop;
+      document.getElementById('menu-pin-status').textContent = alwaysOnTop ? '✓ 已开启' : '未开启';
+      document.getElementById('setting-ontop').checked = alwaysOnTop;
+      appendLog(`窗口置顶设置变更为：${alwaysOnTop ? '始终置顶' : '普通层级'}`);
+    }
+
+    function switchTab(tab) {
+      currentTab = tab;
+      renderAll();
+    }
+
+    function openModal(type) {
+      document.getElementById('modal-backdrop').classList.remove('hidden');
+      ['close', 'plan', 'settings', 'pets'].forEach(m => {
+        const el = document.getElementById('modal-' + m);
+        if (el) el.classList.toggle('hidden', m !== type);
+      });
+      if (type === 'pets') {
+        renderPetPackList();
+        applyPetPackToWidget(getCurrentPetPack());
+      }
+    }
+
+    function closeModal() {
+      document.getElementById('modal-backdrop').classList.add('hidden');
+    }
+
+    function appendLog(msg) {
+      const log = document.getElementById('ipc-log');
+      const now = new Date();
+      const ts = `${String(now.getHours()).padStart(2,'0')}:${String(now.getMinutes()).padStart(2,'0')}:${String(now.getSeconds()).padStart(2,'0')}`;
+      const line = document.createElement('div');
+      line.className = 'text-[var(--foreground)]';
+      line.textContent = `[${ts}] ${msg}`;
+      log.prepend(line);
+    }
+
+    function clearLog() {
+      document.getElementById('ipc-log').innerHTML = '';
+    }
+
+    function escapeHtml(str) {
+      return str.replace(/[&<>"']/g, m => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[m]));
+    }
+
+    // Initial render
+    renderEditorTimeSlots();
+    updateCountdownDisplay();
+    renderAll();
+  </script>
+</body>
+</html>

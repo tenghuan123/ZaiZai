@@ -1,0 +1,18 @@
+{"at": "2026-11-02T08:10:31.354Z", "event": "tray-ready"}
+{"at": "2026-11-02T08:10:31.446Z", "event": "app-ready", "platform": "darwin", "arch": "arm64", "electron": "45.2.1", "database": ".cache/m0-runs/packaged-1793607025817/data/m0.sqlite3"}
+{"at": "2026-11-02T08:10:31.654Z", "event": "window-shown", "mode": "expanded", "visible": true, "alwaysOnTop": true, "animationsPaused": false, "bounds": {"x": 1044, "y": 110, "width": 356, "height": 560}}
+{"at": "2026-11-02T08:10:32.241Z", "event": "window-mode", "mode": "compact", "visible": true, "alwaysOnTop": true, "animationsPaused": false, "bounds": {"x": 1044, "y": 110, "width": 356, "height": 224}}
+{"at": "2026-11-02T08:10:32.439Z", "event": "window-mode", "mode": "expanded", "visible": true, "alwaysOnTop": true, "animationsPaused": false, "bounds": {"x": 1044, "y": 110, "width": 356, "height": 560}}
+{"at": "2026-11-02T08:10:32.455Z", "event": "error", "message": "提醒时间需在 2 秒至 1 小时之间。"}
+{"at": "2026-11-02T08:10:32.833Z", "event": "window-hidden", "mode": "expanded", "visible": false, "alwaysOnTop": true, "animationsPaused": true, "bounds": {"x": 1044, "y": 110, "width": 356, "height": 560}}
+{"at": "2026-11-02T08:10:37.553Z", "event": "reminders-claimed", "ids": ["3ee9089b-1afc-4ce1-aabf-b18c6492295b"], "count": 1, "reason": "timer", "windowVisible": false}
+{"at": "2026-11-02T08:10:37.564Z", "event": "notification-submitted", "ids": ["3ee9089b-1afc-4ce1-aabf-b18c6492295b"], "reason": "timer"}
+{"at": "2026-11-02T08:10:41.799Z", "event": "second-instance"}
+{"at": "2026-11-02T08:10:41.817Z", "event": "window-shown", "mode": "expanded", "visible": true, "alwaysOnTop": true, "animationsPaused": false, "bounds": {"x": 1044, "y": 110, "width": 356, "height": 560}}
+{"at": "2026-11-02T08:10:41.937Z", "event": "notification-closed", "ids": ["3ee9089b-1afc-4ce1-aabf-b18c6492295b"]}
+{"at": "2026-11-02T08:10:42.121Z", "event": "window-mode", "mode": "compact", "visible": true, "alwaysOnTop": true, "animationsPaused": false, "bounds": {"x": 1044, "y": 110, "width": 356, "height": 224}}
+{"at": "2026-11-02T08:10:42.149Z", "event": "app-quit"}
+{"at": "2026-11-02T08:10:42.834Z", "event": "tray-ready"}
+{"at": "2026-11-02T08:10:42.937Z", "event": "app-ready", "platform": "darwin", "arch": "arm64", "electron": "45.2.1", "database": ".cache/m0-runs/packaged-1793607025817/data/m0.sqlite3"}
+{"at": "2026-11-02T08:10:43.077Z", "event": "window-shown", "mode": "compact", "visible": true, "alwaysOnTop": true, "animationsPaused": false, "bounds": {"x": 1044, "y": 110, "width": 356, "height": 224}}
+{"at": "2026-11-02T08:10:43.194Z", "event": "app-quit"}

@@ -1,0 +1,31 @@
+appId: com.desktopbuddy.m0
+productName: Desktop Buddy M0
+directories:
+  output: release
+files:
+  - out/**/*
+  - package.json
+asarUnpack:
+  - node_modules/better-sqlite3/**/*
+extraResources:
+  - from: resources/tray
+    to: tray
+mac:
+  category: public.app-category.productivity
+  target:
+    - target: dir
+      arch: [arm64]
+  identity: '-'
+  hardenedRuntime: false
+  gatekeeperAssess: false
+win:
+  target:
+    - target: nsis
+      arch: [x64]
+nsis:
+  oneClick: false
+  perMachine: false
+  allowToChangeInstallationDirectory: true
+  createDesktopShortcut: true
+  createStartMenuShortcut: true
+  deleteAppDataOnUninstall: false

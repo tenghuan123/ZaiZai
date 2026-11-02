@@ -1,0 +1,75 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 150 140">
+                <!-- Thought bubble top-left -->
+                <g id="pet-thought-bubble" transform="translate(4, 6)">
+                  <ellipse cx="20" cy="16" rx="16" ry="12" fill="#ffffff" stroke="#231f20" stroke-width="2.8"/>
+                  <circle cx="33" cy="29" r="3" fill="#ffffff" stroke="#231f20" stroke-width="2.2"/>
+                  <line x1="13" y1="14" x2="15" y2="19" stroke="#d98a8a" stroke-width="2" stroke-linecap="round"/>
+                  <line x1="18" y1="13" x2="20" y2="18" stroke="#d98a8a" stroke-width="2" stroke-linecap="round"/>
+                  <line x1="23" y1="13" x2="25" y2="18" stroke="#d98a8a" stroke-width="2" stroke-linecap="round"/>
+                </g>
+
+                <!-- Floating Pink Hearts (Right of pet) -->
+                <g class="anim-heart">
+                  <path d="M126 24 C123 19, 116 21, 118 27 C119 31, 125 34, 126 35 C127 34, 133 31, 134 27 C136 21, 129 19, 126 24 Z" fill="#e58787" stroke="#c86b6b" stroke-width="1"/>
+                  <path d="M129 44 C127 40, 122 42, 123 46 C124 49, 128 51, 129 52 C130 51, 134 49, 135 46 C136 42, 131 40, 129 44 Z" fill="#e58787" stroke="#c86b6b" stroke-width="1"/>
+                </g>
+
+                <!-- Tail wagging on left -->
+                <path d="M35 108 C22 106, 18 114, 29 117 C35 118, 40 116, 42 114" fill="#7aa4bf" stroke="#231f20" stroke-width="3" stroke-linecap="round"/>
+                <path d="M16 105 C14 109, 14 113, 16 116" stroke="#231f20" stroke-width="2" stroke-linecap="round" fill="none"/>
+
+                <!-- Main Body & Head White Base -->
+                <path d="M40 52 C32 32, 48 18, 58 32 C66 28, 84 28, 92 32 C102 18, 118 32, 110 52 C120 66, 118 92, 104 102 C106 114, 100 124, 90 124 C86 124, 83 128, 78 128 C73 128, 72 122, 70 122 C67 122, 65 128, 60 128 C54 128, 52 122, 46 118 C36 112, 36 98, 42 94 C32 84, 32 64, 40 52 Z" fill="#ffffff" stroke="#231f20" stroke-width="3.2" stroke-linejoin="round"/>
+
+                <!-- Blue Ear & Forehead Pattern (Hachiware style) -->
+                <path d="M41 51 C34 33, 48 20, 58 32 C63 30, 68 30, 74 37 C64 43, 52 49, 41 51 Z" fill="#77a2bd" stroke="#231f20" stroke-width="2.8" stroke-linejoin="round"/>
+                <path d="M109 51 C116 33, 102 20, 92 32 C87 30, 82 30, 76 37 C86 43, 98 49, 109 51 Z" fill="#77a2bd" stroke="#231f20" stroke-width="2.8" stroke-linejoin="round"/>
+
+                <!-- Pink Cheeks -->
+                <ellipse cx="51" cy="76" rx="8" ry="5" fill="#f3b2b7"/>
+                <line x1="48" y1="74" x2="46" y2="78" stroke="#d97b84" stroke-width="1.6" stroke-linecap="round"/>
+                <line x1="52" y1="74" x2="50" y2="78" stroke="#d97b84" stroke-width="1.6" stroke-linecap="round"/>
+                <ellipse cx="99" cy="76" rx="8" ry="5" fill="#f3b2b7"/>
+                <line x1="97" y1="74" x2="95" y2="78" stroke="#d97b84" stroke-width="1.6" stroke-linecap="round"/>
+                <line x1="101" y1="74" x2="99" y2="78" stroke="#d97b84" stroke-width="1.6" stroke-linecap="round"/>
+
+                <!-- Happy Closed Eyes / Blinking -->
+                <path id="pet-eye-l" d="M56 66 Q61 61 65 66" stroke="#231f20" stroke-width="3" stroke-linecap="round" fill="none"/>
+                <path id="pet-eye-r" d="M85 66 Q89 61 94 66" stroke="#231f20" stroke-width="3" stroke-linecap="round" fill="none"/>
+
+                <!-- Cute Mouth / Nose -->
+                <path d="M72 71 Q75 74 78 71" stroke="#231f20" stroke-width="2.6" stroke-linecap="round" fill="none"/>
+                <path d="M69 76 Q72 80 75 75 Q78 80 81 76" stroke="#231f20" stroke-width="2.6" stroke-linecap="round" fill="none"/>
+
+                <!-- Paws holding together -->
+                <path d="M63 94 C57 90, 57 102, 65 102 C71 102, 73 95, 68 92" fill="#ffffff" stroke="#231f20" stroke-width="2.8" stroke-linecap="round"/>
+                <path d="M87 94 C93 90, 93 102, 85 102 C79 102, 77 95, 82 92" fill="#ffffff" stroke="#231f20" stroke-width="2.8" stroke-linecap="round"/>
+
+                <!-- SCENE GIF OVERLAY 1: DRINK WATER CUP & DROPLETS (Hidden by default) -->
+                <g id="pet-gif-prop-water" style="display:none">
+                  <g class="anim-cup-sip">
+                    <!-- Pink Straw -->
+                    <path d="M86 84 L77 73" stroke="#e57373" stroke-width="3.2" stroke-linecap="round"/>
+                    <!-- Cup Body -->
+                    <rect x="78" y="82" width="24" height="28" rx="5" fill="#e8f6fd" stroke="#231f20" stroke-width="2.5"/>
+                    <!-- Water Fill -->
+                    <rect x="80" y="90" width="20" height="18" rx="3" fill="#63b8ee"/>
+                    <!-- Cup Handle -->
+                    <path d="M102 87 C109 87, 109 103, 102 103" stroke="#231f20" stroke-width="2.4" fill="none"/>
+                  </g>
+                  <!-- Floating Water Droplets -->
+                  <g class="anim-water-drop">
+                    <path d="M116 68 C116 68, 121 75, 116 78 C111 75, 116 68, 116 68 Z" fill="#4fa8e0"/>
+                    <circle cx="108" cy="60" r="2.8" fill="#63b8ee"/>
+                  </g>
+                </g>
+
+                <!-- SCENE GIF OVERLAY 2: STRETCH / EXERCISE DUMBBELLS (Hidden by default) -->
+                <g id="pet-gif-prop-stretch" style="display:none">
+                  <g class="anim-cup-sip">
+                    <rect x="44" y="84" width="16" height="5" rx="2" fill="#6f9bb6" stroke="#231f20" stroke-width="2"/>
+                    <circle cx="43" cy="86.5" r="5.5" fill="#5282a1" stroke="#231f20" stroke-width="2"/>
+                    <circle cx="61" cy="86.5" r="5.5" fill="#5282a1" stroke="#231f20" stroke-width="2"/>
+                  </g>
+                </g>
+              </svg>

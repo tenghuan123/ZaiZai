@@ -1,0 +1,40 @@
+{
+  "name": "desktop-buddy-m0",
+  "version": "0.1.0",
+  "private": true,
+  "description": "Windows 与 macOS 桌面任务助手的原生能力验证",
+  "main": "./out/main/index.js",
+  "author": "Desktop Buddy",
+  "license": "UNLICENSED",
+  "engines": { "node": ">=22.12.0" },
+  "scripts": {
+    "dev": "electron-vite dev",
+    "start": "electron-vite preview",
+    "typecheck": "tsc --noEmit",
+    "build": "npm run typecheck && electron-vite build",
+    "test": "node scripts/test.mjs",
+    "smoke": "npm run build && node scripts/smoke.mjs",
+    "pack:mac": "npm run build && electron-builder --mac --dir",
+    "pack:win": "npm run build && electron-builder --win nsis --x64",
+    "postinstall": "install-electron && electron-builder install-app-deps"
+  },
+  "dependencies": {
+    "better-sqlite3": "13.0.3"
+  },
+  "devDependencies": {
+    "@types/better-sqlite3": "9.6.0",
+    "@types/node": "26.6.6",
+    "@types/react": "19.3.0",
+    "@types/react-dom": "19.3.0",
+    "@vitejs/plugin-react": "6.1.2",
+    "electron": "45.2.1",
+    "electron-builder": "26.18.0",
+    "electron-vite": "6.0.0",
+    "playwright": "1.64.1",
+    "react": "19.3.1",
+    "react-dom": "19.3.1",
+    "tsx": "4.23.15",
+    "typescript": "7.0.2",
+    "vite": "8.3.5"
+  }
+}
