@@ -1,0 +1,80 @@
+{
+  "startedAt": "2026-11-02T08:46:00.909Z",
+  "runDirectory": ".cache/m1-runs/packaged-1793609160908",
+  "executablePath": "release/mac-arm64/Desktop Buddy M0.app/Contents/MacOS/Desktop Buddy M0",
+  "checks": [
+    "native window and tray created; SQLite opened",
+    "expanded ↔ compact changes actual native window bounds",
+    "main process rejects invalid calendar date with a typed error",
+    "real SQLite write failure returns STORAGE, preserves UI draft, and creates no task",
+    "reminder dispatched from main process while native window hidden and renderer busy",
+    "single-instance relaunch restores the original hidden window",
+    "bubble completion saves state and dismisses active reminder",
+    "typed preload task command retries use one persisted ID; removal updates the same day projection",
+    "concurrent reads and writes return the revision belonging to each snapshot",
+    "explicit quit exits process; restart restores SQLite data and compact preference without repeating old reminder"
+  ],
+  "errors": [],
+  "startupMs": 5829,
+  "runtime": {
+    "electron": "45.2.1",
+    "chrome": "156.0.8078.75",
+    "node": "24.22.1"
+  },
+  "notification": {
+    "state": "submitted",
+    "error": null
+  },
+  "metricsNote": "Process working sets include shared pages; sampled after a deliberately busy renderer. Not an idle resource budget measurement.",
+  "metrics": [
+    {
+      "type": "Browser",
+      "memory": {
+        "workingSetSize": 173392,
+        "peakWorkingSetSize": 182720
+      },
+      "cpu": {
+        "cumulativeCPUUsage": 1.373174,
+        "percentCPUUsage": 0,
+        "idleWakeupsPerSecond": 0
+      }
+    },
+    {
+      "type": "GPU",
+      "memory": {
+        "workingSetSize": 84656,
+        "peakWorkingSetSize": 98304
+      },
+      "cpu": {
+        "cumulativeCPUUsage": 0.461584,
+        "percentCPUUsage": 0,
+        "idleWakeupsPerSecond": 0
+      }
+    },
+    {
+      "type": "Utility",
+      "memory": {
+        "workingSetSize": 40672,
+        "peakWorkingSetSize": 49280
+      },
+      "cpu": {
+        "cumulativeCPUUsage": 0.103435,
+        "percentCPUUsage": 0,
+        "idleWakeupsPerSecond": 0
+      }
+    },
+    {
+      "type": "Tab",
+      "memory": {
+        "workingSetSize": 128544,
+        "peakWorkingSetSize": 137440
+      },
+      "cpu": {
+        "cumulativeCPUUsage": 8.946967,
+        "percentCPUUsage": 0,
+        "idleWakeupsPerSecond": 0
+      }
+    }
+  ],
+  "status": "passed"
+}

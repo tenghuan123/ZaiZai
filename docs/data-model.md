@@ -1,6 +1,6 @@
 # 桌面任务助手数据模型
 
-版本：0.1。设计日期：2026-11-02。对应 [应用架构](architecture.md)。以下为正式应用的字段与事务设计，需要在后续实现、迁移和规则测试中验证。
+版本：0.2。更新日期：2026-11-02。对应 [应用架构](architecture.md)。六张核心表及下述任务事务已在 M1 落实，SQLite `user_version=2`；验证证据与界面边界见 [M1 验证记录](m1-verification.md)。
 
 首版保存当前重复规则和真实产生的任务实例。一次性任务只占一条实例，重复任务保留独立计划及稳定时间槽。完成状态、历史展示和提醒资格全部从同一份实例记录取得。
 
@@ -202,4 +202,12 @@ WHERE status = 'pending' AND reminder_enabled = 1 AND due_at_ms IS NOT NULL;
 | 日期或时区回拨 | 来源身份不变，已完成记录和提醒处理记录不重复 |
 | 查看未来或未运行过去日期 | 读取本身不写入实例或伪造运行历史 |
 
-这些不变量是实现阶段的规则与数据库集成测试目标。设计阶段已在临时内存 SQLite 中执行本页索引样例，检查有效时间槽去重、取消和移动后来源身份仍受约束、次日独立，以及同一提醒版本去重。该检查只覆盖索引意图，不代表完整应用迁移、业务流程或原生集成已经通过测试。
+这些不变量已纳入 `tests/database.test.ts`、`tests/tasks.test.ts` 和 `tests/reminders.test.ts` 的真实 SQLite 集成测试。设计阶段的临时索引样例已由正式迁移与服务测试承接；自动化规则验证仍不代表双平台原生验收完成。
+
+## 7 M0 升级与恢复
+
+`database/connection.ts` 先用 SQLite 序列化快照写入同目录独占创建的备份文件并同步到磁盘，快照包含已提交 WAL 页面；之后在同一事务中建表、转换 M0 数据、移除样本表并升级版本。任一步失败回滚表与版本，打开较新版本或无版本号的已有库会明确拒绝。
+
+M0 提醒转换为一次性实例，保留原 ID、UTC 到期毫秒、完成时间和设置。原来的已提交、失败和结果不明记录转换到提醒表，领取中改为 `uncertain`；旧 `missed` 转成已处理的 `unavailable/M0_MISSED`，避免回拨后重发。M0 未保存 IANA 时区，因此来源日期和时间按升级时电脑时区推导，不能还原原始时区；精确 UTC 到期值保持原值，不伪造过去日期激活记录。
+
+设置表使用经过运行时校验的单例 JSON：`version`、`offworkTime`、`defaultReminderEnabled`、`alwaysOnTop`、`displayMode`、`position`、`petId`、`petDisplay`。UI 更新仅允许三个业务偏好 `offworkTime`、`defaultReminderEnabled`、`alwaysOnTop`，携带 `expectedVersion`；窗口坐标与模式由宿主保存。宠物字段为后续资源批次保留，当前不开放 UI 写入。

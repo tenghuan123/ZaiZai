@@ -1,6 +1,6 @@
 import { BrowserWindow, dialog, screen } from 'electron'
 import type { DisplayMode, WindowState } from '../../shared/contracts'
-import type { Store } from '../database/store'
+import type { SettingsRepository } from '../settings/repository'
 import { fitToWorkArea, WINDOW_SIZE } from './geometry'
 
 interface WindowOptions {
@@ -21,7 +21,7 @@ export class DesktopWindow {
   private dragTimer: ReturnType<typeof setInterval> | undefined
   private readonly expectedRenderer: URL
 
-  constructor(private readonly store: Store, private readonly options: WindowOptions) {
+  constructor(private readonly store: SettingsRepository, private readonly options: WindowOptions) {
     const settings = store.getSettings()
     this.mode = settings.displayMode
     const area = screen.getPrimaryDisplay().workArea
@@ -31,7 +31,7 @@ export class DesktopWindow {
     const display = screen.getDisplayMatching(desired)
     this.expectedRenderer = new URL(options.rendererUrl)
     this.window = new BrowserWindow({
-      ...fitToWorkArea(desired, display.workArea), title: '桌面伙伴 · M0',
+      ...fitToWorkArea(desired, display.workArea), title: '桌面伙伴',
       frame: false, transparent: true, resizable: false, maximizable: false,
       fullscreenable: false, alwaysOnTop: settings.alwaysOnTop, show: false,
       hasShadow: false, backgroundColor: '#00000000',
@@ -82,18 +82,22 @@ export class DesktopWindow {
   setMode(mode: DisplayMode): void {
     if (this.mode === mode) return
     this.endDrag()
+    this.store.updateSettings({ displayMode: mode })
     const bounds = { ...this.window.getBounds(), ...WINDOW_SIZE[mode] }
     const area = screen.getDisplayMatching(bounds).workArea
     this.window.setBounds(fitToWorkArea(bounds, area))
     this.mode = mode
-    this.store.updateSettings({ displayMode: mode })
     this.options.log('window-mode', this.state)
     this.options.changed()
   }
 
   setAlwaysOnTop(enabled: boolean): void {
-    this.window.setAlwaysOnTop(enabled)
     this.store.updateSettings({ alwaysOnTop: enabled })
+    this.applyAlwaysOnTop(enabled)
+  }
+
+  applyAlwaysOnTop(enabled: boolean): void {
+    this.window.setAlwaysOnTop(enabled)
     this.options.changed()
   }
 

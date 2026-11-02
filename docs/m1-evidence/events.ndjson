@@ -1,0 +1,18 @@
+{"at":"2026-11-02T08:46:06.086Z","event":"tray-ready"}
+{"at":"2026-11-02T08:46:06.203Z","event":"app-ready","platform":"darwin","arch":"arm64","electron":"45.2.1","database":".cache/m1-runs/packaged-1793609160908/data/m0.sqlite3"}
+{"at":"2026-11-02T08:46:06.439Z","event":"window-shown","mode":"expanded","visible":true,"alwaysOnTop":true,"animationsPaused":false,"bounds":{"x":1044,"y":110,"width":356,"height":560}}
+{"at":"2026-11-02T08:46:06.892Z","event":"window-mode","mode":"compact","visible":true,"alwaysOnTop":true,"animationsPaused":false,"bounds":{"x":1044,"y":110,"width":356,"height":224}}
+{"at":"2026-11-02T08:46:07.038Z","event":"window-mode","mode":"expanded","visible":true,"alwaysOnTop":true,"animationsPaused":false,"bounds":{"x":1044,"y":110,"width":356,"height":560}}
+{"at":"2026-11-02T08:46:07.774Z","event":"error","message":"simulated storage failure"}
+{"at":"2026-11-02T08:46:08.120Z","event":"reminders-claimed","ids":["baa8c995-4085-4827-a211-834732ea9ab6"],"count":1,"reason":"timer","windowVisible":false}
+{"at":"2026-11-02T08:46:08.135Z","event":"notification-submitted","ids":["baa8c995-4085-4827-a211-834732ea9ab6"],"reason":"timer"}
+{"at":"2026-11-02T08:46:08.382Z","event":"window-hidden","mode":"expanded","visible":false,"alwaysOnTop":true,"animationsPaused":true,"bounds":{"x":1044,"y":110,"width":356,"height":560}}
+{"at":"2026-11-02T08:46:17.445Z","event":"second-instance"}
+{"at":"2026-11-02T08:46:17.535Z","event":"window-shown","mode":"expanded","visible":true,"alwaysOnTop":true,"animationsPaused":false,"bounds":{"x":1044,"y":110,"width":356,"height":560}}
+{"at":"2026-11-02T08:46:18.258Z","event":"notification-closed","ids":["baa8c995-4085-4827-a211-834732ea9ab6"]}
+{"at":"2026-11-02T08:46:18.389Z","event":"window-mode","mode":"compact","visible":true,"alwaysOnTop":true,"animationsPaused":false,"bounds":{"x":1044,"y":110,"width":356,"height":224}}
+{"at":"2026-11-02T08:46:18.506Z","event":"app-quit"}
+{"at":"2026-11-02T08:46:19.129Z","event":"tray-ready"}
+{"at":"2026-11-02T08:46:19.265Z","event":"app-ready","platform":"darwin","arch":"arm64","electron":"45.2.1","database":".cache/m1-runs/packaged-1793609160908/data/m0.sqlite3"}
+{"at":"2026-11-02T08:46:19.456Z","event":"window-shown","mode":"compact","visible":true,"alwaysOnTop":true,"animationsPaused":false,"bounds":{"x":1044,"y":110,"width":356,"height":224}}
+{"at":"2026-11-02T08:46:19.593Z","event":"app-quit"}

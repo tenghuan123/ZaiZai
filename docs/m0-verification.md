@@ -2,6 +2,8 @@
 
 验证日期：2026-11-02，Asia/Shanghai。范围为 Electron 工程、桌宠窗口、托盘、后台提醒与 SQLite 样本。
 
+本页保留 M0 当时的验证事实。当前代码和 `scripts/smoke.mjs` 已在 [M1](m1-verification.md) 切换到正式任务模型与日期/时间输入，原 M0 归档证据不随之重写。
+
 已在 macOS Apple Silicon 上跑通关键链路并生成本机应用包。Windows 仅有共用代码与打包配置，尚未运行；本机结果不代表双平台 M0 全部验收通过。
 
 ## 1 环境与产物

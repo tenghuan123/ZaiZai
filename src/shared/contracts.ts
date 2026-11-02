@@ -1,72 +1,68 @@
+import type { CompletionResult, CreateOnceInput, CreatePlanInput, DayView, Occurrence, OccurrenceRef, RepeatPlan, UpdateOnceInput, UpdatePlanInput } from './tasks'
 export type DisplayMode = 'expanded' | 'compact'
-export type DispatchState = 'pending' | 'claimed' | 'submitted' | 'failed' | 'uncertain' | 'missed'
-
+export type DispatchState = 'pending' | 'claimed' | 'submitted' | 'failed' | 'unavailable' | 'uncertain'
+// Read-only presentation of a timed occurrence and its current dispatch. Never a second task record.
 export interface Reminder {
-  id: string
-  title: string
-  dueAt: number
-  createdAt: number
-  dispatchState: DispatchState
-  submittedAt: number | null
-  completedAt: number | null
-  acknowledgedAt: number | null
-  lastError: string | null
+  id: string; title: string; dueAt: number; createdAt: number; dispatchState: DispatchState
+  submittedAt: number | null; completedAt: number | null; acknowledgedAt: number | null; lastError: string | null
 }
-
 export interface Settings {
-  displayMode: DisplayMode
-  alwaysOnTop: boolean
-  offworkTime: string | null
-  position: { x: number; y: number } | null
+  version: number; displayMode: DisplayMode; alwaysOnTop: boolean; offworkTime: string | null
+  defaultReminderEnabled: boolean; position: { x: number; y: number } | null
+  petId: string; petDisplay: Record<string, { scale: number; anchorX: number; anchorY: number }>
 }
-
+export type SettingsPatch = Partial<Pick<Settings, 'offworkTime' | 'defaultReminderEnabled' | 'alwaysOnTop'>>
 export interface WindowState {
-  mode: DisplayMode
-  visible: boolean
-  alwaysOnTop: boolean
-  animationsPaused: boolean
+  mode: DisplayMode; visible: boolean; alwaysOnTop: boolean; animationsPaused: boolean
   bounds: { x: number; y: number; width: number; height: number }
 }
-
 export interface Snapshot {
-  revision: number
-  sessionId: string
-  platform: string
-  reminders: Reminder[]
-  activeReminderIds: string[]
-  settings: Settings
-  window: WindowState
+  revision: number; sessionId: string; platform: string; today: DayView
+  reminders: Reminder[]; activeReminderIds: string[]; settings: Settings; window: WindowState
   focusedReminderId: string | null
-  diagnostics: {
-    trayReady: boolean
-    notificationSupported: boolean
-    databasePath: string
-    versions: { electron: string; chrome: string; node: string }
-  }
+  diagnostics: { trayReady: boolean; notificationSupported: boolean; databasePath: string; backupPath: string | null
+    versions: { electron: string; chrome: string; node: string } }
 }
-
-export type AppResult<T> = { ok: true; value: T } | { ok: false; error: string }
-export interface ScheduleInput { title: string; delaySeconds: number; hideAfterScheduling: boolean }
-
+export interface AppFailure {
+  code: 'VALIDATION' | 'NOT_FOUND' | 'CONFLICT' | 'STORAGE' | 'UNAVAILABLE'; message: string; field?: string
+}
+export type AppResult<T> = { ok: true; value: T; sessionId: string; revision: number } | { ok: false; error: AppFailure }
+export interface AppEvent {
+  sessionId: string; revision: number; kind: 'data-changed' | 'reminders-changed' | 'window-changed' | 'clock-changed'
+}
 export interface DesktopAPI {
   bootstrap(): Promise<AppResult<Snapshot>>
-  scheduleReminder(input: ScheduleInput): Promise<AppResult<{ id: string }>>
-  setCompleted(input: { id: string; completed: boolean }): Promise<AppResult<void>>
+  tasks: {
+    getDay(date: string): Promise<AppResult<DayView>>
+    getHistoryDates(range: { from: string; to: string }): Promise<AppResult<string[]>>
+    createOnce(input: CreateOnceInput): Promise<AppResult<Occurrence>>
+    updateOnce(input: UpdateOnceInput): Promise<AppResult<Occurrence>>
+    setCompleted(ref: OccurrenceRef, completed: boolean): Promise<AppResult<CompletionResult>>
+    removeOccurrence(ref: OccurrenceRef): Promise<AppResult<Occurrence>>
+    moveToToday(ref: OccurrenceRef): Promise<AppResult<Occurrence>>
+  }
+  plans: {
+    list(): Promise<AppResult<RepeatPlan[]>>
+    create(input: CreatePlanInput): Promise<AppResult<RepeatPlan>>
+    update(input: UpdatePlanInput): Promise<AppResult<RepeatPlan>>
+    setPaused(id: string, paused: boolean): Promise<AppResult<RepeatPlan>>
+    end(id: string): Promise<AppResult<RepeatPlan>>
+  }
+  settings: { update(input: { expectedVersion: number; patch: SettingsPatch }): Promise<AppResult<Settings>> }
   acknowledgeReminder(id: string): Promise<AppResult<void>>
   setMode(mode: DisplayMode): Promise<AppResult<void>>
-  setAlwaysOnTop(enabled: boolean): Promise<AppResult<void>>
-  setOffworkTime(time: string | null): Promise<AppResult<void>>
   hide(): Promise<AppResult<void>>
   requestClose(): Promise<AppResult<void>>
   quit(): Promise<AppResult<void>>
   beginDrag(): Promise<AppResult<void>>
   endDrag(): Promise<AppResult<void>>
-  subscribe(listener: () => void): () => void
+  subscribe(listener: (event: AppEvent) => void): () => void
 }
-
 export const channels = {
-  bootstrap: 'app:bootstrap', schedule: 'reminders:schedule', complete: 'reminders:set-completed',
-  acknowledge: 'reminders:acknowledge', mode: 'window:mode', alwaysOnTop: 'window:always-on-top',
-  offworkTime: 'settings:offwork-time', hide: 'window:hide', close: 'window:request-close',
-  quit: 'app:quit', dragStart: 'window:drag-start', dragEnd: 'window:drag-end', changed: 'app:changed'
+  bootstrap: 'app:bootstrap', day: 'tasks:get-day', history: 'tasks:history-dates', createOnce: 'tasks:create-once',
+  updateOnce: 'tasks:update-once', complete: 'tasks:set-completed', remove: 'tasks:remove', move: 'tasks:move-today',
+  plans: 'plans:list', createPlan: 'plans:create', updatePlan: 'plans:update', pausePlan: 'plans:set-paused', endPlan: 'plans:end',
+  settings: 'settings:update', acknowledge: 'reminders:acknowledge', mode: 'window:mode',
+  hide: 'window:hide', close: 'window:request-close', quit: 'app:quit', dragStart: 'window:drag-start',
+  dragEnd: 'window:drag-end', changed: 'app:changed'
 } as const

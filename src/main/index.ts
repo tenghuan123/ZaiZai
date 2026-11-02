@@ -3,8 +3,13 @@ import { appendFileSync, mkdirSync } from 'node:fs'
 import { join } from 'node:path'
 import { randomUUID } from 'node:crypto'
 import { channels } from '../shared/contracts'
-import type { Snapshot } from '../shared/contracts'
-import { Store } from './database/store'
+import type { AppEvent, Snapshot } from '../shared/contracts'
+import { Connection, MigrationError } from './database/connection'
+import { SettingsRepository } from './settings/repository'
+import { TaskRepository } from './tasks/repository'
+import { TaskService } from './tasks/service'
+import { ReminderRepository } from './reminders/repository'
+import { clockSnapshot } from './domain/time'
 import { DesktopWindow } from './desktop/window'
 import { DesktopTray, installApplicationMenu } from './desktop/tray'
 import { NativeNotifications } from './desktop/notifications'
@@ -21,7 +26,10 @@ protocol.registerSchemesAsPrivileged([{ scheme: 'buddy-app', privileges: { stand
 
 let desktop: DesktopWindow | undefined
 let tray: DesktopTray | undefined
-let store: Store | undefined
+let connection: Connection | undefined
+let settings: SettingsRepository | undefined
+let tasks: TaskService | undefined
+let records: ReminderRepository | undefined
 let reminders: ReminderService | undefined
 let notifications: NativeNotifications | undefined
 let shuttingDown = false
@@ -44,20 +52,19 @@ function changed(): void {
   revision++
   try {
     tray?.refresh()
-    if (desktop && !desktop.window.webContents.isDestroyed()) desktop.window.webContents.send(channels.changed)
+    const event: AppEvent = { sessionId, revision, kind: 'data-changed' }
+    if (desktop && !desktop.window.webContents.isDestroyed()) desktop.window.webContents.send(channels.changed, event)
   } catch (error) { reportError(error) }
 }
 function snapshot(): Snapshot {
-  if (!desktop || !store) throw new Error('应用正在启动，请稍后。')
-  const items = store.list()
-  const start = new Date(); start.setHours(0, 0, 0, 0)
-  const activeReminderIds = items.filter(item => item.completedAt === null && item.acknowledgedAt === null &&
-    item.dueAt >= start.getTime() && item.dueAt <= Date.now() &&
-    ['claimed', 'submitted', 'failed', 'uncertain'].includes(item.dispatchState)).map(item => item.id)
-  return { revision, sessionId, platform: process.platform, reminders: items, activeReminderIds, settings: store.getSettings(),
+  if (!desktop || !connection || !settings || !tasks || !records) throw new Error('应用正在启动，请稍后。')
+  const clock = clockSnapshot()
+  return { revision, sessionId, platform: process.platform, today: tasks.getDay(clock.today, clock),
+    reminders: records.listDay(clock.today), activeReminderIds: records.active(clock), settings: settings.getSettings(),
     window: desktop.state, focusedReminderId,
     diagnostics: { trayReady: !!tray && !tray.tray.isDestroyed(), notificationSupported: Notification.isSupported(),
-      databasePath: store.path, versions: { electron: process.versions.electron ?? '', chrome: process.versions.chrome ?? '', node: process.versions.node } } }
+      databasePath: connection.path, backupPath: connection.backupPath,
+      versions: { electron: process.versions.electron ?? '', chrome: process.versions.chrome ?? '', node: process.versions.node } } }
 }
 function quit(): void { app.quit() }
 
@@ -74,43 +81,47 @@ if (!app.requestSingleInstanceLock()) {
     notifications?.dispose()
     tray?.dispose()
     log('app-quit')
-    store?.close()
+    connection?.close()
   })
   void app.whenReady().then(async () => {
-    const database = new Store(join(dataPath, 'm0.sqlite3'))
-    store = database
+    const database = new Connection(join(dataPath, 'm0.sqlite3'))
+    connection = database
+    const preferences = new SettingsRepository(database.db)
+    settings = preferences
+    const taskRepository = new TaskRepository(database.db)
+    const reminderRecords = new ReminderRepository(database.db)
+    records = reminderRecords
+    reminderRecords.recoverClaims()
+    const taskService = new TaskService(taskRepository, reminderRecords)
+    tasks = taskService
+    taskService.ensureToday()
     registerRendererProtocol(join(__dirname, '../renderer'))
-    desktop = new DesktopWindow(database, {
+    desktop = new DesktopWindow(preferences, {
       preload: join(__dirname, '../preload/index.js'),
       rendererUrl: process.env.ELECTRON_RENDERER_URL || APP_URL,
       changed, quit, reportError, log
     })
     const window = desktop
     notifications = new NativeNotifications(ids => {
-      const target = ids.map(id => database.get(id)).find(item => item && item.completedAt === null)
+      const target = ids.map(id => taskRepository.get(id)).find(item => item?.status === 'pending')
       focusedReminderId = target?.id ?? null
-      for (const id of ids) database.acknowledge(id, Date.now())
+      for (const id of ids) reminderRecords.acknowledge(id, Date.now())
       window.setMode('expanded')
       window.show()
       changed()
     }, log)
     const native = notifications
-    reminders = new ReminderService(database, async (items, reason) => {
+    reminders = new ReminderService(reminderRecords, taskService, async (items, reason) => {
       log('reminders-claimed', { ids: items.map(item => item.id), count: items.length, reason, windowVisible: window.state.visible })
       return native.submit(items, reason)
     }, changed, reportError)
     const scheduler = reminders
     tray = new DesktopTray(app.isPackaged ? join(process.resourcesPath, 'tray') : join(__dirname, '../../resources/tray'),
-      window, database, hide => {
-        try {
-          const item = scheduler.schedule('起来活动一下，休息片刻', 5)
-          log('reminder-scheduled-from-tray', { id: item.id, hide })
-          if (hide) window.hide()
-        } catch (error) { reportError(error) }
-      }, quit)
+      window, taskService, quit, reportError)
     log('tray-ready')
     installApplicationMenu()
-    registerIPC({ desktop: window, store: database, reminders: scheduler, notifications: native, snapshot, changed, quit, reportError })
+    registerIPC({ desktop: window, tasks: taskService, settings: preferences, records: reminderRecords,
+      reminders: scheduler, notifications: native, snapshot, metadata: () => ({ sessionId, revision }), changed, quit, reportError })
     powerMonitor.on('suspend', () => { log('system-suspend'); window.setSystemIdle(true) })
     powerMonitor.on('resume', () => { log('system-resume'); window.setSystemIdle(false); void scheduler.checkNow('resume') })
     powerMonitor.on('lock-screen', () => window.setSystemIdle(true))
@@ -120,9 +131,15 @@ if (!app.requestSingleInstanceLock()) {
     await window.load()
     log('app-ready', { platform: process.platform, arch: process.arch, electron: process.versions.electron, database: database.path })
     void scheduler.checkNow('startup')
-  }).catch(error => {
+  }).catch(async error => {
     reportError(error)
-    dialog.showErrorBox('桌面伙伴启动失败', error instanceof Error ? error.message : String(error))
+    const result = await dialog.showMessageBox({ type: 'error', title: '桌面伙伴启动失败',
+      message: error instanceof Error ? error.message : String(error), buttons: ['打开数据目录', '退出'], defaultId: 1, cancelId: 1 })
+    if (result.response === 0) {
+      const { shell } = await import('electron')
+      await shell.openPath(dataPath)
+    }
+    if (error instanceof MigrationError) log('migration-failed', { backupPath: error.backupPath })
     app.exit(1)
   })
 }

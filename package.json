@@ -2,11 +2,13 @@
   "name": "desktop-buddy-m0",
   "version": "0.1.0",
   "private": true,
-  "description": "Windows 与 macOS 桌面任务助手的原生能力验证",
+  "description": "Windows 与 macOS 本地桌面任务助手",
   "main": "./out/main/index.js",
   "author": "Desktop Buddy",
   "license": "UNLICENSED",
-  "engines": { "node": ">=22.12.0" },
+  "engines": {
+    "node": ">=22.12.0"
+  },
   "scripts": {
     "dev": "electron-vite dev",
     "start": "electron-vite preview",
@@ -19,6 +21,7 @@
     "postinstall": "install-electron && electron-builder install-app-deps"
   },
   "dependencies": {
+    "@js-temporal/polyfill": "0.5.1",
     "better-sqlite3": "13.0.3"
   },
   "devDependencies": {

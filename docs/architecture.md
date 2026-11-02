@@ -1,6 +1,6 @@
 # 桌面任务助手应用架构
 
-版本：0.1。设计日期：2026-11-02。状态：M0 已建立，macOS 核心链路已验证；完整应用与双平台验收继续按本方案推进，见 [M0 验证记录](m0-verification.md)。
+版本：0.2。更新日期：2026-11-02。状态：M1 正式数据模型、迁移、任务服务与类型化 IPC 已接通；计划与日期界面留待 M2。验证范围见 [M1 验证记录](m1-verification.md)，原生平台缺口仍见 [M0 验证记录](m0-verification.md)。
 
 采用 **Electron + React + TypeScript + SQLite**，以当前优化后的 [HTML 原型](dual-platform-prototype.html) 为界面与交互基线。任务和提醒在 Electron 主进程中运行，React 负责界面与宠物表现，SQLite 是持久业务数据的唯一来源。一个主要透明窗口承载宠物与任务卡片。
 
@@ -78,7 +78,7 @@ Electron 自身的主进程、渲染进程与 preload 分工参考 [进程模型
 
 ## 3 建议目录
 
-以下为目标目录。M0 已建立 desktop、reminders、database、preload、shared 和 renderer/src；正式任务、重复规则和资源管理目录在后续阶段补齐。
+以下为目标目录。M1 已建立 database/connection、database/migrations、domain、tasks、settings/repository 和 reminders/repository；宠物资源管理与界面 feature 目录在后续阶段补齐。设置由独立 repository 校验并持久化；任务服务负责业务事务，查询层保持只读。
 
 ```text
 src/
@@ -95,6 +95,8 @@ src/
       service.ts               # 写操作、事务边界、今日协调
       queries.ts               # 日期视图、历史与进度
       repository.ts            # 本模块 SQL
+    settings/
+      repository.ts            # 类型化设置、版本检查与宿主偏好保存
     reminders/
       service.ts               # 待处理提醒与确认，维护调度唤醒
       repository.ts            # 到期查询与提交记录

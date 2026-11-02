@@ -1,7 +1,11 @@
 import type { Reminder } from '../../shared/contracts'
-import type { Store } from '../database/store'
+import type { ReminderRepository } from './repository'
+import type { TaskService } from '../tasks/service'
+import type { Clock } from '../domain/time'
+import { clockSnapshot, nextDayStart } from '../domain/time'
+import type { DeliveryOutcome } from './repository'
 
-export type DeliveryOutcome = { state: 'submitted' | 'failed'; error?: string }
+export type { DeliveryOutcome } from './repository'
 export type CheckReason = 'startup' | 'timer' | 'resume'
 
 export class ReminderService {
@@ -11,26 +15,20 @@ export class ReminderService {
   private followup: CheckReason | undefined
 
   constructor(
-    private readonly store: Store,
+    private readonly records: ReminderRepository,
+    private readonly tasks: TaskService,
     private readonly deliver: (items: Reminder[], reason: CheckReason) => Promise<DeliveryOutcome>,
     private readonly changed: () => void,
     private readonly reportError: (error: unknown) => void,
-    private readonly now: () => number = Date.now
+    private readonly clock: Clock = clockSnapshot
   ) {}
-
-  schedule(title: string, delaySeconds: number): Reminder {
-    const now = this.now()
-    const item = this.store.schedule(title, now + delaySeconds * 1000, now)
-    this.changed()
-    this.arm()
-    return item
-  }
 
   arm(): void {
     if (this.timer) clearTimeout(this.timer)
     if (this.stopped || this.checking) return
-    const dueAt = this.store.nextDue()
-    const delay = dueAt === null ? 30_000 : Math.max(20, Math.min(30_000, dueAt - this.now()))
+    const clock = this.clock()
+    const dueAt = this.records.nextDue(clock.today)
+    const delay = Math.max(20, Math.min(30_000, nextDayStart(clock) - clock.nowMs, (dueAt ?? Infinity) - clock.nowMs))
     this.timer = setTimeout(() => { void this.checkNow('timer') }, delay)
   }
 
@@ -40,12 +38,10 @@ export class ReminderService {
     if (this.timer) clearTimeout(this.timer)
     this.checking = true
     try {
-      const now = this.now()
-      const start = new Date(now)
-      start.setHours(0, 0, 0, 0)
-      const expired = this.store.expireBefore(start.getTime())
-      const items = this.store.claimDue(now, start.getTime())
-      if (items.length || expired) this.changed()
+      const clock = this.clock()
+      const dayChanged = this.tasks.coordinateDay(clock)
+      const items = this.records.claimDue(clock)
+      if (items.length || dayChanged) this.changed()
       if (items.length) {
         let outcome: DeliveryOutcome
         try { outcome = await this.deliver(items, reason) }
@@ -54,7 +50,7 @@ export class ReminderService {
           outcome = { state: 'failed', error: error instanceof Error ? error.message : String(error) }
         }
         if (!this.stopped) {
-          this.store.finishDispatch(items.map(item => item.id), outcome, this.now())
+          this.records.finishDispatch(items.map(item => item.dispatchId), outcome, this.clock().nowMs)
           this.changed()
         }
       }

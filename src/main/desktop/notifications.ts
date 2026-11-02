@@ -10,7 +10,7 @@ export class NativeNotifications {
     private readonly log: (event: string, details?: object) => void) {}
 
   submit(items: Reminder[], reason: CheckReason): Promise<DeliveryOutcome> {
-    if (!Notification.isSupported()) return Promise.resolve({ state: 'failed', error: '当前系统不支持原生通知。' })
+    if (!Notification.isSupported()) return Promise.resolve({ state: 'unavailable', error: '当前系统不支持原生通知。' })
     return new Promise(resolve => {
       const title = items.length === 1 ? '桌面伙伴提醒你' : `${items.length} 项提醒已到时间`
       const body = items.length === 1 ? items[0].title : items.map(item => item.title).join('、').slice(0, 90)
