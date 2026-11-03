@@ -1,0 +1,14 @@
+{
+  "directory": "./.cache/calendar-runs/packaged-1793676977073",
+  "checks": [
+    "the accessible date icon retains a purpose tooltip and opens an explanatory modal without compressing the list; Escape restores focus",
+    "clicking outside dismisses the picker without changing the selected day",
+    "selecting tomorrow closes the overlay, merges date/progress/return into one row, and leaves the full empty state and footer visible",
+    "quick add while viewing tomorrow saves to tomorrow and keeps the view there; today statistics are unchanged",
+    "a failed future quick add keeps the draft and selected day; retry creates one task on that day",
+    "historical dates show a recorded dot; history replaces new-task controls with a short explanation and still moves the same task to today",
+    "month navigation handles leap February and a six-row month, keeps selection explicit, and fits inside the native window"
+  ],
+  "errors": [],
+  "status": "passed"
+}

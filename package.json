@@ -16,8 +16,9 @@
     "build": "npm run typecheck && electron-vite build",
     "test": "node scripts/test.mjs",
     "smoke": "npm run build && node scripts/smoke.mjs",
+    "icons:mac": "node scripts/build-icons.mjs",
     "pack:mac": "npm run build && electron-builder --mac --dir",
-    "pack:win": "npm run build && electron-builder --win nsis --x64",
+    "pack:win": "npm run build && electron-builder --win nsis --x64 -c.npmRebuild=false",
     "postinstall": "install-electron && electron-builder install-app-deps"
   },
   "dependencies": {

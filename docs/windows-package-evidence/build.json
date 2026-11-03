@@ -1,0 +1,90 @@
+{
+  "date": "2026-11-03",
+  "timezone": "Asia/Shanghai",
+  "buildHost": "macOS arm64",
+  "displayName": "zaizai",
+  "version": "0.1.0",
+  "electronVersion": "45.2.1",
+  "target": "Windows x64 NSIS",
+  "rebuildNativeDependencies": false,
+  "nativeDependency": {
+    "name": "better-sqlite3",
+    "version": "13.0.3",
+    "api": "Node-API 10",
+    "source": "prebuilds/win32-x64.node bundled with the locked npm dependency"
+  },
+  "unitTests": {
+    "passed": 33,
+    "failed": 0,
+    "platform": "macOS arm64"
+  },
+  "typecheck": "passed",
+  "productionBuild": "passed",
+  "installer": {
+    "path": "release/zaizai Setup 0.1.0.exe",
+    "bytes": 154031877,
+    "sha256": "63da13ca69b714967e49774f42e23b148d87e2e17db8f3e6e5f7b9080c7b1750",
+    "signature": "unsigned",
+    "nsisIntegrity": "passed (7-Zip)",
+    "embeddedAppArchiveIntegrity": "passed (7-Zip)",
+    "embeddedAppFilesMatchUnpacked": [
+      "zaizai.exe",
+      "resources/app.asar",
+      "resources/app.asar.unpacked/node_modules/better-sqlite3/prebuilds/win32-x64.node"
+    ]
+  },
+  "blockmap": {
+    "path": "release/zaizai Setup 0.1.0.exe.blockmap",
+    "bytes": 162099,
+    "sha256": "223741f5331cd596eeeb8e6a6780fddb079fd2fe8a1299fde8aefa018b55921d"
+  },
+  "staticChecks": {
+    "target": "win32-x64",
+    "productVersion": "0.1.0.0",
+    "productName": "zaizai",
+    "applicationExeSha256": "fd5c0a89a853cb2b28ec030a4653669ea2f4ff9749ab5ba74c66c4a93f2cce5c",
+    "applicationArchitecture": "PE32+ AMD64",
+    "signature": "unsigned",
+    "iconMatchesSource": true,
+    "iconSizes": [
+      16,
+      24,
+      32,
+      48,
+      64,
+      128,
+      256
+    ],
+    "sqliteNativeSha256": "e21e5efd71fba66578e95b62554d9028064a80dafd7221bf8a8ef155de8d240a",
+    "sqliteNativeArchitecture": "PE32+ AMD64",
+    "sqliteNativeMatchesDependency": true,
+    "sqliteNativeUnpacked": true,
+    "bundledAssetsMatchBuild": true,
+    "petSpriteSheets": [
+      "out/renderer/assets/all_done-fs2umBJx.png",
+      "out/renderer/assets/celebrate-CImrtxw3.png",
+      "out/renderer/assets/drink_water-DjdOWQT4.png",
+      "out/renderer/assets/idle-Lzw_8OKE.png",
+      "out/renderer/assets/react-QbSKCdyV.png",
+      "out/renderer/assets/remind-CKdXHIeV.png",
+      "out/renderer/assets/stretch-6zQqTjVk.png"
+    ],
+    "trayResourcesMatchSource": true,
+    "windowsRuntimeValidation": "not run (built on macOS arm64)"
+  },
+  "source": {
+    "baseCommit": "3c57988",
+    "includesUncommittedChanges": true
+  },
+  "windowsRuntimeChecks": {
+    "status": "not run",
+    "pending": [
+      "installation",
+      "application startup",
+      "SQLite read/write",
+      "system notifications",
+      "tray interaction",
+      "uninstallation"
+    ]
+  }
+}

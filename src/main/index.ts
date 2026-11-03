@@ -17,7 +17,7 @@ import { APP_URL, registerRendererProtocol } from './desktop/protocol'
 import { ReminderService } from './reminders/service'
 import { registerIPC } from './ipc'
 
-app.setName('Desktop Buddy M0')
+app.setName('zaizai')
 app.setAppUserModelId(app.isPackaged ? 'com.desktopbuddy.m0' : 'com.desktopbuddy.m0.dev')
 const dataPath = process.env.TIA_M0_DATA_DIR || join(app.getPath('appData'), app.isPackaged ? 'desktop-buddy-m0' : 'desktop-buddy-m0-dev')
 mkdirSync(dataPath, { recursive: true })

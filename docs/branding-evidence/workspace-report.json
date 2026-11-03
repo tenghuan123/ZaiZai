@@ -1,0 +1,86 @@
+{
+  "startedAt": "2026-11-03T03:34:30.042Z",
+  "runDirectory": "./.cache/m2-runs/packaged-1793676870042",
+  "executablePath": "./release/mac-arm64/zaizai.app/Contents/MacOS/zaizai",
+  "checks": [
+    "native window and tray created; SQLite opened",
+    "expanded ↔ compact changes actual native window bounds",
+    "main process rejects invalid calendar date with a typed error",
+    "real SQLite write failure returns STORAGE, preserves UI draft, and creates no task",
+    "reminder dispatched from main process while native window hidden and renderer busy",
+    "single-instance relaunch restores the original hidden window",
+    "bubble completion saves state and dismisses active reminder",
+    "typed preload task command retries use one persisted ID; removal updates the same day projection",
+    "concurrent reads and writes return the revision belonging to each snapshot",
+    "explicit quit exits process; restart restores SQLite data and compact preference without repeating old reminder",
+    "UI quick create, edit date/time/reminder, future completion and undo preserve one occurrence ID and today progress",
+    "UI editor keeps draft on real storage failure and version conflict; explicit reload permits a fresh edit",
+    "UI daily plans add/remove/deduplicate slots, edit stable IDs, pause/resume, cancel ending and end while preserving completed history",
+    "UI history migration keeps source date and ID; unrun days show no generated record; date changes and compact mode retain today statistics",
+    "controlled main clock crosses a day: UI follows today, creates two fresh instances and preserves yesterday completion and pending facts",
+    "M2 UI restart restores moved task once, completed plan history, ended state and deletion tombstones"
+  ],
+  "errors": [],
+  "startupMs": 5875,
+  "runtime": {
+    "electron": "45.2.1",
+    "chrome": "156.0.8078.75",
+    "node": "24.22.1"
+  },
+  "notification": {
+    "state": "submitted",
+    "error": null
+  },
+  "metricsNote": "Process working sets include shared pages; sampled after a deliberately busy renderer. Not an idle resource budget measurement.",
+  "metrics": [
+    {
+      "type": "Browser",
+      "memory": {
+        "workingSetSize": 176672,
+        "peakWorkingSetSize": 186160
+      },
+      "cpu": {
+        "cumulativeCPUUsage": 1.061441,
+        "percentCPUUsage": 0,
+        "idleWakeupsPerSecond": 0
+      }
+    },
+    {
+      "type": "GPU",
+      "memory": {
+        "workingSetSize": 170784,
+        "peakWorkingSetSize": 183536
+      },
+      "cpu": {
+        "cumulativeCPUUsage": 0.426788,
+        "percentCPUUsage": 0,
+        "idleWakeupsPerSecond": 0
+      }
+    },
+    {
+      "type": "Utility",
+      "memory": {
+        "workingSetSize": 41072,
+        "peakWorkingSetSize": 49296
+      },
+      "cpu": {
+        "cumulativeCPUUsage": 0.068885,
+        "percentCPUUsage": 0,
+        "idleWakeupsPerSecond": 0
+      }
+    },
+    {
+      "type": "Tab",
+      "memory": {
+        "workingSetSize": 223776,
+        "peakWorkingSetSize": 223776
+      },
+      "cpu": {
+        "cumulativeCPUUsage": 9.014415,
+        "percentCPUUsage": 0,
+        "idleWakeupsPerSecond": 0
+      }
+    }
+  ],
+  "status": "passed"
+}

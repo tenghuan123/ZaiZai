@@ -34,7 +34,7 @@ export class DesktopWindow {
     const display = screen.getDisplayMatching(desired)
     this.expectedRenderer = new URL(options.rendererUrl)
     this.window = new BrowserWindow({
-      ...fitToWorkArea(desired, display.workArea), title: '桌面伙伴',
+      ...fitToWorkArea(desired, display.workArea), title: 'zaizai',
       frame: false, transparent: true, resizable: false, maximizable: false,
       fullscreenable: false, alwaysOnTop: settings.alwaysOnTop, show: false,
       hasShadow: false, backgroundColor: '#00000000',

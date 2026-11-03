@@ -1,0 +1,33 @@
+{
+  "date": "2026-11-03",
+  "timezone": "Asia/Shanghai",
+  "platform": "macOS arm64",
+  "displayName": "zaizai",
+  "version": "0.1.0",
+  "bundleIdentifier": "com.desktopbuddy.m0",
+  "bundleIcon": "icon.icns",
+  "iconSha256": "3a3eb13abf8d80d44072a89ee3716b5c576f01378a82a00f9b2f0187b6b51a6a",
+  "bundledIconMatchesSource": true,
+  "codesignVerification": "passed (deep, strict)",
+  "signature": "ad-hoc",
+  "notarized": false,
+  "unitTests": {
+    "passed": 33,
+    "failed": 0
+  },
+  "packagedUiChecks": {
+    "passed": 39,
+    "failed": 0
+  },
+  "notificationSubmission": "submitted",
+  "archive": {
+    "path": "release/zaizai-0.1.0-mac-arm64.zip",
+    "bytes": 156321902,
+    "sha256": "3d6650206fa38f7d37e4feba89c91b9f57e6682a996f3f1d4f7b4a787832ac99",
+    "zipIntegrity": "passed"
+  },
+  "source": {
+    "baseCommit": "3c57988",
+    "includesUncommittedChanges": true
+  }
+}
