@@ -1,0 +1,40 @@
+{
+  "checkedAt": "2026-11-03T09:24:57.824Z",
+  "archives": [
+    {
+      "path": "release/mac-arm64/zaizai.app/Contents/Resources/app.asar",
+      "currentBuildMatches": true,
+      "petSheets": 28
+    },
+    {
+      "path": "release/win-unpacked/resources/app.asar",
+      "currentBuildMatches": true,
+      "petSheets": 28
+    }
+  ],
+  "artifacts": [
+    {
+      "path": "release/zaizai-0.1.0-mac-arm64.zip",
+      "bytes": 199755485,
+      "sha256": "3eb9258c3e7d4ed608af88b58625f37f45a31c4b9af739fd8a8340396f9803be"
+    },
+    {
+      "path": "release/zaizai Setup 0.1.0.exe",
+      "bytes": 196797906,
+      "sha256": "14decd979a3275cb02da76892e2c3bf32b03a18142041afbf73894ed5cc3c02d"
+    }
+  ],
+  "windowsNativeAddon": {
+    "path": "release/win-unpacked/resources/app.asar.unpacked/node_modules/better-sqlite3/prebuilds/win32-x64.node",
+    "architecture": "x64 PE",
+    "matchesLockedDependency": true
+  },
+  "macAdHocSignature": "verified; not notarized",
+  "windowsInstallerIntegrity": "installer and embedded archive passed 7-Zip; unsigned",
+  "embeddedFilesMatchUnpacked": [
+    "zaizai.exe",
+    "resources/app.asar",
+    "resources/app.asar.unpacked/node_modules/better-sqlite3/prebuilds/win32-x64.node"
+  ],
+  "macZipIntegrity": "passed"
+}

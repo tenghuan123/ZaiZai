@@ -10,6 +10,7 @@ const desktop: DesktopAPI = {
   tasks: {
     getDay: date => invoke(channels.day, date), getHistoryDates: range => invoke(channels.history, range),
     createOnce: input => invoke(channels.createOnce, input), updateOnce: input => invoke(channels.updateOnce, input),
+    setPriority: (ref, priority) => invoke(channels.priority, { ref, priority }),
     setCompleted: (ref, completed) => invoke(channels.complete, { ref, completed }),
     removeOccurrence: ref => invoke(channels.remove, ref), moveToToday: ref => invoke(channels.move, ref)
   },
@@ -22,6 +23,13 @@ const desktop: DesktopAPI = {
   acknowledgeReminder: value => invoke(channels.acknowledge, value), setMode: value => invoke(channels.mode, value),
   hide: () => invoke(channels.hide), requestClose: () => invoke(channels.close), quit: () => invoke(channels.quit),
   beginDrag: () => invoke(channels.dragStart), endDrag: () => invoke(channels.dragEnd),
+  beginResize: () => invoke(channels.resizeStart), endResize: () => invoke(channels.resizeEnd),
+  previewReminderSound: () => invoke(channels.previewSound), showContextMenu: () => invoke(channels.contextMenu),
+  subscribeSound: listener => {
+    const handler = (): void => listener()
+    ipcRenderer.on(channels.playSound, handler)
+    return () => { ipcRenderer.removeListener(channels.playSound, handler) }
+  },
   subscribe: listener => {
     const handler = (_event: Electron.IpcRendererEvent, event: AppEvent): void => listener(event)
     ipcRenderer.on(channels.changed, handler)

@@ -1,6 +1,6 @@
 # 桌面任务助手数据模型
 
-版本：0.3。更新日期：2026-11-03。对应 [应用架构](architecture.md)。六张核心表及 M1 任务事务已落实，SQLite `user_version=2`；验证证据与界面边界见 [M1 验证记录](m1-verification.md)。本次新增的周/月计划、任务优先级、提醒声音、开机自启和自定义窗口尺寸字段为目标设计，尚未进入当前数据库迁移、IPC 或正式应用。
+版本：0.3。更新日期：2026-11-03。对应 [应用架构](architecture.md)。六张核心表与 SQLite `user_version=3` 已实现，周/月计划、优先级和桌面偏好已接入迁移与类型化 IPC。验收范围见 [v0.3 验证记录](v0.3-verification.md)。
 
 首版保存当前重复规则和真实产生的任务实例。一次性任务只占一条实例，重复任务保留独立计划及稳定时间槽。完成状态、历史展示和提醒资格全部从同一份实例记录取得。
 
@@ -37,9 +37,7 @@ erDiagram
 | `creation_key` | 创建请求唯一键，用于超时重试去重 |
 | `title` | 当前计划名称 |
 | `state` | `active`、`paused`、`ended` |
-| `repeat_type` | `daily`（每天）、`weekly`（每周指定星期）、`monthly`（每月指定日期），默认 `daily` |
-| `days_of_week` | 周计划生效星期 JSON 数组（`[1..7]`，周一=1，周日=7）；`daily` / `monthly` 时可空 |
-| `days_of_month` | 月计划生效日期 JSON 数组（`[1..31]` 或月末标识）；`daily` / `weekly` 时可空 |
+| `recurrence` | JSON 判别联合：`{type:'daily'}`、`{type:'weekly',weekdays:[1..7]}` 或 `{type:'monthly',days:[1..31],lastDay:boolean}`；周一=1，月日期可与月末选项组合，重合不重复生成 |
 | `priority` | `urgent`（紧急优先）或 `normal`（普通日常），默认 `normal` |
 | `start_date`、`end_date` | 日历日期范围，结束日期可空且包含当天 |
 | `reminder_enabled` | 新生成或尚未到点实例的提醒偏好 |
@@ -48,7 +46,7 @@ erDiagram
 | `version` | 当前规则及状态版本 |
 | `created_at_ms`、`updated_at_ms` | 创建与修改时间 |
 
-首次创建且开始日期为今天时，允许生成今天已经到点的安排，因此初始生效下界可取今天本地日界线。编辑或恢复时将下界设为操作时刻；已有到点实例不受新下界影响。未来日期还需同时满足 `start_date`、`end_date` 及 `repeat_type` 周期匹配条件（周计划匹配星期、月计划匹配日期）。
+首次创建且开始日期为今天时，允许生成今天已经到点的安排，因此初始生效下界可取今天本地日界线。编辑或恢复时将下界设为操作时刻；已有到点实例不受新下界影响。未来日期还需同时满足 `start_date`、`end_date` 及 `recurrence` 周期匹配条件（周计划匹配星期、月计划匹配日期）。
 
 ### 2.2 plan_slots 稳定时间槽
 
@@ -75,6 +73,7 @@ erDiagram
 | `schedule_zone`、`due_at_ms` | 当前执行时间的时区与 UTC 解析值；无时间时到期值为空 |
 | `title`、`scene` | 实例内容快照，不动态联表覆盖历史 |
 | `priority` | `urgent`（🔥 紧急，待办列表自动置顶排序）或 `normal`（普通日常），默认 `normal` |
+| `priority_override` | 行内改优先级后的单次覆盖标记，协调计划时保留该选择；不阻止周期变更取消尚未到点安排 |
 | `status` | `pending`、`completed`、`cancelled` |
 | `cancel_reason` | 本次删除、计划暂停、计划变更或计划结束；未取消时为空 |
 | `manual_override` | 是否经过手动迁移，防止被计划协调器覆盖 |
@@ -125,7 +124,7 @@ erDiagram
 - **提醒摇铃声音开关（`reminderSoundEnabled: boolean`，默认 `true`）**
 - **开机自启动开关（`openAtLogin: boolean`，默认 `false`）**
 - **窗口置顶 / 仅留在桌面模式（`alwaysOnTop: boolean`）**
-- **展开态自定义窗口宽高尺寸（`expandedSize: { width: number, height: number }`，默认 `356 × 560`）**
+- **展开态自定义窗口宽高尺寸（`expandedSize: { width: number, height: number }`，默认 `356 × 480`，大号预设 `440 × 610`）**
 - 上次完整或仅桌宠模式（`displayMode`）、窗口逻辑坐标（`position`）、当前宠物 ID（`petId`），以及按宠物 ID 保存的显示参数覆盖值（`petDisplay`）。
 
 设置字段有明确类型和版本；不接受任意键名与文件路径写入。
@@ -226,4 +225,11 @@ WHERE status = 'pending' AND reminder_enabled = 1 AND due_at_ms IS NOT NULL;
 
 M0 提醒转换为一次性实例，保留原 ID、UTC 到期毫秒、完成时间和设置。原来的已提交、失败和结果不明记录转换到提醒表，领取中改为 `uncertain`；旧 `missed` 转成已处理的 `unavailable/M0_MISSED`，避免回拨后重发。M0 未保存 IANA 时区，因此来源日期和时间按升级时电脑时区推导，不能还原原始时区；精确 UTC 到期值保持原值，不伪造过去日期激活记录。
 
-设置表使用经过运行时校验的单例 JSON：`version`、`offworkTime`、`defaultReminderEnabled`、`alwaysOnTop`、`displayMode`、`position`、`petId`、`petDisplay`。UI 更新仅允许三个业务偏好 `offworkTime`、`defaultReminderEnabled`、`alwaysOnTop`，携带 `expectedVersion`；窗口坐标与模式由宿主保存。宠物字段为后续资源批次保留，当前不开放 UI 写入。
+设置表使用经过运行时校验的单例 JSON：`version`、`offworkTime`、`defaultReminderEnabled`、`alwaysOnTop`、`openAtLogin`、`reminderSoundEnabled`、`expandedSize`、`displayMode`、`position`、`petId`、`petDisplay`。UI 更新允许下班时间、默认提醒、置顶、自启、声音、展开尺寸及内置角色 ID，携带 `expectedVersion`；窗口坐标与模式由宿主保存，用户素材参数不开放任意写入。
+
+
+## 8 v2 → v3 升级
+
+`003-scheduling.ts` 为计划增加优先级和周期 JSON，为实例增加优先级与单次覆盖标记，并补齐三项新偏好。旧计划使用每日规则，旧实例优先级为普通，已有完成、取消、迁移、提醒记录、角色与其他设置保留。升级先备份，再在一个事务中更改结构与版本；失败保留可恢复旧库。新建库和 M0 旧库同样经过该版本序列。
+
+主进程统一验证周期类型、日期范围、非空星期/日期和去重；月末通过当前日历月的真实天数计算。优先级修改不改变 `schedule_version`，不会重新触发已经处理的提醒。缺省的新请求字段沿用每日/普通默认，更新时省略则保留原字段，以兼容现有调用。

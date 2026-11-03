@@ -3,8 +3,9 @@ import { randomUUID } from 'node:crypto'
 import { closeSync, fsyncSync, openSync, writeFileSync } from 'node:fs'
 import { createTaskModel, importM0 } from './migrations/002-task-model'
 import { SettingsRepository } from '../settings/repository'
+import { addSchedulingPreferences } from './migrations/003-scheduling'
 
-export const schemaVersion = 2
+export const schemaVersion = 3
 export class MigrationError extends Error {
   constructor(readonly databasePath: string, readonly backupPath: string | null, cause: unknown) {
     super(`本地数据升级失败，原库未重置。数据库：${databasePath}。${backupPath ? `迁移前备份：${backupPath}。` : ''}\n${cause instanceof Error ? cause.message : String(cause)}`, { cause })
@@ -32,8 +33,11 @@ export class Connection {
           backupPath = destination
         }
         db.transaction(() => {
-          createTaskModel(db)
-          if (current === 1) importM0(db, timeZone)
+          if (current < 2) {
+            createTaskModel(db)
+            if (current === 1) importM0(db, timeZone)
+          }
+          if (current < 3) addSchedulingPreferences(db)
           new SettingsRepository(db).getSettings()
           db.pragma(`user_version = ${schemaVersion}`)
         })()

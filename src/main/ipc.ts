@@ -4,7 +4,7 @@ import { channels } from '../shared/contracts'
 import type { AppResult, Snapshot } from '../shared/contracts'
 import type { DesktopWindow } from './desktop/window'
 import type { TaskService } from './tasks/service'
-import type { SettingsRepository } from './settings/repository'
+import type { SettingsService } from './settings/service'
 import type { ReminderService } from './reminders/service'
 import type { ReminderRepository } from './reminders/repository'
 import type { NativeNotifications } from './desktop/notifications'
@@ -12,10 +12,11 @@ import { AppError } from './domain/errors'
 import { fields, identifier, object } from './domain/validation'
 
 interface Context {
-  desktop: DesktopWindow; tasks: TaskService; settings: SettingsRepository; reminders: ReminderService
+  desktop: DesktopWindow; tasks: TaskService; settings: SettingsService; reminders: ReminderService
   records: ReminderRepository; notifications: NativeNotifications; snapshot: () => Snapshot
   metadata: () => { sessionId: string; revision: number }; changed: () => void; quit: () => void
   reportError: (error: unknown) => void
+  showContextMenu: () => void
 }
 export function registerIPC(context: Context): void {
   const { desktop, tasks, settings, reminders, records, notifications, changed } = context
@@ -51,6 +52,10 @@ export function registerIPC(context: Context): void {
   handle(channels.history, input => tasks.getHistoryDates(input))
   handle(channels.createOnce, input => afterWrite(() => tasks.createOnce(input)))
   handle(channels.updateOnce, input => afterWrite(() => tasks.updateOnce(input)))
+  handle(channels.priority, input => {
+    const value = object(input); fields(value, ['ref', 'priority'])
+    return afterWrite(() => tasks.setPriority(value.ref, value.priority))
+  })
   handle(channels.complete, input => {
     const value = object(input); fields(value, ['ref', 'completed'])
     const result = afterWrite(() => tasks.setCompleted(value.ref, value.completed))
@@ -75,11 +80,7 @@ export function registerIPC(context: Context): void {
     return afterWrite(() => tasks.setPaused(value.id, value.paused))
   })
   handle(channels.endPlan, input => afterWrite(() => tasks.endPlan(input)))
-  handle(channels.settings, input => {
-    const result = afterWrite(() => settings.updateFromUI(input))
-    sideEffect(() => desktop.applyAlwaysOnTop(result.alwaysOnTop))
-    return result
-  })
+  handle(channels.settings, input => afterWrite(() => settings.update(input)))
   handle(channels.acknowledge, input => {
     const id = identifier(input)
     afterWrite(() => records.acknowledge(id, Date.now()))
@@ -94,4 +95,8 @@ export function registerIPC(context: Context): void {
   handle(channels.quit, () => { setImmediate(context.quit) })
   handle(channels.dragStart, () => desktop.beginDrag())
   handle(channels.dragEnd, () => desktop.endDrag())
+  handle(channels.resizeStart, () => desktop.beginResize())
+  handle(channels.resizeEnd, () => desktop.endResize(true))
+  handle(channels.previewSound, () => desktop.playReminderSound())
+  handle(channels.contextMenu, context.showContextMenu)
 }

@@ -4,10 +4,11 @@ import { BUILT_IN_PET_ID, isBuiltInPetId } from '../../shared/pet'
 import { AppError, checkVersion } from '../domain/errors'
 import { boolean, fields, object, version } from '../domain/validation'
 import { validTime } from '../domain/time'
+import { MIN_SIZE, MAX_SIZE, STANDARD_SIZE } from '../../shared/window'
 
 export const defaultSettings: Settings = {
   version: 1, displayMode: 'expanded', alwaysOnTop: true, offworkTime: '18:00', defaultReminderEnabled: true,
-  position: null, petId: BUILT_IN_PET_ID, petDisplay: {}
+  position: null, petId: BUILT_IN_PET_ID, petDisplay: {}, openAtLogin: false, reminderSoundEnabled: true, expandedSize: STANDARD_SIZE
 }
 export function validateSettings(input: unknown): Settings {
   const value = object(input)
@@ -15,6 +16,14 @@ export function validateSettings(input: unknown): Settings {
   version(value.version)
   if (value.displayMode !== 'expanded' && value.displayMode !== 'compact') throw new AppError('VALIDATION', '窗口模式不正确。')
   boolean(value.alwaysOnTop, 'alwaysOnTop'); boolean(value.defaultReminderEnabled, 'defaultReminderEnabled')
+  boolean(value.openAtLogin, 'openAtLogin'); boolean(value.reminderSoundEnabled, 'reminderSoundEnabled')
+  const size = object(value.expandedSize)
+  fields(size, ['width', 'height'])
+  for (const key of ['width', 'height'] as const) {
+    if (typeof size[key] !== 'number' || !Number.isInteger(size[key]) || size[key] < MIN_SIZE[key] || size[key] > MAX_SIZE[key]) {
+      throw new AppError('VALIDATION', '窗口尺寸超出可用范围。', 'expandedSize')
+    }
+  }
   if (value.offworkTime !== null) validTime(value.offworkTime, 'offworkTime')
   if (value.position !== null) {
     const position = object(value.position)
@@ -38,7 +47,7 @@ export function validateSettings(input: unknown): Settings {
   return value as unknown as Settings
 }
 export class SettingsRepository {
-  constructor(private readonly db: Database.Database) {}
+  constructor(readonly db: Database.Database) {}
   getSettings(): Settings {
     const row = this.db.prepare('SELECT value FROM app_settings WHERE id=1').get() as { value: string }
     try {
@@ -61,7 +70,7 @@ export class SettingsRepository {
     const value = object(input)
     fields(value, ['expectedVersion', 'patch'])
     const patch = object(value.patch)
-    fields(patch, ['offworkTime', 'defaultReminderEnabled', 'alwaysOnTop', 'petId'])
+    fields(patch, ['offworkTime', 'defaultReminderEnabled', 'alwaysOnTop', 'petId', 'openAtLogin', 'reminderSoundEnabled', 'expandedSize'])
     if ('petId' in patch && !isBuiltInPetId(patch.petId)) throw new AppError('VALIDATION', '请选择已内置的桌宠角色。', 'petId')
     return this.updateSettings(patch, version(value.expectedVersion))
   }

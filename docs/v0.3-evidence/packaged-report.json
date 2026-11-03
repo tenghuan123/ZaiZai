@@ -1,0 +1,23 @@
+{
+  "directory": "/Users/tenghuan/programming/vjshi/studyDemo/tia-windows-plugins/.cache/scheduling-packaged/1793697271418",
+  "executablePath": "/Users/tenghuan/programming/vjshi/studyDemo/tia-windows-plugins/release/mac-arm64/zaizai.app/Contents/MacOS/zaizai",
+  "checks": [
+    "packaged app opens SQLite, tray and all sprite assets; urgent task and size preset work",
+    "real macOS login service accepted enable and disable; original system preference restored",
+    "pet context menu creates native layer, size, login and sound controls",
+    "packaged restart restores saved task and custom native size"
+  ],
+  "errors": [],
+  "originalLogin": {
+    "openAtLogin": false,
+    "status": "not-found"
+  },
+  "loginAttempt": {
+    "ok": true,
+    "actual": {
+      "openAtLogin": true,
+      "status": "enabled"
+    }
+  },
+  "status": "passed"
+}

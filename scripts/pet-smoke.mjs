@@ -116,7 +116,7 @@ try {
   await ready('idle')
   await page.screenshot({ path: join(directory, 'compact.png'), omitBackground: true })
   await page.getByRole('button', { name: '展开清单', exact: true }).click()
-  assert.equal((await snapshot()).window.bounds.height, 560)
+  assert.equal((await snapshot()).window.bounds.height, 480)
   await page.waitForFunction(() => document.querySelector('.card')?.inert === false && !document.querySelector('.widget')?.classList.contains('compact'))
   await page.locator('.card').evaluate(async element => { await Promise.all(element.getAnimations().map(animation => animation.finished)) })
   report.checks.push('the actual compact and expanded native window sizes still fit the new character')

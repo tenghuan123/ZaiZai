@@ -1,6 +1,6 @@
 # 桌面任务助手应用架构
 
-版本：0.3。更新日期：2026-11-02。状态：M1 数据与任务服务、M2 任务编辑/计划管理/日期历史界面已接通。验证范围见 [M1](m1-verification.md)、[M2 验证记录](m2-verification.md)，原生平台缺口仍见 [M0 验证记录](m0-verification.md)。
+版本：0.3。更新日期：2026-11-03。状态：M1 数据与任务服务、M2 任务编辑/计划管理/日期历史界面已接通。验证范围见 [M1](m1-verification.md)、[M2 验证记录](m2-verification.md)，原生平台缺口仍见 [M0 验证记录](m0-verification.md)。
 
 采用 **Electron + React + TypeScript + SQLite**，以当前优化后的 [HTML 原型](dual-platform-prototype.html) 为界面与交互基线。任务和提醒在 Electron 主进程中运行，React 负责界面与宠物表现，SQLite 是持久业务数据的唯一来源。一个主要透明窗口承载宠物与任务卡片。
 
@@ -149,7 +149,7 @@ docs/
 | tasks | `createOnce(input)`、`updateOnce(input)` | 新增或编辑一次性任务 |
 | tasks | `setCompleted(ref, completed)` | 设置期望完成状态，不提供反转状态的 toggle 命令 |
 | tasks | `removeOccurrence(ref)`、`moveToToday(ref)` | 仅操作本次实例，幂等处理重复请求 |
-| plans | `list()`、`create(input)`、`update(input)` | 每日计划及时间槽配置 |
+| plans | `list()`、`create(input)`、`update(input)` | 日/周/月周期及时间槽配置 |
 | plans | `setPaused(id, paused)`、`end(id)` | 改变后续安排，保留已有发生记录 |
 | reminders | `acknowledge(ids)`、`locate(ids)` | 结束气泡呈现或定位，均不代表完成任务 |
 | settings | `update(patch)` | 只接受定义好的设置字段 |
@@ -285,7 +285,7 @@ sequenceDiagram
 
 启动顺序为单实例检查 → 打开数据库并迁移 → 注册资源与 IPC → 协调今日 → 创建后台入口与窗口 → 启动提醒。迁移失败时保持原数据并显示恢复入口，不创建空库伪装成功。
 
-窗口展开尺寸以原型的 356 × 560 逻辑像素为起点；仅桌宠时根据宠物、摘要和气泡包围框缩小原生窗口。提醒气泡变高、打开编辑器或资源库时，先切换到可容纳内容的布局，再显示内容。收起动画结束再缩小边界，展开则先扩大边界再播放动画，避免裁剪。
+窗口展开标准尺寸为 356 × 480 逻辑像素，大号预设为 440 × 610；上次展开尺寸持久化到设置；仅桌宠时根据宠物、摘要和气泡包围框缩小原生窗口。提醒气泡变高、打开编辑器或资源库时，先切换到可容纳内容的布局，再显示内容。收起动画结束再缩小边界，展开则先扩大边界再播放动画，避免裁剪。
 
 当前清单卡片常驻并通过裁剪、透明度和位移完成 340ms 过渡；收起后用 `inert` 排除键盘和指针交互，微缩胶囊淡入。主进程收起时延后缩至 356 × 224，反向展开会取消尚未执行的缩窗计时器；退出同样清理计时器。
 
@@ -353,3 +353,13 @@ sequenceDiagram
 Windows 通知身份、macOS 通知签名和旧通知点击能力按锁定版本验证。首版必须验证运行中及后台隐藏时的点击定位；退出后没有驻留调度器，旧通知如触发系统冷启动则进入正常启动流程并校验任务是否仍有效。[通知平台差异](https://www.electronjs.org/docs/latest/tutorial/notifications)、[通知 API](https://www.electronjs.org/docs/latest/api/notification)
 
 架构设计完成后可按上述顺序建立应用。当前文档确定职责和规则，不把原型读取、接口草案或官方 API 能力说明当作双平台实现验收结果。
+
+
+## v0.3 调度与偏好接入
+
+- `domain/recurrence.ts` 在统一候选入口匹配日/周/月规则，供今日协调、未来预览和实例落库共用。`tasks.setPriority` 只修改本次优先级，计划规则与提醒安排版本不变。
+- `SettingsService` 负责 UI/系统菜单偏好写入：先校验并更新事务内设置，再应用系统登录项与窗口副作用。系统拒绝或窗口失败时回滚数据库，并尝试恢复已改变的原生状态；错误可见。
+- `SystemLoginItems` 只在安装版注册登录项，检查 macOS 服务状态或 Windows 启动项生效状态；启动时读取系统设置，尊重用户在系统中做的调整。
+- 透明窗口保持 `resizable:false`，由右下角指针手势启动主进程 cursor/bounds 调整，释放后保存尺寸；避免依赖透明窗不可靠的原生边框缩放。尺寸约束为 356×480 至 520×780，并适配可用显示区域。
+- 主进程领取一批提醒后按声音偏好发送一次 `reminders:play-sound`，renderer 用 Web Audio 播放原型音色；系统通知设置 `silent:true` 防止重复音效或绕过静音。该信号不控制任务或通知持久状态，主动试听不受静音开关限制。
+- 设置使用覆盖式原生 `<dialog>`，保留任务列表和输入位置；失败保留设置入口并说明原因。标准尺寸下内容可滚动，不扩大原生窗口来显示长编辑器。

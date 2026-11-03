@@ -23,17 +23,16 @@ export class TaskQueries {
         // Query by source identity, even if a saved exception was moved to another day or cancelled.
         if (due === null || this.repository.byIdentity(plan.id, date, slot.id)) continue
         items.push({ kind: 'preview', ref: { planId: plan.id, sourceDate: date, slotId: slot.id, expectedPlanVersion: plan.version },
-          title: plan.title, scene: plan.scene, scheduledDate: date, scheduledTime: slot.localTime,
+          title: plan.title, priority: plan.priority, scene: plan.scene, scheduledDate: date, scheduledTime: slot.localTime,
           scheduleZone: clock.timeZone, dueAtMs: due, reminderEnabled: plan.reminderEnabled })
       }
     }
     items.sort((a, b) => {
       const x = a.kind === 'saved' ? a.occurrence : a
       const y = b.kind === 'saved' ? b.occurrence : b
-      if (a.kind === 'saved' && b.kind === 'saved' && a.occurrence.status === 'completed' && b.occurrence.status === 'completed') {
-        return (b.occurrence.completedAtMs ?? 0) - (a.occurrence.completedAtMs ?? 0)
-      }
-      return (x.scheduledTime ?? '99:99').localeCompare(y.scheduledTime ?? '99:99') || x.title.localeCompare(y.title)
+      // The day keeps schedule order; the completed tab sorts its own subset by completion time.
+      return Number(y.priority === 'urgent') - Number(x.priority === 'urgent') ||
+        (x.scheduledTime ?? '99:99').localeCompare(y.scheduledTime ?? '99:99') || x.title.localeCompare(y.title)
     })
     return { date, kind, activated: this.repository.isActivated(date), items,
       progress: progress(items.map(item => item.kind === 'saved' ? item.occurrence : { status: 'pending' })) }

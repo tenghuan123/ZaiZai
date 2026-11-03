@@ -1,5 +1,7 @@
 import { BrowserWindow, dialog, screen } from 'electron'
-import type { DisplayMode, WindowState } from '../../shared/contracts'
+import type { DisplayMode, Settings, WindowState } from '../../shared/contracts'
+import { channels } from '../../shared/contracts'
+import { MIN_SIZE, MAX_SIZE } from '../../shared/window'
 import type { SettingsRepository } from '../settings/repository'
 import { fitToWorkArea, WINDOW_SIZE } from './geometry'
 import { MENU_TRANSITION_MS } from '../../shared/motion'
@@ -22,13 +24,14 @@ export class DesktopWindow {
   private publishedVisibility = false
   private dragTimer: ReturnType<typeof setInterval> | undefined
   private compactTimer: ReturnType<typeof setTimeout> | undefined
+  private resizeTimer: ReturnType<typeof setInterval> | undefined
   private readonly expectedRenderer: URL
 
   constructor(private readonly store: SettingsRepository, private readonly options: WindowOptions) {
     const settings = store.getSettings()
     this.mode = settings.displayMode
     const area = screen.getPrimaryDisplay().workArea
-    const size = WINDOW_SIZE[this.mode]
+    const size = this.mode === 'expanded' ? settings.expandedSize : WINDOW_SIZE.compact
     const desired = { ...size, x: settings.position?.x ?? area.x + area.width - size.width - 40,
       y: settings.position?.y ?? area.y + 80 }
     const display = screen.getDisplayMatching(desired)
@@ -37,9 +40,10 @@ export class DesktopWindow {
       ...fitToWorkArea(desired, display.workArea), title: 'zaizai',
       frame: false, transparent: true, resizable: false, maximizable: false,
       fullscreenable: false, alwaysOnTop: settings.alwaysOnTop, show: false,
+      skipTaskbar: !settings.alwaysOnTop,
       hasShadow: false, backgroundColor: '#00000000',
       webPreferences: { preload: options.preload, contextIsolation: true, nodeIntegration: false,
-        sandbox: true, backgroundThrottling: true }
+        sandbox: true, backgroundThrottling: true, autoplayPolicy: 'no-user-gesture-required' }
     })
     this.window.webContents.setWindowOpenHandler(() => ({ action: 'deny' }))
     this.window.webContents.on('will-navigate', (event, url) => {
@@ -51,7 +55,7 @@ export class DesktopWindow {
     })
     this.window.on('show', () => this.publishVisibility())
     this.window.on('hide', () => this.publishVisibility())
-    this.window.on('blur', () => this.endDrag())
+    this.window.on('blur', () => { this.endDrag(); this.endResize() })
     this.window.on('moved', () => this.savePosition())
     this.window.webContents.on('render-process-gone', (_event, details) => {
       options.log('renderer-gone', details)
@@ -85,11 +89,13 @@ export class DesktopWindow {
   setMode(mode: DisplayMode): void {
     if (this.mode === mode) return
     this.endDrag()
+    this.endResize()
     this.store.updateSettings({ displayMode: mode })
     clearTimeout(this.compactTimer)
     this.mode = mode
     const resize = (): void => {
-      const bounds = { ...this.window.getBounds(), ...WINDOW_SIZE[mode] }
+      const size = mode === 'expanded' ? this.store.getSettings().expandedSize : WINDOW_SIZE.compact
+      const bounds = { ...this.window.getBounds(), ...size }
       const area = screen.getDisplayMatching(bounds).workArea
       this.window.setBounds(fitToWorkArea(bounds, area))
     }
@@ -105,14 +111,21 @@ export class DesktopWindow {
     this.options.changed()
   }
 
-  setAlwaysOnTop(enabled: boolean): void {
-    this.store.updateSettings({ alwaysOnTop: enabled })
-    this.applyAlwaysOnTop(enabled)
+  private applyAlwaysOnTop(enabled: boolean): void {
+    this.window.setAlwaysOnTop(enabled)
+    this.window.setSkipTaskbar(!enabled)
   }
 
-  applyAlwaysOnTop(enabled: boolean): void {
-    this.window.setAlwaysOnTop(enabled)
-    this.options.changed()
+  applyPreferences(settings: Settings): void {
+    this.applyAlwaysOnTop(settings.alwaysOnTop)
+    if (this.mode === 'expanded') {
+      const bounds = { ...this.window.getBounds(), ...settings.expandedSize }
+      this.window.setBounds(fitToWorkArea(bounds, screen.getDisplayMatching(bounds).workArea))
+    }
+  }
+
+  playReminderSound(): void {
+    this.window.webContents.send(channels.playSound)
   }
 
   show(): void {
@@ -122,14 +135,14 @@ export class DesktopWindow {
     this.publishVisibility()
   }
 
-  hide(): void { this.endDrag(); this.window.hide(); this.publishVisibility() }
+  hide(): void { this.endDrag(); this.endResize(); this.window.hide(); this.publishVisibility() }
 
   private publishVisibility(): void {
     // Some packaged macOS windows omit native show/hide events, so commands also publish the actual state.
     const visible = this.window.isVisible()
     if (visible === this.publishedVisibility) return
     this.publishedVisibility = visible
-    if (!visible) this.endDrag()
+    if (!visible) { this.endDrag(); this.endResize() }
     this.options.log(visible ? 'window-shown' : 'window-hidden', this.state)
     this.options.changed()
   }
@@ -150,7 +163,7 @@ export class DesktopWindow {
   }
 
   beginDrag(): void {
-    if (this.dragTimer) return
+    if (this.dragTimer || this.resizeTimer) return
     const start = screen.getCursorScreenPoint()
     const bounds = this.window.getBounds()
     const startedAt = Date.now()
@@ -171,15 +184,49 @@ export class DesktopWindow {
     this.options.changed()
   }
 
+  beginResize(): void {
+    if (this.mode !== 'expanded' || this.resizeTimer || !this.window.isVisible()) return
+    this.endDrag()
+    const start = screen.getCursorScreenPoint(), bounds = this.window.getBounds(), startedAt = Date.now()
+    const area = screen.getDisplayMatching(bounds).workArea
+    this.resizeTimer = setInterval(() => {
+      if (Date.now() - startedAt > 15_000) { this.endResize(); return }
+      const cursor = screen.getCursorScreenPoint()
+      const width = Math.min(area.width, MAX_SIZE.width, Math.max(MIN_SIZE.width, bounds.width + cursor.x - start.x))
+      const height = Math.min(area.height, MAX_SIZE.height, Math.max(MIN_SIZE.height, bounds.height + cursor.y - start.y))
+      this.window.setBounds(fitToWorkArea({ ...bounds, width, height }, area))
+    }, 16)
+  }
+
+  endResize(reportFailure = false): void {
+    if (!this.resizeTimer) return
+    clearInterval(this.resizeTimer); this.resizeTimer = undefined
+    const { width, height } = this.window.getBounds()
+    let failure: unknown
+    try {
+      this.store.updateSettings({ expandedSize: { width: Math.max(MIN_SIZE.width, width), height: Math.max(MIN_SIZE.height, height) } })
+      this.savePosition()
+    } catch (error) {
+      failure = error
+      this.options.reportError(error)
+      this.applyPreferences(this.store.getSettings())
+    }
+    this.options.log('window-resized', this.state)
+    this.options.changed()
+    if (failure && reportFailure) throw failure
+  }
+
   keepOnScreen(): void {
     const bounds = this.window.getBounds()
     this.window.setBounds(fitToWorkArea(bounds, screen.getDisplayMatching(bounds).workArea))
   }
 
   private savePosition(): void {
-    if (this.quitting || this.dragTimer) return
+    if (this.quitting || this.dragTimer || this.resizeTimer) return
     try {
       const { x, y } = this.window.getBounds()
+      const saved = this.store.getSettings().position
+      if (saved?.x === x && saved.y === y) return
       this.store.updateSettings({ position: { x, y } })
     } catch (error) { this.options.reportError(error) }
   }
@@ -187,6 +234,7 @@ export class DesktopWindow {
   prepareToQuit(): void {
     clearTimeout(this.compactTimer)
     this.endDrag()
+    this.endResize()
     this.savePosition()
     this.quitting = true
   }

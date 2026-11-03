@@ -56,7 +56,7 @@ try {
   let state = await snapshot(page)
   assert.equal(state.diagnostics.trayReady, true)
   assert.equal(state.window.bounds.width, 356)
-  assert.equal(state.window.bounds.height, 560)
+  assert.equal(state.window.bounds.height, 480)
   report.runtime = state.diagnostics.versions
   report.checks.push('native window and tray created; SQLite opened')
   await page.screenshot({ path: join(runDirectory, 'expanded.png'), omitBackground: true })
@@ -69,7 +69,7 @@ try {
   assert.equal(nativeBounds.height, 224)
   await page.screenshot({ path: join(runDirectory, 'compact.png'), omitBackground: true })
   await page.getByRole('button', { name: '展开清单', exact: true }).click()
-  assert.equal((await snapshot(page)).window.bounds.height, 560)
+  assert.equal((await snapshot(page)).window.bounds.height, 480)
   report.checks.push('expanded ↔ compact changes actual native window bounds')
 
   const invalid = await page.evaluate(() => window.desktop.tasks.createOnce({ requestId: crypto.randomUUID(), title: 'bad input',

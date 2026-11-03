@@ -5,12 +5,13 @@ const occurrenceColumns = {
   id: 'id', creationKey: 'creation_key', planId: 'plan_id', slotId: 'slot_id', planVersion: 'plan_version',
   sourceDate: 'source_date', sourceTime: 'source_time', sourceZone: 'source_zone',
   scheduledDate: 'scheduled_date', scheduledTime: 'scheduled_time', scheduleZone: 'schedule_zone', dueAtMs: 'due_at_ms',
-  title: 'title', scene: 'scene', status: 'status', cancelReason: 'cancel_reason', manualOverride: 'manual_override',
+  title: 'title', priority: 'priority', priorityOverride: 'priority_override', scene: 'scene', status: 'status', cancelReason: 'cancel_reason', manualOverride: 'manual_override',
   reminderEnabled: 'reminder_enabled', scheduleVersion: 'schedule_version', completedAtMs: 'completed_at_ms',
   version: 'version', createdAtMs: 'created_at_ms', updatedAtMs: 'updated_at_ms'
 } as const
 const planColumns = {
   id: 'id', creationKey: 'creation_key', title: 'title', state: 'state', startDate: 'start_date', endDate: 'end_date',
+  priority: 'priority', recurrence: 'recurrence',
   reminderEnabled: 'reminder_enabled', scene: 'scene', effectiveFromMs: 'effective_from_ms', version: 'version',
   createdAtMs: 'created_at_ms', updatedAtMs: 'updated_at_ms'
 } as const
@@ -18,12 +19,12 @@ function select(columns: Record<string, string>): string {
   return Object.entries(columns).map(([key, column]) => `${column} AS ${key}`).join(',')
 }
 function bindings(value: object): Record<string, unknown> {
-  return Object.fromEntries(Object.entries(value).map(([key, entry]) => [key, typeof entry === 'boolean' ? Number(entry) : entry]))
+  return Object.fromEntries(Object.entries(value).map(([key, entry]) => [key, typeof entry === 'boolean' ? Number(entry) : key === 'recurrence' ? JSON.stringify(entry) : entry]))
 }
 const occurrenceSelect = select(occurrenceColumns)
 const planSelect = select(planColumns)
 function occurrence(row: Occurrence | undefined): Occurrence | undefined {
-  return row && { ...row, manualOverride: !!row.manualOverride, reminderEnabled: !!row.reminderEnabled }
+  return row && { ...row, priorityOverride: !!row.priorityOverride, manualOverride: !!row.manualOverride, reminderEnabled: !!row.reminderEnabled }
 }
 
 export class TaskRepository {
@@ -59,8 +60,8 @@ export class TaskRepository {
     this.db.prepare(`UPDATE task_occurrences SET ${entries.map(([key, col]) => `${col}=@${key}`)} WHERE id=@id`).run(bindings(item))
   }
   plans(): RepeatPlan[] {
-    return (this.db.prepare(`SELECT ${planSelect} FROM repeat_plans ORDER BY created_at_ms,id`).all() as RepeatPlan[])
-      .map(row => ({ ...row, reminderEnabled: !!row.reminderEnabled, slots: this.slots(row.id) }))
+    return (this.db.prepare(`SELECT ${planSelect} FROM repeat_plans ORDER BY created_at_ms,id`).all() as (Omit<RepeatPlan, 'recurrence'> & { recurrence: string })[])
+      .map(row => ({ ...row, recurrence: JSON.parse(row.recurrence) as RepeatPlan['recurrence'], reminderEnabled: !!row.reminderEnabled, slots: this.slots(row.id) }))
   }
   plan(id: string): RepeatPlan | undefined { return this.plans().find(plan => plan.id === id) }
   planByCreationKey(key: string): RepeatPlan | undefined { return this.plans().find(plan => plan.creationKey === key) }

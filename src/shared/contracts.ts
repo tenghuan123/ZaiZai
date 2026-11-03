@@ -1,4 +1,4 @@
-import type { CompletionResult, CreateOnceInput, CreatePlanInput, DayView, Occurrence, OccurrenceRef, RepeatPlan, UpdateOnceInput, UpdatePlanInput } from './tasks'
+import type { CompletionResult, CreateOnceInput, CreatePlanInput, DayView, Occurrence, OccurrenceRef, Priority, RepeatPlan, UpdateOnceInput, UpdatePlanInput } from './tasks'
 export type DisplayMode = 'expanded' | 'compact'
 export type DispatchState = 'pending' | 'claimed' | 'submitted' | 'failed' | 'unavailable' | 'uncertain'
 // Read-only presentation of a timed occurrence and its current dispatch. Never a second task record.
@@ -9,9 +9,10 @@ export interface Reminder {
 export interface Settings {
   version: number; displayMode: DisplayMode; alwaysOnTop: boolean; offworkTime: string | null
   defaultReminderEnabled: boolean; position: { x: number; y: number } | null
+  openAtLogin: boolean; reminderSoundEnabled: boolean; expandedSize: { width: number; height: number }
   petId: string; petDisplay: Record<string, { scale: number; anchorX: number; anchorY: number }>
 }
-export type SettingsPatch = Partial<Pick<Settings, 'offworkTime' | 'defaultReminderEnabled' | 'alwaysOnTop' | 'petId'>>
+export type SettingsPatch = Partial<Pick<Settings, 'offworkTime' | 'defaultReminderEnabled' | 'alwaysOnTop' | 'petId' | 'openAtLogin' | 'reminderSoundEnabled' | 'expandedSize'>>
 export interface WindowState {
   mode: DisplayMode; visible: boolean; alwaysOnTop: boolean; animationsPaused: boolean
   bounds: { x: number; y: number; width: number; height: number }
@@ -37,6 +38,7 @@ export interface DesktopAPI {
     getHistoryDates(range: { from: string; to: string }): Promise<AppResult<string[]>>
     createOnce(input: CreateOnceInput): Promise<AppResult<Occurrence>>
     updateOnce(input: UpdateOnceInput): Promise<AppResult<Occurrence>>
+    setPriority(ref: OccurrenceRef, priority: Priority): Promise<AppResult<Occurrence>>
     setCompleted(ref: OccurrenceRef, completed: boolean): Promise<AppResult<CompletionResult>>
     removeOccurrence(ref: OccurrenceRef): Promise<AppResult<Occurrence>>
     moveToToday(ref: OccurrenceRef): Promise<AppResult<Occurrence>>
@@ -56,13 +58,20 @@ export interface DesktopAPI {
   quit(): Promise<AppResult<void>>
   beginDrag(): Promise<AppResult<void>>
   endDrag(): Promise<AppResult<void>>
+  beginResize(): Promise<AppResult<void>>
+  endResize(): Promise<AppResult<void>>
+  previewReminderSound(): Promise<AppResult<void>>
+  showContextMenu(): Promise<AppResult<void>>
+  subscribeSound(listener: () => void): () => void
   subscribe(listener: (event: AppEvent) => void): () => void
 }
 export const channels = {
   bootstrap: 'app:bootstrap', day: 'tasks:get-day', history: 'tasks:history-dates', createOnce: 'tasks:create-once',
   updateOnce: 'tasks:update-once', complete: 'tasks:set-completed', remove: 'tasks:remove', move: 'tasks:move-today',
+  priority: 'tasks:set-priority',
   plans: 'plans:list', createPlan: 'plans:create', updatePlan: 'plans:update', pausePlan: 'plans:set-paused', endPlan: 'plans:end',
   settings: 'settings:update', acknowledge: 'reminders:acknowledge', mode: 'window:mode',
   hide: 'window:hide', close: 'window:request-close', quit: 'app:quit', dragStart: 'window:drag-start',
-  dragEnd: 'window:drag-end', changed: 'app:changed'
+  dragEnd: 'window:drag-end', resizeStart: 'window:resize-start', resizeEnd: 'window:resize-end',
+  previewSound: 'reminders:preview-sound', playSound: 'reminders:play-sound', contextMenu: 'window:context-menu', changed: 'app:changed'
 } as const

@@ -86,7 +86,7 @@ try {
   const empty = await page.getByText('这天还没有安排', { exact: true }).boundingBox()
   assert.ok(empty.y + empty.height <= baseline.listBottom)
   assert.equal(await page.locator('.selected-day-banner').count(), 0)
-  assert.equal(await page.getByLabel('新增待办', { exact: true }).getAttribute('placeholder'), '新增这一天的待办')
+  assert.equal(await page.getByLabel('新增待办', { exact: true }).getAttribute('placeholder'), '添加这一天的待办…')
   await page.screenshot({ path: join(directory, 'tomorrow-empty.png'), omitBackground: true })
   report.checks.push('selecting tomorrow closes the overlay, merges date/progress/return into one row, and leaves the full empty state and footer visible')
 

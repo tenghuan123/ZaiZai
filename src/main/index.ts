@@ -6,6 +6,8 @@ import { channels } from '../shared/contracts'
 import type { AppEvent, Snapshot } from '../shared/contracts'
 import { Connection, MigrationError } from './database/connection'
 import { SettingsRepository } from './settings/repository'
+import { SettingsService } from './settings/service'
+import { SystemLoginItems } from './desktop/login-items'
 import { TaskRepository } from './tasks/repository'
 import { TaskService } from './tasks/service'
 import { ReminderRepository } from './reminders/repository'
@@ -88,6 +90,13 @@ if (!app.requestSingleInstanceLock()) {
     connection = database
     const preferences = new SettingsRepository(database.db)
     settings = preferences
+    const loginItems = new SystemLoginItems()
+    if (app.isPackaged && ['darwin', 'win32'].includes(process.platform)) {
+      try {
+        const openAtLogin = loginItems.read()
+        if (openAtLogin !== preferences.getSettings().openAtLogin) preferences.updateSettings({ openAtLogin })
+      } catch (error) { reportError(error) }
+    }
     const taskRepository = new TaskRepository(database.db)
     const reminderRecords = new ReminderRepository(database.db)
     records = reminderRecords
@@ -102,6 +111,7 @@ if (!app.requestSingleInstanceLock()) {
       changed, quit, reportError, log
     })
     const window = desktop
+    const preferenceService = new SettingsService(preferences, loginItems, next => window.applyPreferences(next), reportError)
     notifications = new NativeNotifications(ids => {
       const target = ids.map(id => taskRepository.get(id)).find(item => item?.status === 'pending')
       focusedReminderId = target?.id ?? null
@@ -113,15 +123,17 @@ if (!app.requestSingleInstanceLock()) {
     const native = notifications
     reminders = new ReminderService(reminderRecords, taskService, async (items, reason) => {
       log('reminders-claimed', { ids: items.map(item => item.id), count: items.length, reason, windowVisible: window.state.visible })
+      if (preferences.getSettings().reminderSoundEnabled) window.playReminderSound()
       return native.submit(items, reason)
     }, changed, reportError)
     const scheduler = reminders
     tray = new DesktopTray(app.isPackaged ? join(process.resourcesPath, 'tray') : join(__dirname, '../../resources/tray'),
-      window, taskService, quit, reportError)
+      window, taskService, preferences, preferenceService, changed, quit, reportError)
     log('tray-ready')
     installApplicationMenu()
-    registerIPC({ desktop: window, tasks: taskService, settings: preferences, records: reminderRecords,
-      reminders: scheduler, notifications: native, snapshot, metadata: () => ({ sessionId, revision }), changed, quit, reportError })
+    registerIPC({ desktop: window, tasks: taskService, settings: preferenceService, records: reminderRecords,
+      reminders: scheduler, notifications: native, snapshot, metadata: () => ({ sessionId, revision }), changed, quit, reportError,
+      showContextMenu: () => tray?.showContextMenu() })
     powerMonitor.on('suspend', () => { log('system-suspend'); window.setSystemIdle(true) })
     powerMonitor.on('resume', () => { log('system-resume'); window.setSystemIdle(false); void scheduler.checkNow('resume') })
     powerMonitor.on('lock-screen', () => window.setSystemIdle(true))

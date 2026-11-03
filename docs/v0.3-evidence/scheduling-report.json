@@ -1,0 +1,14 @@
+{
+  "directory": "/Users/tenghuan/programming/vjshi/studyDemo/tia-windows-plugins/.cache/scheduling-runs/1793697764379",
+  "checks": [
+    "quick urgent creation, urgent-first order, inline toggle and progress tags work through UI and SQLite",
+    "weekly/monthly UI creates, edits, pauses and resumes actual plans; custom 31st and last-day choice persist",
+    "settings presets change actual native bounds; settings/header layer toggles agree with BrowserWindow",
+    "resize pointer path updates native bounds with injected cursor positions; saved size restores after compact; double-click presets work",
+    "preview creates the eight-oscillator bell; mute suppresses automatic sound; a two-task batch signals once while window hidden (controlled clock)",
+    "development login setting fails visibly without saving; injected native acceptance/rejection verifies real IPC rollback and UI recovery",
+    "restart restores native size, priority and both recurrence rules from SQLite"
+  ],
+  "errors": [],
+  "status": "passed"
+}

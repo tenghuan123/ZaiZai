@@ -1,6 +1,6 @@
 import { useEffect, useRef, useState } from 'react'
 import type { CSSProperties, PointerEvent as ReactPointerEvent } from 'react'
-import type { DayItem, RepeatPlan } from '../../shared/tasks'
+import type { DayItem, Priority, RepeatPlan } from '../../shared/tasks'
 import { useWorkspace } from './features/tasks/use-workspace'
 import { itemKey, TaskList } from './features/tasks/TaskList'
 import { DateNavigator, shiftDate } from './features/calendar/DateNavigator'
@@ -15,6 +15,9 @@ import { getPetPack } from './features/pet/pet-pack'
 import { useTaskCompletion } from './features/tasks/use-task-completion'
 import { CompletionEffects } from './features/tasks/CompletionEffects'
 import { MENU_TRANSITION_MS } from '../../shared/motion'
+import { SettingsDialog } from './features/settings/SettingsDialog'
+import { playReminderBell } from './features/pet/reminder-sound'
+import { LARGE_SIZE, STANDARD_SIZE } from '../../shared/window'
 
 const api = window.desktop
 function countdown(time: string | null, now: number): string {
@@ -36,6 +39,7 @@ export function App(): React.JSX.Element {
   const { workspace, day, loading, error, setError, refresh, command } = useWorkspace(selectedDate)
   const [now, setNow] = useState(Date.now)
   const [title, setTitle] = useState('')
+  const [quickPriority, setQuickPriority] = useState<Priority>('normal')
   const [tab, setTab] = useState<'todo' | 'done' | 'plans'>('todo')
   const [showCalendar, setShowCalendar] = useState(false)
   const [showSettings, setShowSettings] = useState(false)
@@ -55,9 +59,14 @@ export function App(): React.JSX.Element {
   const feedbackTimer = useRef<ReturnType<typeof setTimeout> | undefined>(undefined)
   const clickTimer = useRef<ReturnType<typeof setTimeout> | undefined>(undefined)
   const gesture = useRef<{ x: number; y: number; moved: boolean } | null>(null)
+  const resizeGesture = useRef<{ x: number; y: number; moved: boolean } | null>(null)
   const snapshot = workspace?.snapshot
   const petPack = getPetPack(snapshot?.settings.petId)
   const activeReminderId = snapshot?.activeReminderIds[0] ?? null
+
+  useEffect(() => api.subscribeSound(() => {
+    void playReminderBell().catch(() => setError('提醒铃声播放失败，请重试试听。'))
+  }), [setError])
 
   useEffect(() => {
     if (activeReminderId && petReaction) setPetReaction(null)
@@ -79,8 +88,8 @@ export function App(): React.JSX.Element {
     if (focusedId && day && tab === 'todo') document.querySelector(`[data-occurrence-id="${CSS.escape(focusedId)}"]`)?.scrollIntoView({ block: 'nearest' })
   }, [focusedId, day, tab])
   useEffect(() => {
-    if ((editor || ending || showCalendar) && snapshot?.window.mode === 'compact') void command(() => api.setMode('expanded'))
-  }, [editor, ending, showCalendar, snapshot?.window.mode, command])
+    if ((editor || ending || showCalendar || showSettings) && snapshot?.window.mode === 'compact') void command(() => api.setMode('expanded'))
+  }, [editor, ending, showCalendar, showSettings, snapshot?.window.mode, command])
   useEffect(() => () => {
     if (feedbackTimer.current) clearTimeout(feedbackTimer.current)
     if (clickTimer.current) clearTimeout(clickTimer.current)
@@ -119,7 +128,7 @@ export function App(): React.JSX.Element {
     setError(''); setShowCalendar(false)
     setEditor({ kind: 'new', requestId: crypto.randomUUID(), title, type,
       date: selectedDate && selectedDate > snapshot.today.date ? selectedDate : snapshot.today.date,
-      reminderEnabled: snapshot.settings.defaultReminderEnabled })
+      reminderEnabled: snapshot.settings.defaultReminderEnabled, priority: quickPriority })
   }
   function editItem(item: DayItem): void {
     setError('')
@@ -154,9 +163,9 @@ export function App(): React.JSX.Element {
     if (date < snapshot.today.date) return
     await withBusy('quick', async () => {
       const result = await command(() => api.tasks.createOnce({ requestId: quickRequest.current, title,
-        scheduledDate: date, scheduledTime: null, reminderEnabled: snapshot.settings.defaultReminderEnabled }))
+        scheduledDate: date, scheduledTime: null, reminderEnabled: snapshot.settings.defaultReminderEnabled, priority: quickPriority }))
       if (result.ok) {
-        quickRequest.current = crypto.randomUUID(); setTitle(''); setTab('todo'); say(`${date === snapshot.today.date ? '今日' : date.slice(5).replace('-', '月') + '日'}待办已保存 🐾`)
+        quickRequest.current = crypto.randomUUID(); setTitle(''); setQuickPriority('normal'); setTab('todo'); say(`${date === snapshot.today.date ? '今日' : date.slice(5).replace('-', '月') + '日'}待办已保存 🐾`)
       }
     })
   }
@@ -187,6 +196,33 @@ export function App(): React.JSX.Element {
       if (result.ok) say('已移到今天，原日期会保留 🐾')
     })
   }
+  async function togglePriority(item: DayItem): Promise<void> {
+    await withBusy(itemKey(item), async () => {
+      const value = item.kind === 'saved' ? item.occurrence : item
+      await command(() => api.tasks.setPriority(item.ref, value.priority === 'urgent' ? 'normal' : 'urgent'))
+    })
+  }
+  function resizeStart(event: ReactPointerEvent<HTMLButtonElement>): void {
+    if (event.button !== 0) return
+    event.preventDefault(); event.currentTarget.setPointerCapture(event.pointerId)
+    resizeGesture.current = { x: event.clientX, y: event.clientY, moved: false }
+  }
+  function resizeMove(event: ReactPointerEvent<HTMLButtonElement>): void {
+    const start = resizeGesture.current
+    if (!start || start.moved || Math.hypot(event.clientX - start.x, event.clientY - start.y) < 3) return
+    start.moved = true
+    void command(() => api.beginResize())
+  }
+  function resizeEnd(): void {
+    const start = resizeGesture.current; resizeGesture.current = null
+    if (start?.moved) void command(() => api.endResize())
+  }
+  function toggleSize(): void {
+    if (!snapshot) return
+    const size = snapshot.settings.expandedSize
+    void command(() => api.settings.update({ expectedVersion: snapshot.settings.version,
+      patch: { expandedSize: size.width >= 410 || size.height >= 580 ? STANDARD_SIZE : LARGE_SIZE } }))
+  }
   function pointerDown(event: ReactPointerEvent<HTMLButtonElement>): void {
     if (event.button !== 0) return
     event.currentTarget.setPointerCapture(event.pointerId)
@@ -213,12 +249,13 @@ export function App(): React.JSX.Element {
   const compact = snapshot.window.mode === 'compact'
   const date = selectedDate ?? snapshot.today.date
   const past = date < snapshot.today.date
-  const dateLabel = date === snapshot.today.date ? '今日进度' : `${Number(date.slice(5, 7))}月${Number(date.slice(8))}日 · ${date === shiftDate(snapshot.today.date, 1) ? '明天' : past ? '历史' : '未来'}`
+  const dateLabel = date === snapshot.today.date ? '待办进度' : `${Number(date.slice(5, 7))}月${Number(date.slice(8))}日 · ${date === shiftDate(snapshot.today.date, 1) ? '明天' : past ? '历史' : '未来'}`
   const active = snapshot.activeReminderIds.map(id => snapshot.reminders.find(item => item.id === id)).filter(item => !!item)
   const current = active[0]
   const currentItem = current && snapshot.today.items.find(item => item.kind === 'saved' && item.occurrence.id === current.id)
   const done = day?.items.filter(item => item.kind === 'saved' && item.occurrence.status === 'completed').length ?? 0
   const total = day?.items.length ?? 0
+  const urgentCount = day?.items.filter(item => { const value = item.kind === 'saved' ? item.occurrence : item; return value.priority === 'urgent' && !(item.kind === 'saved' && item.occurrence.status === 'completed') }).length ?? 0
   const petPlayback = selectPetPlayback(current ? { id: current.id,
     scene: currentItem?.kind === 'saved' ? currentItem.occurrence.scene : 'generic' } : null,
   petReaction, showPet && !compact ? petPreview : null)
@@ -227,6 +264,7 @@ export function App(): React.JSX.Element {
     style={{ '--menu-duration': `${MENU_TRANSITION_MS}ms` } as CSSProperties}>
     <section className="pet-scene">
       <button className="pet" aria-label="互动桌宠，双击展开或收起" title="拖动我移动窗口，双击展开或收起"
+        onContextMenu={event => { event.preventDefault(); void command(() => api.showContextMenu()) }}
         onPointerDown={pointerDown} onPointerMove={pointerMove} onPointerUp={pointerUp}
         onPointerCancel={() => { gesture.current = null; void command(() => api.endDrag()) }}
         onDoubleClick={() => { if (clickTimer.current) clearTimeout(clickTimer.current); void command(() => api.setMode(compact ? 'expanded' : 'compact')) }}
@@ -246,7 +284,7 @@ export function App(): React.JSX.Element {
     <button className="mini-dock" aria-label="展开清单" aria-hidden={!compact} inert={!compact} onClick={() => { void command(() => api.setMode('expanded')) }}>
       <span className="status-dot" /> 今天 {snapshot.today.progress.completed}/{snapshot.today.progress.total}<span>展开清单 ▾</span>
     </button><section className="card" aria-hidden={compact} inert={compact}>
-      <header className="card-header"><div className="window-controls">
+      <header className="card-header" onPointerDown={event => { if (event.button === 0 && !(event.target as HTMLElement).closest('button, input')) { event.currentTarget.setPointerCapture(event.pointerId); void command(() => api.beginDrag()) } }} onPointerUp={event => { if (event.currentTarget.hasPointerCapture(event.pointerId)) void command(() => api.endDrag()) }} onPointerCancel={() => { void command(() => api.endDrag()) }}><div className="window-controls">
         <button className="round blue" aria-label="仅显示桌宠" onClick={() => { void command(() => api.setMode('compact')) }}>
           <svg viewBox="0 0 12 12" fill="none" aria-hidden="true" focusable="false"><path d="M2.5 6h7" stroke="currentColor" strokeWidth="1.7" strokeLinecap="round" /></svg>
         </button>
@@ -256,58 +294,48 @@ export function App(): React.JSX.Element {
         <button className={`settings-button calendar-button ${showCalendar ? 'active' : ''}`} aria-label="日期与历史" title="查看历史待办和未来安排"
           aria-haspopup="dialog" aria-expanded={showCalendar} onClick={event => { event.currentTarget.focus(); setShowCalendar(true); setShowSettings(false); setShowPet(false) }}>
           <svg viewBox="0 0 16 16" fill="none" aria-hidden="true"><rect x="2" y="3.5" width="12" height="10.5" rx="2" /><path d="M5 2v3M11 2v3M2 7h12M5 10h2" /></svg></button>
+        <button className={`layer-button ${snapshot.window.alwaysOnTop ? '' : 'desktop-layer'}`} aria-label="切换桌面层级" title={snapshot.window.alwaysOnTop ? '当前：始终置顶，点击切换为仅在桌面' : '当前：仅在桌面，点击恢复始终置顶'} onClick={() => { void command(() => api.settings.update({ expectedVersion: snapshot.settings.version, patch: { alwaysOnTop: !snapshot.settings.alwaysOnTop } })) }}>{snapshot.window.alwaysOnTop ? '📌 置顶' : '🖥 桌面'}</button>
         <button className={`settings-button ${showPet ? 'active' : ''}`} aria-label="桌宠动作" onClick={() => { setShowPet(value => !value); setShowSettings(false); setShowCalendar(false) }}>🐾</button>
-        <button className="settings-button" aria-label="设置与验证状态" onClick={() => { setShowSettings(value => !value); setShowPet(false) }}>⚙</button>
+        <button className="settings-button" aria-label="组件偏好设置" onClick={() => { setShowSettings(value => !value); setShowPet(false) }}>⚙</button>
       </div><div className="clock"><strong>{new Date(now).toLocaleTimeString('zh-CN', { hour: '2-digit', minute: '2-digit', hour12: false })}</strong>
         <span>{new Date(now).toLocaleDateString('zh-CN', { month: '2-digit', day: '2-digit', weekday: 'long' })}</span></div></header>
       {showPet ? <PetActions pack={petPack} selected={petPreview} blocked={!!current} switching={busy.has('pet-selection')}
-        onSelectPack={id => { void selectPetPack(id) }} onSelect={action => { setPetReaction(null); setPetPreview(action) }} onClose={() => setShowPet(false)} /> : showSettings ? <section className="settings-panel">
-        <div className="panel-title"><h2>设置与验证状态</h2><button onClick={() => setShowSettings(false)}>返回</button></div>
-        <label className="setting-row">固定下班时间<input aria-label="固定下班时间" type="time" value={snapshot.settings.offworkTime || ''}
-          onChange={event => { void command(() => api.settings.update({ expectedVersion: snapshot.settings.version, patch: { offworkTime: event.target.value || null } })) }} /></label>
-        <label className="setting-row">窗口始终置顶<input type="checkbox" checked={snapshot.window.alwaysOnTop}
-          onChange={event => { void command(() => api.settings.update({ expectedVersion: snapshot.settings.version, patch: { alwaysOnTop: event.target.checked } })) }} /></label>
-        <label className="setting-row">新任务默认提醒<input type="checkbox" checked={snapshot.settings.defaultReminderEnabled}
-          onChange={event => { void command(() => api.settings.update({ expectedVersion: snapshot.settings.version, patch: { defaultReminderEnabled: event.target.checked } })) }} /></label>
-        <div className="verification-status"><span>菜单栏 / 托盘<strong>{snapshot.diagnostics.trayReady ? '已创建' : '不可用'}</strong></span>
-          <span>系统通知能力<strong>{snapshot.diagnostics.notificationSupported ? '系统支持' : '系统不支持'}</strong></span><span>原生窗口<strong>{snapshot.window.bounds.width} × {snapshot.window.bounds.height}</strong></span>
-          <span>Electron<strong>{snapshot.diagnostics.versions.electron}</strong></span></div>
-        <details><summary>本地数据位置</summary><p className="data-path">{snapshot.diagnostics.databasePath}</p></details>
-        <button className="secondary wide" onClick={() => { void command(() => api.hide()) }}>隐藏到托盘 / 菜单栏</button>
-        <button className="text-button wide" onClick={() => { void command(() => api.quit()) }}>退出软件</button>
-      </section> : <>
-        <div className="progress-caption" aria-live="polite"><span title={date}>{dateLabel} {day ? `${done}/${total}` : '读取中…'}</span>
+        onSelectPack={id => { void selectPetPack(id) }} onSelect={action => { setPetReaction(null); setPetPreview(action); if (action === 'remind' && snapshot.settings.reminderSoundEnabled) void command(() => api.previewReminderSound()) }} onClose={() => setShowPet(false)} /> : <>
+        <div className="progress-caption" aria-live="polite"><span title={date}>{dateLabel} {day ? `${done}/${total}` : '读取中…'}</span>{urgentCount > 0 && <span className="urgent-tag urgent-count">🔥 {urgentCount}项紧急</span>}
           <span className="progress-tools">{date !== snapshot.today.date && <button aria-label="返回今天" onClick={() => selectDate(snapshot.today.date)}>回今天</button>}{day?.progress.percentage ?? 0}%</span></div>
         <div className="progress-track"><div style={{ width: `${day?.progress.percentage ?? 0}%` }} /></div>
         <nav className="tabs" aria-label="任务清单分类">
           <button className={tab === 'todo' ? 'selected' : ''} onClick={() => setTab('todo')}>待办 ({total - done})</button>
           <button className={tab === 'done' ? 'selected' : ''} onClick={() => setTab('done')}>已完成 <span key={completionCount} className={completionCount ? 'completion-badge' : ''}>({done})</span></button>
-          <button className={tab === 'plans' ? 'selected' : ''} onClick={() => { setTab('plans'); setShowCalendar(false) }}>重复计划</button>
+          <button className={tab === 'plans' ? 'selected' : ''} onClick={() => { setTab('plans'); setShowCalendar(false) }}>周期计划 ({workspace.plans.filter(plan => plan.state !== 'ended').length})</button>
         </nav>
         {tab === 'plans' ? <PlanList plans={workspace.plans} busy={busy} onCreate={() => openNew('repeat')} onEdit={plan => { setError(''); setEditor({ kind: 'plan', plan }) }}
           onPaused={plan => { void withBusy(plan.id, async () => { const result = await command(() => api.plans.setPaused(plan.id, plan.state !== 'paused')); if (result.ok) say(result.value.state === 'paused' ? '计划已暂停，历史仍保留' : '计划已恢复，从现在继续安排') }) }}
           onEnd={plan => { setError(''); setEnding(plan) }} />
-          : day && !loading ? <TaskList day={day} tab={tab} busy={busy} pending={completion.pending} focusedId={focusedId}
+          : day && !loading ? <TaskList day={day} plans={workspace.plans} tab={tab} busy={busy} pending={completion.pending} focusedId={focusedId}
             onComplete={(item, desired, button) => { if (desired) completion.toggle(item, button); else void complete(item, false) }} onEdit={editItem}
-            onRemove={item => { void remove(item) }} onMove={item => { void move(item) }} /> : <div className="empty-state"><p>{loading ? '正在读取这一天…' : '这一天暂时无法读取'}</p><button onClick={() => { void refresh() }}>重新读取</button></div>}
+            onPriority={item => { void togglePriority(item) }} onRemove={item => { void remove(item) }} onMove={item => { void move(item) }} /> : <div className="empty-state"><p>{loading ? '正在读取这一天…' : '这一天暂时无法读取'}</p><button onClick={() => { void refresh() }}>重新读取</button></div>}
         {past ? <p className="history-note">历史待办可点「移到今天」继续处理</p> : <form className="quick-add" onSubmit={event => { event.preventDefault(); void quickAdd() }}>
-          <div><input aria-label="新增待办" maxLength={120} placeholder={date === snapshot.today.date ? '新增今日待办' : '新增这一天的待办'} value={title} disabled={busy.has('quick')} onChange={event => setTitle(event.target.value)} />
-            <button type="button" aria-label="定时或重复" onClick={() => openNew(tab === 'plans' ? 'repeat' : 'once')}>◷ 定时/重复</button></div>
+          <div><input aria-label="新增待办" maxLength={120} placeholder={date === snapshot.today.date ? '添加新待办…' : '添加这一天的待办…'} value={title} disabled={busy.has('quick')} onChange={event => setTitle(event.target.value)} />
+            <button type="button" className={`quick-urgent ${quickPriority === 'urgent' ? 'selected' : ''}`} aria-label="紧急任务" aria-pressed={quickPriority === 'urgent'} onClick={() => setQuickPriority(value => value === 'urgent' ? 'normal' : 'urgent')}>🔥 紧急</button>
+            <button type="button" aria-label="定时或重复" onClick={() => openNew(tab === 'plans' ? 'repeat' : 'once')}>◷ 周期</button></div>
           <button type="submit" className="add-button" aria-label="快捷新增任务" disabled={busy.has('quick')}>＋</button>
         </form>}
       </>}
+      <button className="resize-handle" aria-label="调整窗口尺寸" title="拖拽调整尺寸，双击切换标准与大尺寸" onPointerDown={resizeStart} onPointerMove={resizeMove} onPointerUp={resizeEnd} onPointerCancel={resizeEnd} onDoubleClick={toggleSize}>↘</button>
     </section>
     <CompletionEffects pending={completion.pending} />
+    {showSettings && <SettingsDialog snapshot={snapshot} command={command} onClose={() => { setShowSettings(false); setError('') }} />}
     {showCalendar && <DateNavigator today={snapshot.today.date} selected={date} historyDates={workspace.historyDates} onSelect={selectDate} onClose={() => setShowCalendar(false)} />}
     {editor && <TaskEditor key={editorKey(editor)} target={editor} now={now} command={command} onClose={() => { setEditor(null); setError('') }} onReload={reloadEditor}
       onSaved={result => {
         const wasNew = editor.kind === 'new'
-        setEditor(null); setTitle(''); setError('')
+        setEditor(null); setTitle(''); setQuickPriority('normal'); setError('')
         if (result.kind === 'once') { selectDate(result.occurrence.scheduledDate); setTab(result.occurrence.status === 'completed' ? 'done' : 'todo'); say('任务安排已保存 ✨') }
         else { if (wasNew) { selectDate(result.plan.startDate > snapshot.today.date ? result.plan.startDate : snapshot.today.date); setTab('todo') } else { setTab('plans'); setShowCalendar(false) } say('重复计划已保存 ✨') }
       }} />}
     {ending && <EndPlanDialog plan={ending} busy={busy.has(ending.id)} error={error} onClose={() => { setEnding(null); setError('') }}
       onConfirm={() => { void withBusy(ending.id, async () => { const result = await command(() => api.plans.end(ending.id)); if (result.ok) { setEnding(null); say('计划已结束，已有历史仍保留') } }) }} />}
-    {error && !editor && !ending && <div className="error-toast" role="alert">{error}<button aria-label="关闭错误提示" onClick={() => setError('')}>×</button></div>}
+    {error && !editor && !ending && !showSettings && <div className="error-toast" role="alert">{error}<button aria-label="关闭错误提示" onClick={() => setError('')}>×</button></div>}
   </main>
 }

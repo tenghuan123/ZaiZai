@@ -14,7 +14,8 @@ export class NativeNotifications {
     return new Promise(resolve => {
       const title = items.length === 1 ? '桌面伙伴提醒你' : `${items.length} 项提醒已到时间`
       const body = items.length === 1 ? items[0].title : items.map(item => item.title).join('、').slice(0, 90)
-      const notification = new Notification({ title, body, silent: false })
+      // The app plays one bell per dispatch batch; the OS sound would duplicate it and bypass mute.
+      const notification = new Notification({ title, body, silent: true })
       const ids = items.map(item => item.id)
       this.active.set(notification, ids)
       let settled = false
