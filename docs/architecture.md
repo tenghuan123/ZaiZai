@@ -1,6 +1,6 @@
 # 桌面任务助手应用架构
 
-版本：0.2。更新日期：2026-11-02。状态：M1 正式数据模型、迁移、任务服务与类型化 IPC 已接通；计划与日期界面留待 M2。验证范围见 [M1 验证记录](m1-verification.md)，原生平台缺口仍见 [M0 验证记录](m0-verification.md)。
+版本：0.3。更新日期：2026-11-02。状态：M1 数据与任务服务、M2 任务编辑/计划管理/日期历史界面已接通。验证范围见 [M1](m1-verification.md)、[M2 验证记录](m2-verification.md)，原生平台缺口仍见 [M0 验证记录](m0-verification.md)。
 
 采用 **Electron + React + TypeScript + SQLite**，以当前优化后的 [HTML 原型](dual-platform-prototype.html) 为界面与交互基线。任务和提醒在 Electron 主进程中运行，React 负责界面与宠物表现，SQLite 是持久业务数据的唯一来源。一个主要透明窗口承载宠物与任务卡片。
 
@@ -78,7 +78,7 @@ Electron 自身的主进程、渲染进程与 preload 分工参考 [进程模型
 
 ## 3 建议目录
 
-以下为目标目录。M1 已建立 database/connection、database/migrations、domain、tasks、settings/repository 和 reminders/repository；宠物资源管理与界面 feature 目录在后续阶段补齐。设置由独立 repository 校验并持久化；任务服务负责业务事务，查询层保持只读。
+以下为目标目录。M1 已建立 database/connection、database/migrations、domain、tasks、settings/repository 和 reminders/repository；M2 已建立 renderer/src/features 下的 tasks、editor、plans、calendar。当前已补充 features/pet，接入 V3 内置精灵图、动作优先级与预览；多角色资源管理和导入仍属于后续批次。设置由独立 repository 校验并持久化；任务服务负责业务事务，查询层保持只读。
 
 ```text
 src/
@@ -121,6 +121,7 @@ src/
       tasks/
       editor/
       calendar/
+      plans/
       pet/                     # 播放器、气泡优先级与点击拖动手势
       settings/
       pet-library/
@@ -234,6 +235,8 @@ sequenceDiagram
 
 正式实现先保存业务结果，再播放原型中的打勾、删除线和庆祝。原型的约 880ms 动画不成为业务提交延迟；动画期间再次点击发送撤销命令。渲染失败、切页或动画中断不会丢失完成状态。
 
+渲染层 `use-task-completion` 只保存正在退出的任务行及其动画阶段，主进程快照仍是完成状态和统计的唯一来源。成功保存后保留 620ms 的撤销窗口，再用 260ms 折叠任务行；撤销失败会保留已完成反馈并显示命令错误，完成失败则恢复原任务行。该控制器由 App 持有，切换标签、日期或仅桌宠模式不会取消已提交的业务操作。未来预览落库后按来源日期、计划与时间槽匹配原行，避免新 ID 产生重复行。系统减少动态效果时直接提交并刷新，无等待动画。
+
 全部完成只由本次成功完成命令引起的“非空、未全部完成 → 全部完成”变化触发。启动恢复、删空列表和历史查看不触发今日庆祝。
 
 ## 6 提醒架构
@@ -283,6 +286,8 @@ sequenceDiagram
 
 窗口展开尺寸以原型的 356 × 560 逻辑像素为起点；仅桌宠时根据宠物、摘要和气泡包围框缩小原生窗口。提醒气泡变高、打开编辑器或资源库时，先切换到可容纳内容的布局，再显示内容。收起动画结束再缩小边界，展开则先扩大边界再播放动画，避免裁剪。
 
+当前清单卡片常驻并通过裁剪、透明度和位移完成 340ms 过渡；收起后用 `inert` 排除键盘和指针交互，微缩胶囊淡入。主进程收起时延后缩至 356 × 224，反向展开会取消尚未执行的缩窗计时器；退出同样清理计时器。
+
 主进程负责窗口位置与逻辑坐标，宠物拖动超过手势阈值才开始原生位置更新，结束后保存。双击优先于普通点击反馈；按钮、输入框和任务行排除拖动。窗口置顶默认沿用原型，并可在设置中关闭。
 
 透明窗的自动鼠标穿透与缩放存在平台限制。`resizable: false` 只作为用户不可拖拽缩放的配置；程序切换边界能否在目标环境稳定工作必须在 M0 验证，不能只根据普通窗口的 `setBounds` API 推断。M0 同时检查透明边缘、焦点、输入和缩小后的遮挡；未通过时先调整宿主方案，再固定单窗口实现。[透明窗口限制](https://www.electronjs.org/docs/latest/tutorial/custom-window-styles)、[窗口边界 API](https://www.electronjs.org/docs/latest/api/base-window#winsetboundsbounds-animate)
@@ -304,6 +309,10 @@ sequenceDiagram
 资源描述区分 `sprite-sheet` 和 `animated-image`。精灵图声明每帧宽高、行列、帧数、帧率、循环与锚点；GIF 或动态 WebP 按文件自身的帧率和循环显示，不能把精灵图的 FPS 滑块承诺为通用动图调速。需要精确动作次数和节能控制时优先使用精灵图。
 
 状态沿用 `idle`、`react`、`celebrate`、`all_done`、`remind`；可选喝水、运动等场景动作。未指定场景的任务使用通用提醒，不仅凭标题包含某个字就决定动作。缺失可选动作回退为通用动作，`idle` 不可用时回退内置角色。
+
+当前内置包为 `resources/pets/strawberry-bunny-v3`。渲染构建只静态引用其中七张精灵图和 manifest，由现有 `buddy-app://ui` 协议提供；预览页面、旧版本和生成资料不随应用打包。Canvas 依据 manifest 的 320 × 320 帧尺寸、列数、帧数与帧率播放，父界面的时钟刷新不重置动作。隐藏与系统暂停只停止动画时钟，恢复时不累计隐藏期间的时间；系统减少动态效果偏好显示静态帧。
+
+点击与任务成功结果产生单次回应，播放完回到待机或当前动作预览。待处理提醒根据实例的 `scene` 选择摇铃、喝水或拉伸，压过普通互动并丢弃被打断的普通动作。编辑器允许明确选择提醒动作，顶栏动作面板提供七组循环预览。旧 `builtin-cat` 是占位内置角色的别名，设置读取时对应 V3，后续正常设置写入持久化新 ID，不重置其他偏好。
 
 内置资源目录只读，用户导入复制到用户数据目录，显示参数覆盖值单独保存在设置中。界面接收资源 ID 和 `pet-asset://` URL，不接收任意磁盘路径。主进程注册资源协议，只允许解析已登记包内的文件，并保留内容安全策略。[Electron 自定义协议](https://www.electronjs.org/docs/latest/api/protocol)
 

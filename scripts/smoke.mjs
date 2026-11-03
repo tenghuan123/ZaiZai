@@ -4,13 +4,14 @@ import { spawn, spawnSync } from 'node:child_process'
 import { mkdir, readFile, writeFile } from 'node:fs/promises'
 import { resolve, join } from 'node:path'
 import assert from 'node:assert/strict'
+import { runWorkspaceChecks } from './workspace-smoke.mjs'
 
 const require = createRequire(import.meta.url)
 const executableArgument = process.argv.find(value => value.startsWith('--executable='))?.slice('--executable='.length)
 const requireNotification = process.argv.includes('--require-notification')
 const executablePath = executableArgument ? resolve(executableArgument) : require('electron')
 const args = executableArgument ? [] : [resolve('.')]
-const runDirectory = resolve('.cache/m1-runs', `${executableArgument ? 'packaged' : 'development'}-${Date.now()}`)
+const runDirectory = resolve('.cache/m2-runs', `${executableArgument ? 'packaged' : 'development'}-${Date.now()}`)
 const dataDirectory = join(runDirectory, 'data')
 await mkdir(dataDirectory, { recursive: true })
 const env = { ...process.env, TIA_M0_DATA_DIR: dataDirectory }
@@ -60,6 +61,7 @@ try {
   report.checks.push('native window and tray created; SQLite opened')
   await page.screenshot({ path: join(runDirectory, 'expanded.png'), omitBackground: true })
   await page.getByRole('button', { name: '仅显示桌宠', exact: true }).click()
+  await waitUntil(async () => (await snapshot(page)).window.bounds.height === 224, 'card collapse before native resize')
   state = await snapshot(page)
   assert.equal(state.window.mode, 'compact')
   assert.equal(state.window.bounds.height, 224)
@@ -83,18 +85,23 @@ try {
     assert.equal(result.status, 0, result.stderr)
   }
   databaseSQL("CREATE TRIGGER smoke_write_failure BEFORE INSERT ON task_occurrences WHEN NEW.title='模拟写入失败' BEGIN SELECT RAISE(ABORT,'simulated storage failure'); END")
-  await page.getByLabel('任务内容', { exact: true }).fill('模拟写入失败')
-  await page.getByRole('button', { name: '添加任务', exact: true }).click()
+  await page.getByLabel('新增待办', { exact: true }).fill('模拟写入失败')
+  await page.getByRole('button', { name: '快捷新增任务', exact: true }).click()
   await page.getByRole('alert').filter({ hasText: '本地数据读写失败' }).waitFor()
-  assert.equal(await page.getByLabel('任务内容', { exact: true }).inputValue(), '模拟写入失败')
+  assert.equal(await page.getByLabel('新增待办', { exact: true }).inputValue(), '模拟写入失败')
   assert.equal((await snapshot(page)).today.items.length, 0)
   databaseSQL('DROP TRIGGER smoke_write_failure')
   report.checks.push('real SQLite write failure returns STORAGE, preserves UI draft, and creates no task')
 
-  await page.getByLabel('任务内容', { exact: true }).fill('隐藏后的后台提醒验证')
-  const time = await page.evaluate(() => new Date().toTimeString().slice(0, 5))
-  await page.getByLabel('任务时间', { exact: true }).fill(time)
-  await page.getByRole('button', { name: '添加并隐藏', exact: true }).click()
+  const hiddenTask = await page.evaluate(async () => {
+    await window.desktop.hide()
+    return window.desktop.tasks.createOnce({ requestId: crypto.randomUUID(), title: '隐藏后的后台提醒验证',
+      scheduledDate: new Date(Date.now() + 60_000).toLocaleDateString('sv-SE'), scheduledTime: new Date(Date.now() + 60_000).toTimeString().slice(0, 5), reminderEnabled: true })
+  })
+  assert.equal(hiddenTask.ok, true)
+  // A seconds-precision fixture, like migrated M0 data, keeps this lifecycle check independent of minute boundaries.
+  databaseSQL(`UPDATE task_occurrences SET due_at_ms=${Date.now() + 3000} WHERE id='${hiddenTask.value.id}'`)
+  await page.evaluate(id => window.desktop.tasks.setCompleted({ id }, false), hiddenTask.value.id)
   await waitUntil(async () => !(await snapshot(page)).window.visible, 'native window hidden')
   const scheduled = (await snapshot(page)).reminders[0]
   const blockedAt = await application.evaluate(({ BrowserWindow }) => {
@@ -112,6 +119,7 @@ try {
   const events = (await readFile(join(dataDirectory, 'm0-events.ndjson'), 'utf8')).trim().split('\n').map(line => JSON.parse(line))
   const claimed = events.find(event => event.event === 'reminders-claimed' && event.ids.includes(scheduled.id))
   assert.equal(claimed.windowVisible, false)
+  assert.ok(Date.parse(claimed.at) >= blockedAt, 'scheduler must claim after renderer is blocked')
   assert.ok(Date.parse(claimed.at) - blockedAt < 8500, 'scheduler must fire before renderer unblocks')
   report.notification = { state: dispatched.dispatchState, error: dispatched.lastError }
   report.checks.push('reminder dispatched from main process while native window hidden and renderer busy')
@@ -130,9 +138,8 @@ try {
   assert.equal((await snapshot(page)).activeReminderIds.length, 0)
   report.checks.push('bubble completion saves state and dismisses active reminder')
 
-  await page.getByLabel('任务内容', { exact: true }).fill('重启恢复验证')
-  await page.getByLabel('任务时间', { exact: true }).fill('')
-  await page.getByRole('button', { name: '添加任务', exact: true }).click()
+  await page.getByLabel('新增待办', { exact: true }).fill('重启恢复验证')
+  await page.getByRole('button', { name: '快捷新增任务', exact: true }).click()
   await waitUntil(async () => (await snapshot(page)).today.items.length === 2, 'untimed second task persisted')
   const firstDay = (await snapshot(page)).today.date
   const requestId = crypto.randomUUID()
@@ -178,6 +185,19 @@ try {
   assert.equal(state.window.bounds.height, 224)
   assert.equal(state.activeReminderIds.length, 0)
   report.checks.push('explicit quit exits process; restart restores SQLite data and compact preference without repeating old reminder')
+  const workspaceChecks = await runWorkspaceChecks({ page, snapshot, waitUntil, runDirectory, databaseSQL,
+    withMainClock: async (now, action) => {
+      await application.evaluate((_electron, time) => {
+        globalThis.__m2OriginalNow = Date.now
+        Date.now = () => time
+      }, now)
+      try { await action() } finally {
+        await application.evaluate(() => { Date.now = globalThis.__m2OriginalNow; delete globalThis.__m2OriginalNow })
+        await snapshot(page)
+      }
+    },
+    restart: async () => { await quit(page); ({ page } = await launch()); return page } })
+  report.checks.push(...workspaceChecks)
   await quit(page)
   assert.deepEqual(report.errors, [])
   report.status = 'passed'

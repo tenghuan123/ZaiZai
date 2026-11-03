@@ -1,0 +1,26 @@
+{"at":"2026-11-02T09:49:18.016Z","event":"tray-ready"}
+{"at":"2026-11-02T09:49:18.128Z","event":"app-ready","platform":"darwin","arch":"arm64","electron":"45.2.1","database":".cache/m2-runs/packaged-1793612953415/data/m0.sqlite3"}
+{"at":"2026-11-02T09:49:18.386Z","event":"window-shown","mode":"expanded","visible":true,"alwaysOnTop":true,"animationsPaused":false,"bounds":{"x":1044,"y":110,"width":356,"height":560}}
+{"at":"2026-11-02T09:49:19.298Z","event":"window-mode","mode":"compact","visible":true,"alwaysOnTop":true,"animationsPaused":false,"bounds":{"x":1044,"y":110,"width":356,"height":224}}
+{"at":"2026-11-02T09:49:19.491Z","event":"window-mode","mode":"expanded","visible":true,"alwaysOnTop":true,"animationsPaused":false,"bounds":{"x":1044,"y":110,"width":356,"height":560}}
+{"at":"2026-11-02T09:49:20.107Z","event":"error","message":"simulated storage failure"}
+{"at":"2026-11-02T09:49:20.494Z","event":"window-hidden","mode":"expanded","visible":false,"alwaysOnTop":true,"animationsPaused":true,"bounds":{"x":1044,"y":110,"width":356,"height":560}}
+{"at":"2026-11-02T09:49:23.240Z","event":"reminders-claimed","ids":["df01098b-9026-42ad-956b-5990d21f88e3"],"count":1,"reason":"timer","windowVisible":false}
+{"at":"2026-11-02T09:49:23.256Z","event":"notification-submitted","ids":["df01098b-9026-42ad-956b-5990d21f88e3"],"reason":"timer"}
+{"at":"2026-11-02T09:49:29.748Z","event":"second-instance"}
+{"at":"2026-11-02T09:49:29.783Z","event":"window-shown","mode":"expanded","visible":true,"alwaysOnTop":true,"animationsPaused":false,"bounds":{"x":1044,"y":110,"width":356,"height":560}}
+{"at":"2026-11-02T09:49:30.006Z","event":"notification-closed","ids":["df01098b-9026-42ad-956b-5990d21f88e3"]}
+{"at":"2026-11-02T09:49:30.251Z","event":"window-mode","mode":"compact","visible":true,"alwaysOnTop":true,"animationsPaused":false,"bounds":{"x":1044,"y":110,"width":356,"height":224}}
+{"at":"2026-11-02T09:49:30.278Z","event":"app-quit"}
+{"at":"2026-11-02T09:49:31.420Z","event":"tray-ready"}
+{"at":"2026-11-02T09:49:31.580Z","event":"app-ready","platform":"darwin","arch":"arm64","electron":"45.2.1","database":".cache/m2-runs/packaged-1793612953415/data/m0.sqlite3"}
+{"at":"2026-11-02T09:49:31.751Z","event":"window-shown","mode":"compact","visible":true,"alwaysOnTop":true,"animationsPaused":false,"bounds":{"x":1044,"y":110,"width":356,"height":224}}
+{"at":"2026-11-02T09:49:31.858Z","event":"window-mode","mode":"expanded","visible":true,"alwaysOnTop":true,"animationsPaused":false,"bounds":{"x":1044,"y":110,"width":356,"height":560}}
+{"at":"2026-11-02T09:49:33.139Z","event":"error","message":"editor storage failure"}
+{"at":"2026-11-02T09:49:35.083Z","event":"window-mode","mode":"compact","visible":true,"alwaysOnTop":true,"animationsPaused":false,"bounds":{"x":1044,"y":110,"width":356,"height":224}}
+{"at":"2026-11-02T09:49:35.133Z","event":"window-mode","mode":"expanded","visible":true,"alwaysOnTop":true,"animationsPaused":false,"bounds":{"x":1044,"y":110,"width":356,"height":560}}
+{"at":"2026-11-02T09:49:35.849Z","event":"app-quit"}
+{"at":"2026-11-02T09:49:36.617Z","event":"tray-ready"}
+{"at":"2026-11-02T09:49:36.710Z","event":"app-ready","platform":"darwin","arch":"arm64","electron":"45.2.1","database":".cache/m2-runs/packaged-1793612953415/data/m0.sqlite3"}
+{"at":"2026-11-02T09:49:36.822Z","event":"window-shown","mode":"expanded","visible":true,"alwaysOnTop":true,"animationsPaused":false,"bounds":{"x":1044,"y":110,"width":356,"height":560}}
+{"at":"2026-11-02T09:49:37.328Z","event":"app-quit"}

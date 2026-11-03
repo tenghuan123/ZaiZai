@@ -1,15 +1,21 @@
-import { useCallback, useEffect, useRef, useState } from 'react'
-import type { PointerEvent as ReactPointerEvent } from 'react'
-import type { AppResult, Reminder, Snapshot } from '../../shared/contracts'
-import type { Occurrence } from '../../shared/tasks'
-import petImage from './assets/pet.svg'
+import { useEffect, useRef, useState } from 'react'
+import type { CSSProperties, PointerEvent as ReactPointerEvent } from 'react'
+import type { DayItem, RepeatPlan } from '../../shared/tasks'
+import { useWorkspace } from './features/tasks/use-workspace'
+import { itemKey, TaskList } from './features/tasks/TaskList'
+import { DateNavigator } from './features/calendar/DateNavigator'
+import { PlanList } from './features/plans/PlanList'
+import { EndPlanDialog, TaskEditor } from './features/editor/TaskEditor'
+import type { EditorTarget } from './features/editor/TaskEditor'
+import { selectPetPlayback } from '../../shared/pet'
+import type { PetAction, PetReaction } from '../../shared/pet'
+import { PetSprite } from './features/pet/PetSprite'
+import { PetActions } from './features/pet/PetActions'
+import { useTaskCompletion } from './features/tasks/use-task-completion'
+import { CompletionEffects } from './features/tasks/CompletionEffects'
+import { MENU_TRANSITION_MS } from '../../shared/motion'
 
 const api = window.desktop
-const dispatchLabels: Record<Reminder['dispatchState'], string> = {
-  pending: '等待提醒', claimed: '正在提交通知', submitted: '通知已提交', failed: '通知未提交',
-  unavailable: '系统通知不可用', uncertain: '上次提交结果不明'
-}
-
 function countdown(time: string | null, now: number): string {
   if (!time) return '点击设置下班时间'
   const [hour, minute] = time.split(':').map(Number)
@@ -19,40 +25,41 @@ function countdown(time: string | null, now: number): string {
   const seconds = Math.ceil(difference / 1000)
   return `离下班还有 ${[Math.floor(seconds / 3600), Math.floor(seconds / 60) % 60, seconds % 60].map(value => String(value).padStart(2, '0')).join(':')}`
 }
+function editorKey(target: EditorTarget): string {
+  return target.kind === 'new' ? target.requestId : target.kind === 'once'
+    ? `${target.occurrence.id}/${target.occurrence.version}` : `${target.plan.id}/${target.plan.version}`
+}
 
 export function App(): React.JSX.Element {
-  const [snapshot, setSnapshot] = useState<Snapshot | null>(null)
-  const [error, setError] = useState('')
+  const [selectedDate, setSelectedDate] = useState<string | null>(null)
+  const { workspace, day, loading, error, setError, refresh, command } = useWorkspace(selectedDate)
   const [now, setNow] = useState(Date.now)
-  const [title, setTitle] = useState('起来活动一下')
-  const [date, setDate] = useState('')
-  const [time, setTime] = useState('')
-  const [saving, setSaving] = useState(false)
-  const [tab, setTab] = useState<'todo' | 'done'>('todo')
+  const [title, setTitle] = useState('')
+  const [tab, setTab] = useState<'todo' | 'done' | 'plans'>('todo')
+  const [showCalendar, setShowCalendar] = useState(false)
   const [showSettings, setShowSettings] = useState(false)
+  const [showPet, setShowPet] = useState(false)
+  const [petPreview, setPetPreview] = useState<PetAction>('idle')
+  const [petReaction, setPetReaction] = useState<PetReaction | null>(null)
+  const [editor, setEditor] = useState<EditorTarget | null>(null)
+  const [ending, setEnding] = useState<RepeatPlan | null>(null)
+  const [busy, setBusy] = useState(new Set<string>())
   const [feedback, setFeedback] = useState('')
-  const request = useRef(0)
-  const creationKey = useRef(crypto.randomUUID())
-  const completing = useRef(new Set<string>())
+  const [focusedId, setFocusedId] = useState<string | null>(null)
+  const [completionCount, setCompletionCount] = useState(0)
+  const completion = useTaskCompletion(complete)
+  const quickRequest = useRef(crypto.randomUUID())
+  const busyRef = useRef(new Set<string>())
+  const lastFocus = useRef<string | null>(null)
   const feedbackTimer = useRef<ReturnType<typeof setTimeout> | undefined>(undefined)
   const clickTimer = useRef<ReturnType<typeof setTimeout> | undefined>(undefined)
   const gesture = useRef<{ x: number; y: number; moved: boolean } | null>(null)
-
-  const refresh = useCallback(async () => {
-    const version = ++request.current
-    try {
-      const result = await api.bootstrap()
-      if (version !== request.current) return
-      if (result.ok) setSnapshot(previous => previous?.sessionId === result.sessionId && previous.revision > result.revision ? previous : result.value)
-      else setError(result.error.message)
-    } catch { setError('与桌面主进程的连接中断，请重新打开窗口。') }
-  }, [])
+  const snapshot = workspace?.snapshot
+  const activeReminderId = snapshot?.activeReminderIds[0] ?? null
 
   useEffect(() => {
-    const unsubscribe = api.subscribe(() => { void refresh() })
-    void refresh()
-    return () => { unsubscribe(); request.current++ }
-  }, [refresh])
+    if (activeReminderId && petReaction) setPetReaction(null)
+  }, [activeReminderId, petReaction])
 
   useEffect(() => {
     if (snapshot?.window.animationsPaused) return
@@ -60,56 +67,112 @@ export function App(): React.JSX.Element {
     const timer = setInterval(() => setNow(Date.now()), 1000)
     return () => clearInterval(timer)
   }, [snapshot?.window.animationsPaused])
-
+  useEffect(() => {
+    const id = snapshot?.focusedReminderId
+    if (id && id !== lastFocus.current) {
+      lastFocus.current = id; setFocusedId(id); setSelectedDate(null); setTab('todo'); setShowSettings(false); setShowPet(false)
+    }
+  }, [snapshot?.focusedReminderId])
+  useEffect(() => {
+    if (focusedId && day && tab === 'todo') document.querySelector(`[data-occurrence-id="${CSS.escape(focusedId)}"]`)?.scrollIntoView({ block: 'nearest' })
+  }, [focusedId, day, tab])
+  useEffect(() => {
+    if ((editor || ending) && snapshot?.window.mode === 'compact') void command(() => api.setMode('expanded'))
+  }, [editor, ending, snapshot?.window.mode, command])
   useEffect(() => () => {
     if (feedbackTimer.current) clearTimeout(feedbackTimer.current)
     if (clickTimer.current) clearTimeout(clickTimer.current)
   }, [])
 
-  const run = useCallback(async (action: () => Promise<AppResult<unknown>>): Promise<boolean> => {
-    setError('')
-    try {
-      const result = await action()
-      if (!result.ok) {
-        setError(result.error.message)
-        if (result.error.code === 'CONFLICT') await refresh()
-        return false
-      }
-      await refresh()
-      return true
-    } catch { setError('操作未确认，请重新读取清单后检查。'); return false }
-  }, [refresh])
-
   function say(text: string): void {
     if (feedbackTimer.current) clearTimeout(feedbackTimer.current)
-    setFeedback(text)
-    feedbackTimer.current = setTimeout(() => setFeedback(''), 2800)
+    setFeedback(text); feedbackTimer.current = setTimeout(() => setFeedback(''), 2800)
   }
-
-  async function schedule(hideAfterScheduling: boolean): Promise<void> {
-    if (saving || !title.trim()) return
-    setSaving(true)
+  function respondToPet(): void {
+    if (activeReminderId) return
+    setPetReaction({ id: crypto.randomUUID(), action: 'react' })
+    say('今天也要好好照顾自己呀 🐾')
+  }
+  async function withBusy(key: string, action: () => Promise<void>): Promise<void> {
+    if (busyRef.current.has(key)) return
+    busyRef.current.add(key); setBusy(new Set(busyRef.current))
+    try { await action() } finally { busyRef.current.delete(key); setBusy(new Set(busyRef.current)) }
+  }
+  function selectDate(date: string): void {
+    setSelectedDate(date === snapshot?.today.date ? null : date); setShowSettings(false); setShowPet(false)
+    if (tab === 'plans') setTab('todo')
+  }
+  function openNew(type: 'once' | 'repeat' = 'once'): void {
+    if (!snapshot) return
+    setError('')
+    setEditor({ kind: 'new', requestId: crypto.randomUUID(), title, type,
+      date: selectedDate && selectedDate > snapshot.today.date ? selectedDate : snapshot.today.date,
+      reminderEnabled: snapshot.settings.defaultReminderEnabled })
+  }
+  function editItem(item: DayItem): void {
+    setError('')
+    if (item.kind === 'saved' && item.occurrence.planId === null) setEditor({ kind: 'once', occurrence: item.occurrence })
+    else {
+      const planId = item.kind === 'preview' ? item.ref.planId : item.occurrence.planId
+      const plan = workspace?.plans.find(value => value.id === planId)
+      if (plan) setEditor({ kind: 'plan', plan })
+      else { setError('所属计划暂时无法读取，请重试。'); void refresh() }
+    }
+  }
+  async function reloadEditor(): Promise<string | undefined> {
     try {
-      if (!snapshot) return
-      const saved = await run(() => api.tasks.createOnce({ requestId: creationKey.current, title,
-        scheduledDate: date || snapshot.today.date, scheduledTime: time || null,
-        reminderEnabled: snapshot.settings.defaultReminderEnabled, scene: 'generic' }))
-      if (saved) {
-        creationKey.current = crypto.randomUUID()
-        say(time ? '安排好了，到时间提醒你 🐾' : '已保存到任务清单 🐾')
-        if (hideAfterScheduling) await run(() => api.hide())
+      if (editor?.kind === 'plan') {
+        const result = await api.plans.list()
+        if (!result.ok) return result.error.message
+        const plan = result.value.find(value => value.id === editor.plan.id)
+        if (plan) { setEditor({ kind: 'plan', plan }); setError(''); return }
+      } else if (editor?.kind === 'once') {
+        const result = await api.tasks.getDay(editor.occurrence.scheduledDate)
+        if (!result.ok) return result.error.message
+        const item = result.value.items.find(item => item.kind === 'saved' && item.occurrence.id === editor.occurrence.id)
+        if (item?.kind === 'saved') { setEditor({ kind: 'once', occurrence: item.occurrence }); setError(''); return }
       }
-    } finally { setSaving(false) }
+      return '原日期中已没有这条记录，可能已删除或移动。草稿仍保留，可关闭后重新查看。'
+    } catch { return '最新记录读取失败，草稿仍保留，请重试。' }
   }
-
-  async function complete(id: string, completed: boolean): Promise<void> {
-    if (completing.current.has(id)) return
-    completing.current.add(id)
-    try {
-      if (await run(() => api.tasks.setCompleted({ id }, completed))) say(completed ? '完成一项啦，真棒 ✨' : '已恢复到待办清单')
-    } finally { completing.current.delete(id) }
+  async function quickAdd(): Promise<void> {
+    if (!title.trim()) { openNew(); return }
+    if (!snapshot) return
+    await withBusy('quick', async () => {
+      const result = await command(() => api.tasks.createOnce({ requestId: quickRequest.current, title,
+        scheduledDate: snapshot.today.date, scheduledTime: null, reminderEnabled: snapshot.settings.defaultReminderEnabled }))
+      if (result.ok) {
+        quickRequest.current = crypto.randomUUID(); setTitle(''); setSelectedDate(null); setTab('todo'); say('今日待办已保存 🐾')
+      }
+    })
   }
-
+  async function complete(item: DayItem, completed: boolean): Promise<boolean> {
+    let saved = false
+    await withBusy(itemKey(item), async () => {
+      const result = await command(() => api.tasks.setCompleted(item.ref, completed))
+      saved = result.ok
+      if (result.ok && result.value.changed) {
+        say(result.value.allCompleted ? '🎉 今日任务全部达成！' : completed ? '完成一项！继续保持 ✨' : '已恢复到待办清单')
+        if (completed) {
+          setCompletionCount(count => count + 1)
+          setPetReaction({ id: crypto.randomUUID(), action: result.value.allCompleted ? 'all_done' : 'celebrate' })
+        } else setPetReaction(null)
+      }
+    })
+    return saved
+  }
+  async function remove(item: DayItem): Promise<void> {
+    await withBusy(itemKey(item), async () => {
+      const result = await command(() => api.tasks.removeOccurrence(item.ref))
+      if (result.ok) say('已删除这一次安排')
+    })
+  }
+  async function move(item: DayItem): Promise<void> {
+    await withBusy(itemKey(item), async () => {
+      const result = await command(() => api.tasks.moveToToday(item.ref))
+      if (result.ok) say('已移到今天，原日期会保留 🐾')
+    })
+  }
   function pointerDown(event: ReactPointerEvent<HTMLButtonElement>): void {
     if (event.button !== 0) return
     event.currentTarget.setPointerCapture(event.pointerId)
@@ -121,124 +184,112 @@ export function App(): React.JSX.Element {
     if (Math.hypot(event.clientX - start.x, event.clientY - start.y) >= 5) {
       start.moved = true
       if (clickTimer.current) clearTimeout(clickTimer.current)
-      void run(() => api.beginDrag())
+      void command(() => api.beginDrag())
     }
   }
   function pointerUp(): void {
-    const start = gesture.current
-    gesture.current = null
+    const start = gesture.current; gesture.current = null
     if (!start) return
-    if (start.moved) { void run(() => api.endDrag()); return }
+    if (start.moved) { void command(() => api.endDrag()); return }
     if (clickTimer.current) clearTimeout(clickTimer.current)
-    clickTimer.current = setTimeout(() => say('今天也要好好照顾自己呀 🐾'), 250)
+    clickTimer.current = setTimeout(respondToPet, 250)
   }
 
-  if (!snapshot) return <main className="loading">{error || '桌面伙伴正在醒来…'}</main>
+  if (!workspace || !snapshot) return <main className="loading">{error || '桌面伙伴正在醒来…'}{error && <button onClick={() => { void refresh() }}>重新读取</button>}</main>
   const compact = snapshot.window.mode === 'compact'
-  const items = snapshot.today.items.filter(item => item.kind === 'saved').map(item => item.occurrence)
-  const done = items.filter(item => item.status === 'completed')
-  const todo = items.filter(item => item.status === 'pending')
-  const active = snapshot.activeReminderIds.map(id => snapshot.reminders.find(item => item.id === id)).filter((item): item is Reminder => !!item)
+  const date = selectedDate ?? snapshot.today.date
+  const active = snapshot.activeReminderIds.map(id => snapshot.reminders.find(item => item.id === id)).filter(item => !!item)
   const current = active[0]
-  const percentage = snapshot.today.progress.percentage
-  const label = (item: Occurrence): string => {
-    if (item.status === 'completed') return '已完成'
-    if (!item.reminderEnabled) return '提醒已关闭'
-    const reminder = snapshot.reminders.find(value => value.id === item.id)
-    return reminder ? dispatchLabels[reminder.dispatchState] : '无时间待办'
-  }
-  const rows = tab === 'todo' ? todo : done
-  const emotion = current ? 'alert' : feedback ? 'happy' : 'idle'
+  const currentItem = current && snapshot.today.items.find(item => item.kind === 'saved' && item.occurrence.id === current.id)
+  const done = day?.items.filter(item => item.kind === 'saved' && item.occurrence.status === 'completed').length ?? 0
+  const total = day?.items.length ?? 0
+  const petPlayback = selectPetPlayback(current ? { id: current.id,
+    scene: currentItem?.kind === 'saved' ? currentItem.occurrence.scene : 'generic' } : null,
+  petReaction, showPet && !compact ? petPreview : null)
 
-  return <main className={`widget ${compact ? 'compact' : ''} ${snapshot.window.animationsPaused ? 'paused' : ''}`}>
+  return <main className={`widget ${compact ? 'compact' : ''} ${snapshot.window.animationsPaused ? 'paused' : ''}`}
+    style={{ '--menu-duration': `${MENU_TRANSITION_MS}ms` } as CSSProperties}>
     <section className="pet-scene">
-      <button className={`pet pet-${emotion}`} aria-label="互动桌宠，双击展开或收起" title="拖动我移动窗口，双击展开或收起"
+      <button className="pet" aria-label="互动桌宠，双击展开或收起" title="拖动我移动窗口，双击展开或收起"
         onPointerDown={pointerDown} onPointerMove={pointerMove} onPointerUp={pointerUp}
-        onPointerCancel={() => { gesture.current = null; void run(() => api.endDrag()) }}
-        onDoubleClick={() => {
-          if (clickTimer.current) clearTimeout(clickTimer.current)
-          void run(() => api.setMode(compact ? 'expanded' : 'compact'))
-        }}
-        onKeyDown={event => { if (event.key === 'Enter' || event.key === ' ') { event.preventDefault(); say('今天也要加油呀 🐾') } }}>
-        <img src={petImage} alt="蓝耳白猫桌宠" draggable={false} />
+        onPointerCancel={() => { gesture.current = null; void command(() => api.endDrag()) }}
+        onDoubleClick={() => { if (clickTimer.current) clearTimeout(clickTimer.current); void command(() => api.setMode(compact ? 'expanded' : 'compact')) }}
+        onKeyDown={event => { if (event.key === 'Enter' || event.key === ' ') { event.preventDefault(); respondToPet() } }}>
+        <PetSprite playback={petPlayback} paused={snapshot.window.animationsPaused} onFinished={key => {
+          setPetReaction(reaction => reaction && `reaction:${reaction.id}` === key ? null : reaction)
+        }} />
       </button>
-      <div className={`bubble ${current ? 'reminder-bubble' : ''}`} aria-live="polite">
-        {current ? <>
-          <button className="bubble-dismiss" aria-label="收起这次提醒" onClick={() => { void run(() => api.acknowledgeReminder(current.id)) }}>×</button>
-          <strong>{current.title}</strong>
-          {active.length > 1 && <small>还有 {active.length - 1} 项到点事项</small>}
-          {current.dispatchState === 'failed' && <small className="notification-error">系统通知未提交，可在这里处理</small>}
-          <div className="bubble-actions">
-            <button className="primary" onClick={() => { void complete(current.id, true) }}>完成了</button>
-            <button onClick={() => { void run(() => api.setMode('expanded')); setTab('todo') }}>查看清单</button>
-          </div>
-        </> : <button className="bubble-label" onClick={() => { setShowSettings(true); void run(() => api.setMode('expanded')) }}>
-          {feedback || countdown(snapshot.settings.offworkTime, now)}
-        </button>}
-      </div>
+      <div className={`bubble ${current ? 'reminder-bubble' : ''}`} aria-live="polite">{current ? <>
+        <button className="bubble-dismiss" aria-label="收起这次提醒" onClick={() => { void command(() => api.acknowledgeReminder(current.id)) }}>×</button>
+        <strong>{current.title}</strong>{active.length > 1 && <small>还有 {active.length - 1} 项到点事项</small>}
+        {['failed', 'unavailable'].includes(current.dispatchState) && <small className="notification-error">系统通知未提交，可在这里处理</small>}
+        <div className="bubble-actions"><button className="primary" disabled={!currentItem || busy.has(current.id)} onClick={() => { if (currentItem) void complete(currentItem, true) }}>完成了</button>
+          <button onClick={() => { setSelectedDate(null); setTab('todo'); setShowSettings(false); setFocusedId(current.id); void command(() => api.setMode('expanded')) }}>查看清单</button></div>
+      </> : <button className="bubble-label" onClick={() => { setShowSettings(true); setShowPet(false); void command(() => api.setMode('expanded')) }}>{feedback || countdown(snapshot.settings.offworkTime, now)}</button>}</div>
     </section>
-
-    {compact ? <button className="mini-dock" aria-label="展开清单" onClick={() => { void run(() => api.setMode('expanded')) }}>
-      <span className="status-dot" /> 已完成 {done.length}/{items.length}<span>展开清单 ▾</span>
-    </button> : <section className="card">
-      <header className="card-header">
-        <div className="window-controls">
-          <button className="round blue" aria-label="仅显示桌宠" onClick={() => { void run(() => api.setMode('compact')) }}>−</button>
-          <button className="round coral" aria-label="关闭桌面伙伴" onClick={() => { void run(() => api.requestClose()) }}>×</button>
-          <button className="settings-button" aria-label="设置与验证状态" onClick={() => setShowSettings(!showSettings)}>⚙</button>
-        </div>
-        <div className="clock"><strong>{new Date(now).toLocaleTimeString('zh-CN', { hour: '2-digit', minute: '2-digit', hour12: false })}</strong>
-          <span>{new Date(now).toLocaleDateString('zh-CN', { month: '2-digit', day: '2-digit', weekday: 'long' })}</span></div>
-      </header>
-
-      {showSettings ? <section className="settings-panel">
-        <div className="panel-title"><h2>设置与验证状态</h2><button aria-label="返回提醒清单" onClick={() => setShowSettings(false)}>返回</button></div>
+    <button className="mini-dock" aria-label="展开清单" aria-hidden={!compact} inert={!compact} onClick={() => { void command(() => api.setMode('expanded')) }}>
+      <span className="status-dot" /> 今天 {snapshot.today.progress.completed}/{snapshot.today.progress.total}<span>展开清单 ▾</span>
+    </button><section className="card" aria-hidden={compact} inert={compact}>
+      <header className="card-header"><div className="window-controls">
+        <button className="round blue" aria-label="仅显示桌宠" onClick={() => { void command(() => api.setMode('compact')) }}>
+          <svg viewBox="0 0 12 12" fill="none" aria-hidden="true" focusable="false"><path d="M2.5 6h7" stroke="currentColor" strokeWidth="1.7" strokeLinecap="round" /></svg>
+        </button>
+        <button className="round coral" aria-label="关闭桌面伙伴" onClick={() => { void command(() => api.requestClose()) }}>
+          <svg viewBox="0 0 12 12" fill="none" aria-hidden="true" focusable="false"><path d="m3 3 6 6m0-6L3 9" stroke="currentColor" strokeWidth="1.7" strokeLinecap="round" /></svg>
+        </button>
+        <button className={`settings-button ${showCalendar ? 'active' : ''}`} aria-label="日期与历史" onClick={() => { setShowCalendar(value => !value); setShowSettings(false); setShowPet(false) }}>▦</button>
+        <button className={`settings-button ${showPet ? 'active' : ''}`} aria-label="桌宠动作" onClick={() => { setShowPet(value => !value); setShowSettings(false); setShowCalendar(false) }}>🐾</button>
+        <button className="settings-button" aria-label="设置与验证状态" onClick={() => { setShowSettings(value => !value); setShowPet(false) }}>⚙</button>
+      </div><div className="clock"><strong>{new Date(now).toLocaleTimeString('zh-CN', { hour: '2-digit', minute: '2-digit', hour12: false })}</strong>
+        <span>{new Date(now).toLocaleDateString('zh-CN', { month: '2-digit', day: '2-digit', weekday: 'long' })}</span></div></header>
+      {showPet ? <PetActions selected={petPreview} blocked={!!current} onSelect={action => { setPetReaction(null); setPetPreview(action) }} onClose={() => setShowPet(false)} /> : showSettings ? <section className="settings-panel">
+        <div className="panel-title"><h2>设置与验证状态</h2><button onClick={() => setShowSettings(false)}>返回</button></div>
         <label className="setting-row">固定下班时间<input aria-label="固定下班时间" type="time" value={snapshot.settings.offworkTime || ''}
-          onChange={event => { void run(() => api.settings.update({ expectedVersion: snapshot.settings.version, patch: { offworkTime: event.target.value || null } })) }} /></label>
+          onChange={event => { void command(() => api.settings.update({ expectedVersion: snapshot.settings.version, patch: { offworkTime: event.target.value || null } })) }} /></label>
         <label className="setting-row">窗口始终置顶<input type="checkbox" checked={snapshot.window.alwaysOnTop}
-          onChange={event => { void run(() => api.settings.update({ expectedVersion: snapshot.settings.version, patch: { alwaysOnTop: event.target.checked } })) }} /></label>
+          onChange={event => { void command(() => api.settings.update({ expectedVersion: snapshot.settings.version, patch: { alwaysOnTop: event.target.checked } })) }} /></label>
         <label className="setting-row">新任务默认提醒<input type="checkbox" checked={snapshot.settings.defaultReminderEnabled}
-          onChange={event => { void run(() => api.settings.update({ expectedVersion: snapshot.settings.version, patch: { defaultReminderEnabled: event.target.checked } })) }} /></label>
-        <div className="verification-status">
-          <span>菜单栏 / 托盘<strong>{snapshot.diagnostics.trayReady ? '已创建' : '不可用'}</strong></span>
-          <span>系统通知能力<strong>{snapshot.diagnostics.notificationSupported ? '系统支持' : '系统不支持'}</strong></span>
-          <span>原生窗口<strong>{snapshot.window.bounds.width} × {snapshot.window.bounds.height}</strong></span>
-          <span>Electron<strong>{snapshot.diagnostics.versions.electron}</strong></span>
-        </div>
+          onChange={event => { void command(() => api.settings.update({ expectedVersion: snapshot.settings.version, patch: { defaultReminderEnabled: event.target.checked } })) }} /></label>
+        <div className="verification-status"><span>菜单栏 / 托盘<strong>{snapshot.diagnostics.trayReady ? '已创建' : '不可用'}</strong></span>
+          <span>系统通知能力<strong>{snapshot.diagnostics.notificationSupported ? '系统支持' : '系统不支持'}</strong></span><span>原生窗口<strong>{snapshot.window.bounds.width} × {snapshot.window.bounds.height}</strong></span>
+          <span>Electron<strong>{snapshot.diagnostics.versions.electron}</strong></span></div>
         <details><summary>本地数据位置</summary><p className="data-path">{snapshot.diagnostics.databasePath}</p></details>
-        <p className="scope-note">任务与设置保存在本机。每日计划和日期管理界面将在 M2 接入。</p>
-        <button className="secondary wide" onClick={() => { void run(() => api.hide()) }}>隐藏到托盘 / 菜单栏</button>
-        <button className="text-button wide" onClick={() => { void run(() => api.quit()) }}>退出软件</button>
+        <button className="secondary wide" onClick={() => { void command(() => api.hide()) }}>隐藏到托盘 / 菜单栏</button>
+        <button className="text-button wide" onClick={() => { void command(() => api.quit()) }}>退出软件</button>
       </section> : <>
-        <div className="progress-caption"><span>今日进度 {done.length}/{items.length}</span><span>{percentage}%</span></div>
-        <div className="progress-track"><div style={{ width: `${percentage}%` }} /></div>
-        <nav className="tabs" aria-label="提醒清单分类">
-          <button className={tab === 'todo' ? 'selected' : ''} onClick={() => setTab('todo')}>待办 ({todo.length})</button>
-          <button className={tab === 'done' ? 'selected' : ''} onClick={() => setTab('done')}>已完成 ({done.length})</button>
+        {showCalendar && <DateNavigator today={snapshot.today.date} selected={date} historyDates={workspace.historyDates} onSelect={selectDate} />}
+        {date !== snapshot.today.date && <div className="selected-day-banner"><span>{date} · {date < snapshot.today.date ? '历史' : '未来安排'}</span>
+          <button onClick={() => { setSelectedDate(null); setShowCalendar(false) }}>返回今天</button></div>}
+        <div className="progress-caption" aria-live="polite"><span>{date === snapshot.today.date ? '今日' : date.slice(5)}进度 {day ? `${done}/${total}` : '读取中…'}</span><span>{day?.progress.percentage ?? 0}%</span></div>
+        <div className="progress-track"><div style={{ width: `${day?.progress.percentage ?? 0}%` }} /></div>
+        <nav className="tabs" aria-label="任务清单分类">
+          <button className={tab === 'todo' ? 'selected' : ''} onClick={() => setTab('todo')}>待办 ({total - done})</button>
+          <button className={tab === 'done' ? 'selected' : ''} onClick={() => setTab('done')}>已完成 <span key={completionCount} className={completionCount ? 'completion-badge' : ''}>({done})</span></button>
+          <button className={tab === 'plans' ? 'selected' : ''} onClick={() => { setTab('plans'); setShowCalendar(false) }}>重复计划</button>
         </nav>
-        <div className="reminder-list">
-          {rows.length === 0 && <div className="empty-state"><span>{tab === 'todo' ? '☁' : '✧'}</span>
-            <p>{tab === 'todo' ? '给自己安排一个小提醒吧' : '完成的小事都会留在这里'}</p></div>}
-          {rows.map(item => <article key={item.id} className={`reminder-row ${snapshot.focusedReminderId === item.id ? 'focused' : ''}`} data-reminder-id={item.id}>
-            <button className={`check ${item.status === 'completed' ? 'checked' : ''}`} aria-label={`${item.status === 'completed' ? '撤销' : '完成'}：${item.title}`}
-              onClick={() => { void complete(item.id, item.status !== 'completed') }}>{item.status === 'completed' ? '✓' : ''}</button>
-            <div className="reminder-content"><strong className={item.status === 'completed' ? 'struck' : ''} title={item.title}>{item.title}</strong>
-              <small>
-                {item.scheduledTime || '无时间'} · {label(item)}
-              </small></div>
-          </article>)}
-        </div>
-        <form className="reminder-form" onSubmit={event => { event.preventDefault(); void schedule(false) }}>
-          <input aria-label="任务内容" value={title} maxLength={120} placeholder="想安排什么？" onChange={event => setTitle(event.target.value)} />
-          <div className="schedule-controls"><label>日期 <input aria-label="任务日期" type="date" value={date || snapshot.today.date} onChange={event => setDate(event.target.value)} /></label>
-            <label>时间 <input aria-label="任务时间" type="time" value={time} onChange={event => setTime(event.target.value)} /></label></div>
-          <div className="schedule-controls">
-            <button className="primary" type="submit" disabled={saving || !title.trim()}>添加任务</button>
-            <button className="secondary" type="button" disabled={saving || !title.trim()} onClick={() => { void schedule(true) }}>添加并隐藏</button></div>
+        {tab === 'plans' ? <PlanList plans={workspace.plans} busy={busy} onCreate={() => openNew('repeat')} onEdit={plan => { setError(''); setEditor({ kind: 'plan', plan }) }}
+          onPaused={plan => { void withBusy(plan.id, async () => { const result = await command(() => api.plans.setPaused(plan.id, plan.state !== 'paused')); if (result.ok) say(result.value.state === 'paused' ? '计划已暂停，历史仍保留' : '计划已恢复，从现在继续安排') }) }}
+          onEnd={plan => { setError(''); setEnding(plan) }} />
+          : day && !loading ? <TaskList day={day} tab={tab} busy={busy} pending={completion.pending} focusedId={focusedId}
+            onComplete={(item, desired, button) => { if (desired) completion.toggle(item, button); else void complete(item, false) }} onEdit={editItem}
+            onRemove={item => { void remove(item) }} onMove={item => { void move(item) }} /> : <div className="empty-state"><p>{loading ? '正在读取这一天…' : '这一天暂时无法读取'}</p><button onClick={() => { void refresh() }}>重新读取</button></div>}
+        <form className="quick-add" onSubmit={event => { event.preventDefault(); void quickAdd() }}>
+          <div><input aria-label="新增待办" maxLength={120} placeholder="新增今日待办" value={title} disabled={busy.has('quick')} onChange={event => setTitle(event.target.value)} />
+            <button type="button" aria-label="定时或重复" onClick={() => openNew(tab === 'plans' ? 'repeat' : 'once')}>◷ 定时/重复</button></div>
+          <button type="submit" className="add-button" aria-label="快捷新增任务" disabled={busy.has('quick')}>＋</button>
         </form>
-        <footer className="card-footer"><span>今日任务</span><span>数据保存在本机</span></footer>
       </>}
-    </section>}
-    {error && <div className="error-toast" role="alert">{error}<button aria-label="关闭错误提示" onClick={() => setError('')}>×</button></div>}
+    </section>
+    <CompletionEffects pending={completion.pending} />
+    {editor && <TaskEditor key={editorKey(editor)} target={editor} now={now} command={command} onClose={() => { setEditor(null); setError('') }} onReload={reloadEditor}
+      onSaved={result => {
+        const wasNew = editor.kind === 'new'
+        setEditor(null); setTitle(''); setError('')
+        if (result.kind === 'once') { selectDate(result.occurrence.scheduledDate); setTab(result.occurrence.status === 'completed' ? 'done' : 'todo'); say('任务安排已保存 ✨') }
+        else { if (wasNew) { selectDate(result.plan.startDate > snapshot.today.date ? result.plan.startDate : snapshot.today.date); setTab('todo') } else { setTab('plans'); setShowCalendar(false) } say('重复计划已保存 ✨') }
+      }} />}
+    {ending && <EndPlanDialog plan={ending} busy={busy.has(ending.id)} error={error} onClose={() => { setEnding(null); setError('') }}
+      onConfirm={() => { void withBusy(ending.id, async () => { const result = await command(() => api.plans.end(ending.id)); if (result.ok) { setEnding(null); say('计划已结束，已有历史仍保留') } }) }} />}
+    {error && !editor && !ending && <div className="error-toast" role="alert">{error}<button aria-label="关闭错误提示" onClick={() => setError('')}>×</button></div>}
   </main>
 }

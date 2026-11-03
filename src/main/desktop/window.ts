@@ -2,6 +2,7 @@ import { BrowserWindow, dialog, screen } from 'electron'
 import type { DisplayMode, WindowState } from '../../shared/contracts'
 import type { SettingsRepository } from '../settings/repository'
 import { fitToWorkArea, WINDOW_SIZE } from './geometry'
+import { MENU_TRANSITION_MS } from '../../shared/motion'
 
 interface WindowOptions {
   preload: string
@@ -18,7 +19,9 @@ export class DesktopWindow {
   private closingDialog = false
   private quitting = false
   private systemIdle = false
+  private publishedVisibility = false
   private dragTimer: ReturnType<typeof setInterval> | undefined
+  private compactTimer: ReturnType<typeof setTimeout> | undefined
   private readonly expectedRenderer: URL
 
   constructor(private readonly store: SettingsRepository, private readonly options: WindowOptions) {
@@ -46,8 +49,8 @@ export class DesktopWindow {
     this.window.on('close', event => {
       if (!this.quitting) { event.preventDefault(); void this.requestClose().catch(options.reportError) }
     })
-    this.window.on('show', () => { options.log('window-shown', this.state); options.changed() })
-    this.window.on('hide', () => { this.endDrag(); options.log('window-hidden', this.state); options.changed() })
+    this.window.on('show', () => this.publishVisibility())
+    this.window.on('hide', () => this.publishVisibility())
     this.window.on('blur', () => this.endDrag())
     this.window.on('moved', () => this.savePosition())
     this.window.webContents.on('render-process-gone', (_event, details) => {
@@ -83,10 +86,21 @@ export class DesktopWindow {
     if (this.mode === mode) return
     this.endDrag()
     this.store.updateSettings({ displayMode: mode })
-    const bounds = { ...this.window.getBounds(), ...WINDOW_SIZE[mode] }
-    const area = screen.getDisplayMatching(bounds).workArea
-    this.window.setBounds(fitToWorkArea(bounds, area))
+    clearTimeout(this.compactTimer)
     this.mode = mode
+    const resize = (): void => {
+      const bounds = { ...this.window.getBounds(), ...WINDOW_SIZE[mode] }
+      const area = screen.getDisplayMatching(bounds).workArea
+      this.window.setBounds(fitToWorkArea(bounds, area))
+    }
+    if (mode === 'expanded' || !this.window.isVisible()) resize()
+    else {
+      // The renderer folds the card first; shrinking now would clip that animation.
+      this.compactTimer = setTimeout(() => {
+        this.compactTimer = undefined
+        resize(); this.options.changed()
+      }, MENU_TRANSITION_MS)
+    }
     this.options.log('window-mode', this.state)
     this.options.changed()
   }
@@ -105,10 +119,20 @@ export class DesktopWindow {
     this.keepOnScreen()
     this.window.show()
     this.window.focus()
-    this.options.changed()
+    this.publishVisibility()
   }
 
-  hide(): void { this.window.hide() }
+  hide(): void { this.endDrag(); this.window.hide(); this.publishVisibility() }
+
+  private publishVisibility(): void {
+    // Some packaged macOS windows omit native show/hide events, so commands also publish the actual state.
+    const visible = this.window.isVisible()
+    if (visible === this.publishedVisibility) return
+    this.publishedVisibility = visible
+    if (!visible) this.endDrag()
+    this.options.log(visible ? 'window-shown' : 'window-hidden', this.state)
+    this.options.changed()
+  }
 
   async requestClose(): Promise<void> {
     if (this.closingDialog || this.quitting) return
@@ -161,6 +185,7 @@ export class DesktopWindow {
   }
 
   prepareToQuit(): void {
+    clearTimeout(this.compactTimer)
     this.endDrag()
     this.savePosition()
     this.quitting = true

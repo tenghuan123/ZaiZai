@@ -1,0 +1,15 @@
+{
+  "directory": "./.cache/animation-runs/1793670221564",
+  "checks": [
+    "a second click in the 620 ms feedback sends an explicit undo, cancels every effect, and restores saved progress",
+    "check/particles/stroke/stamp retain the row; confirmed persistence updates progress before a smooth exit; undo restores it",
+    "a real SQLite completion failure restores the unchecked row, clears effects, and preserves progress",
+    "changing tabs preserves pending completion; two independent completions reach 100% and trigger all-done celebration",
+    "the card folds while native height stays 560, then shrinks to 224; the compact dock clears the pet and expands back",
+    "rapid reversal cancels the stale native resize; pet double-click uses the same animated mode transition",
+    "a future preview completes and undoes through the same materialized occurrence; retry saves exactly one occurrence and exits its row",
+    "reduced motion completes directly without particles or delayed row removal, and mode switching has no CSS animation"
+  ],
+  "errors": [],
+  "status": "passed"
+}

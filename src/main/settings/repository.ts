@@ -1,12 +1,13 @@
 import type Database from 'better-sqlite3'
 import type { Settings } from '../../shared/contracts'
+import { BUILT_IN_PET_ID } from '../../shared/pet'
 import { AppError, checkVersion } from '../domain/errors'
 import { boolean, fields, object, version } from '../domain/validation'
 import { validTime } from '../domain/time'
 
 export const defaultSettings: Settings = {
   version: 1, displayMode: 'expanded', alwaysOnTop: true, offworkTime: '18:00', defaultReminderEnabled: true,
-  position: null, petId: 'builtin-cat', petDisplay: {}
+  position: null, petId: BUILT_IN_PET_ID, petDisplay: {}
 }
 export function validateSettings(input: unknown): Settings {
   const value = object(input)
@@ -40,7 +41,11 @@ export class SettingsRepository {
   constructor(private readonly db: Database.Database) {}
   getSettings(): Settings {
     const row = this.db.prepare('SELECT value FROM app_settings WHERE id=1').get() as { value: string }
-    try { return validateSettings(JSON.parse(row.value)) }
+    try {
+      const settings = validateSettings(JSON.parse(row.value))
+      // The old ID represented the only built-in placeholder, never a user-selected resource pack.
+      return settings.petId === 'builtin-cat' ? { ...settings, petId: BUILT_IN_PET_ID } : settings
+    }
     catch (error) { throw new Error('本地设置损坏，应用不会自动重置。', { cause: error }) }
   }
   updateSettings(patch: Partial<Omit<Settings, 'version'>>, expectedVersion?: number): Settings {
