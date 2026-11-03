@@ -1,7 +1,7 @@
 import type { Scene } from './tasks'
 
 export const BUILT_IN_PET_ID = 'strawberry-bunny-v3'
-export const BUILT_IN_PET_IDS = [BUILT_IN_PET_ID, 'hu-xianya', 'teng-huan'] as const
+export const BUILT_IN_PET_IDS = [BUILT_IN_PET_ID, 'hu-xianya', 'teng-huan', 'teng-junlong'] as const
 export function isBuiltInPetId(value: unknown): boolean {
   return BUILT_IN_PET_IDS.some(id => id === value)
 }

@@ -24,6 +24,14 @@ import tengHuanAllDone from '../../../../../resources/pets/teng-huan/all_done.pn
 import tengHuanRemind from '../../../../../resources/pets/teng-huan/remind.png?url'
 import tengHuanDrinkWater from '../../../../../resources/pets/teng-huan/drink_water.png?url'
 import tengHuanStretch from '../../../../../resources/pets/teng-huan/stretch.png?url'
+import tengJunlongManifest from '../../../../../resources/pets/teng-junlong/manifest.json'
+import tengJunlongIdle from '../../../../../resources/pets/teng-junlong/idle.png?url'
+import tengJunlongReact from '../../../../../resources/pets/teng-junlong/react.png?url'
+import tengJunlongCelebrate from '../../../../../resources/pets/teng-junlong/celebrate.png?url'
+import tengJunlongAllDone from '../../../../../resources/pets/teng-junlong/all_done.png?url'
+import tengJunlongRemind from '../../../../../resources/pets/teng-junlong/remind.png?url'
+import tengJunlongDrinkWater from '../../../../../resources/pets/teng-junlong/drink_water.png?url'
+import tengJunlongStretch from '../../../../../resources/pets/teng-junlong/stretch.png?url'
 
 export interface PetSpriteState { src: string; frames: number; cols: number; fps: number; loop: boolean; url: string }
 export interface PetPack {
@@ -43,7 +51,9 @@ export const petPacks: PetPack[] = [
   createPetPack(xianyaManifest, { idle: xianyaIdle, react: xianyaReact, celebrate: xianyaCelebrate, all_done: xianyaAllDone,
     remind: xianyaRemind, drink_water: xianyaDrinkWater, stretch: xianyaStretch }),
   createPetPack(tengHuanManifest, { idle: tengHuanIdle, react: tengHuanReact, celebrate: tengHuanCelebrate, all_done: tengHuanAllDone,
-    remind: tengHuanRemind, drink_water: tengHuanDrinkWater, stretch: tengHuanStretch })
+    remind: tengHuanRemind, drink_water: tengHuanDrinkWater, stretch: tengHuanStretch }),
+  createPetPack(tengJunlongManifest, { idle: tengJunlongIdle, react: tengJunlongReact, celebrate: tengJunlongCelebrate, all_done: tengJunlongAllDone,
+    remind: tengJunlongRemind, drink_water: tengJunlongDrinkWater, stretch: tengJunlongStretch })
 ]
 
 export function getPetPack(id: string = BUILT_IN_PET_ID): PetPack {

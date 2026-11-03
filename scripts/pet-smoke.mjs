@@ -7,6 +7,7 @@ import assert from 'node:assert/strict'
 
 const require = createRequire(import.meta.url)
 const executable = process.argv.find(value => value.startsWith('--executable='))?.slice('--executable='.length)
+const selectedPetId = 'teng-junlong'
 const directory = resolve('.cache/pet-runs', `${executable ? 'packaged' : 'built'}-${Date.now()}`)
 await mkdir(directory, { recursive: true })
 const env = { ...process.env, TIA_M0_DATA_DIR: join(directory, 'data') }
@@ -49,11 +50,12 @@ try {
   await page.getByRole('button', { name: '桌宠动作', exact: true }).click()
   const actions = { idle: '待机眨眼', react: '挥手回应', celebrate: '鼓掌庆祝', all_done: '跳跃欢呼', remind: '摇铃提醒', drink_water: '喝水提醒', stretch: '头顶伸展' }
   const selector = page.getByRole('combobox', { name: '桌宠角色', exact: true })
-  for (const petId of ['strawberry-bunny-v3', 'hu-xianya', 'teng-huan']) {
+  for (const petId of ['strawberry-bunny-v3', 'hu-xianya', 'teng-huan', selectedPetId]) {
     await selector.selectOption(petId)
     await ready('idle', petId)
     assert.equal((await snapshot()).settings.petId, petId)
     if (petId === 'teng-huan') assert.match(await page.locator('.pet-pack-description').innerText(), /v1\.0\.2/)
+    if (petId === selectedPetId) assert.match(await page.locator('.pet-pack-description').innerText(), /v1\.0\.1/)
     for (const [action, label] of Object.entries(actions)) {
       await page.getByRole('button', { name: label, exact: true }).click()
       await ready(action, petId); await moving()
@@ -72,22 +74,22 @@ try {
   sql("CREATE TRIGGER pet_selection_failure BEFORE UPDATE ON app_settings WHEN json_extract(NEW.value,'$.petId')='strawberry-bunny-v3' BEGIN SELECT RAISE(ABORT,'pet selection storage failure'); END")
   await selector.selectOption('strawberry-bunny-v3')
   await page.getByRole('alert').filter({ hasText: '本地数据读写失败' }).waitFor()
-  assert.equal(await selector.inputValue(), 'teng-huan')
+  assert.equal(await selector.inputValue(), selectedPetId)
   assert.deepEqual((await snapshot()).settings, selected)
-  assert.equal(await canvas.getAttribute('data-pet-id'), 'teng-huan')
+  assert.equal(await canvas.getAttribute('data-pet-id'), selectedPetId)
   sql('DROP TRIGGER pet_selection_failure')
   await page.getByRole('button', { name: '关闭错误提示', exact: true }).click()
   await selector.selectOption('strawberry-bunny-v3'); await ready('idle', 'strawberry-bunny-v3')
-  await selector.selectOption('teng-huan'); await ready('idle', 'teng-huan')
-  report.checks.push('all three installed characters animate all seven actions, Teng Huan uses v1.0.2, and a real storage failure preserves the current choice until a successful retry')
+  await selector.selectOption(selectedPetId); await ready('idle', selectedPetId)
+  report.checks.push('all four installed characters animate all seven actions, Teng Huan uses v1.0.2, Teng Junlong uses v1.0.1, and a real storage failure preserves the current choice until a successful retry')
   await page.getByRole('button', { name: '返回清单', exact: true }).click()
   await ready('idle')
   report.checks.push('all seven actual app previews animate, and returning to the task list restores idle')
 
   await page.getByRole('button', { name: '互动桌宠，双击展开或收起', exact: true }).press('Enter')
-  await page.getByRole('button', { name: '我在这里，陪你把今天安排好。', exact: true }).waitFor()
+  await page.getByRole('button', { name: '我在这里，陪你稳稳地推进今天的计划。', exact: true }).waitFor()
   await ready('react'); await moving(); await ready('idle')
-  report.checks.push('Teng Huan keyboard interaction uses his own dialogue, waves once, then returns to idle')
+  report.checks.push('Teng Junlong keyboard interaction uses his own dialogue, waves once, then returns to idle')
 
   await page.emulateMedia({ reducedMotion: 'reduce' })
   await page.waitForFunction(() => document.querySelector('.pet-sprite')?.dataset.paused === 'true', null, { polling: 100 })
@@ -157,7 +159,7 @@ try {
       const pending = (await snapshot()).activeReminderIds
       await selector.selectOption('strawberry-bunny-v3'); await ready(action, 'strawberry-bunny-v3')
       assert.deepEqual((await snapshot()).activeReminderIds, pending)
-      await selector.selectOption('teng-huan'); await ready(action, 'teng-huan')
+      await selector.selectOption(selectedPetId); await ready(action, selectedPetId)
       assert.deepEqual((await snapshot()).activeReminderIds, pending)
     }
     await page.getByRole('button', { name: '返回清单', exact: true }).click()
@@ -174,11 +176,11 @@ try {
   page.on('pageerror', error => report.errors.push(error.message))
   page.on('console', message => { if (message.type() === 'error') report.errors.push(message.text()) })
   canvas = page.locator('.pet-sprite')
-  await ready('idle', 'teng-huan'); await moving()
-  assert.equal((await snapshot()).settings.petId, 'teng-huan')
+  await ready('idle', selectedPetId); await moving()
+  assert.equal((await snapshot()).settings.petId, selectedPetId)
   assert.deepEqual((await snapshot()).today.progress, saved.today.progress)
   await page.screenshot({ path: join(directory, 'reopened.png'), omitBackground: true })
-  report.checks.push('a complete application restart restores Teng Huan and preserves task progress')
+  report.checks.push('a complete application restart restores Teng Junlong and preserves task progress')
   assert.deepEqual(report.errors, [])
   report.status = 'passed'
 } catch (error) {

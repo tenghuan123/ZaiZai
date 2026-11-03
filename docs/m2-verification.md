@@ -143,3 +143,11 @@ TypeScript 检查和生产构建通过，36 项规则测试通过。[生产资�
 本轮开发版系统通知仍返回 `UNErrorDomain错误1`，回归覆盖的是投递失败后的可处理状态，不能据此认定系统通知投递成功。未重新生成安装包，`release/` 仍是上轮双角色版本；Windows 真机、系统通知人工点击、真实休眠和多屏等验证缺口继续保留。本次仅做本地 Git 提交，未推送。
 
 需求和浏览器原型 v0.3 的周/月计划、任务优先级、提醒声音、开机自启及自定义窗口尺寸仍为目标设计；已在数据模型和 README 中明确其与当前正式应用的实现边界。
+
+## 2026-11-03 滕俊龙接入
+
+将 `resources/pets/teng-junlong` v1.0.1 登记为第四个内置角色。七组动作沿用现有播放与提醒流程，待机使用修订后的眨眼帧序。启动最新构建后，顶栏 `🐾` →「桌宠角色」→「滕俊龙 · 路桥工程师」即可切换，角色选择沿用版本校验与 SQLite 保存流程并在重启后恢复。
+
+`npm run build` 的类型检查和生产构建通过，`npm test` 的 37 项测试通过。[构建资源检查](teng-junlong-integration-evidence/build.json)确认共 28 张精灵图，滕俊龙七张图片的 SHA-256 与当前资源逐一一致，待机图匹配眨眼修订版。[真实 Electron 检查](teng-junlong-integration-evidence/built-report.json)的 10 项检查通过：四角色各七组动作、滕俊龙 v1.0.1、保存失败与重试、角色台词、完成反馈、三类提醒、待处理提醒期间切换角色，以及完整重启后恢复角色与任务进度。
+
+截图见[角色动作](teng-junlong-integration-evidence/built-actions.png)、[仅桌宠模式](teng-junlong-integration-evidence/built-compact.png)、[重启恢复](teng-junlong-integration-evidence/built-reopened.png)。本轮使用隔离测试数据目录，完成源码与生产构建接入；`release/` 的 macOS 与 Windows 安装包尚未重新生成。未提交或推送。

@@ -1,0 +1,46 @@
+{
+  "date": "2026-11-03",
+  "passed": true,
+  "id": "teng-junlong",
+  "version": "1.0.1",
+  "totalBundledSpriteSheets": 28,
+  "confirmedSheetsMatchBuild": true,
+  "idleUsesRetimedVersion": true,
+  "sheets": {
+    "idle": {
+      "source": "idle.png",
+      "built": "idle-Ca1hlzIV.png",
+      "sha256": "298034c6513350136432870175e0394afd09264cbac2b4f36746295ca57c631e"
+    },
+    "react": {
+      "source": "react.png",
+      "built": "react-3hX0qYvd.png",
+      "sha256": "476e9367bcc30dbd65d6db64bda6060afce4fe628ebdb36e83ca77461207b360"
+    },
+    "celebrate": {
+      "source": "celebrate.png",
+      "built": "celebrate-BGrtRiAk.png",
+      "sha256": "e856ed0680644f4dd74b39e9d5cb0c6874e174866ec98a5a258f5ea3966b1f3b"
+    },
+    "all_done": {
+      "source": "all_done.png",
+      "built": "all_done-633Q6L3W.png",
+      "sha256": "f90e1a5de5268065f836d33846f01a2f0014cbd9186b9988c3d39fed064f70d8"
+    },
+    "remind": {
+      "source": "remind.png",
+      "built": "remind-Be7PnQuc.png",
+      "sha256": "b5a61ec534f21fd8a6f389927d9f0b302ba22e8953e9236397679114921d3c6a"
+    },
+    "drink_water": {
+      "source": "drink_water.png",
+      "built": "drink_water-DG4islVt.png",
+      "sha256": "0dc2e359189451b12443a4b4ae43a5d486e2981a035932d0d7ba48ed73c30e4b"
+    },
+    "stretch": {
+      "source": "stretch.png",
+      "built": "stretch-VTOEBjY_.png",
+      "sha256": "bc7f2d0e93d2e3fcbe6b6049e62ee7ad644ce29d210fc31a43f7683b79c73815"
+    }
+  }
+}
