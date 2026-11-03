@@ -1,6 +1,6 @@
 # 桌面任务助手数据模型
 
-版本：0.2。更新日期：2026-11-02。对应 [应用架构](architecture.md)。六张核心表及下述任务事务已在 M1 落实，SQLite `user_version=2`；验证证据与界面边界见 [M1 验证记录](m1-verification.md)。
+版本：0.3。更新日期：2026-11-03。对应 [应用架构](architecture.md)。六张核心表及 M1 任务事务已落实，SQLite `user_version=2`；验证证据与界面边界见 [M1 验证记录](m1-verification.md)。本次新增的周/月计划、任务优先级、提醒声音、开机自启和自定义窗口尺寸字段为目标设计，尚未进入当前数据库迁移、IPC 或正式应用。
 
 首版保存当前重复规则和真实产生的任务实例。一次性任务只占一条实例，重复任务保留独立计划及稳定时间槽。完成状态、历史展示和提醒资格全部从同一份实例记录取得。
 
@@ -29,7 +29,7 @@ erDiagram
 
 ## 2 表定义
 
-### 2.1 repeat_plans 每日重复计划
+### 2.1 repeat_plans 周期重复计划（日计划 / 周计划 / 月计划）
 
 | 字段 | 含义 |
 | --- | --- |
@@ -37,14 +37,18 @@ erDiagram
 | `creation_key` | 创建请求唯一键，用于超时重试去重 |
 | `title` | 当前计划名称 |
 | `state` | `active`、`paused`、`ended` |
+| `repeat_type` | `daily`（每天）、`weekly`（每周指定星期）、`monthly`（每月指定日期），默认 `daily` |
+| `days_of_week` | 周计划生效星期 JSON 数组（`[1..7]`，周一=1，周日=7）；`daily` / `monthly` 时可空 |
+| `days_of_month` | 月计划生效日期 JSON 数组（`[1..31]` 或月末标识）；`daily` / `weekly` 时可空 |
+| `priority` | `urgent`（紧急优先）或 `normal`（普通日常），默认 `normal` |
 | `start_date`、`end_date` | 日历日期范围，结束日期可空且包含当天 |
 | `reminder_enabled` | 新生成或尚未到点实例的提醒偏好 |
-| `scene` | 可选 `generic`、`water`、`stretch` 等表现标识，默认通用 |
+| `scene` | 可选 `generic`、`water`、`stretch`、`bell` 等表现标识，默认通用 |
 | `effective_from_ms` | 现行规则允许生成新安排的最早时刻 |
 | `version` | 当前规则及状态版本 |
 | `created_at_ms`、`updated_at_ms` | 创建与修改时间 |
 
-首次创建且开始日期为今天时，允许生成今天已经到点的安排，因此初始生效下界可取今天本地日界线。编辑或恢复时将下界设为操作时刻；已有到点实例不受新下界影响。未来日期还需同时满足 `start_date` 和 `end_date`。
+首次创建且开始日期为今天时，允许生成今天已经到点的安排，因此初始生效下界可取今天本地日界线。编辑或恢复时将下界设为操作时刻；已有到点实例不受新下界影响。未来日期还需同时满足 `start_date`、`end_date` 及 `repeat_type` 周期匹配条件（周计划匹配星期、月计划匹配日期）。
 
 ### 2.2 plan_slots 稳定时间槽
 
@@ -52,7 +56,7 @@ erDiagram
 | --- | --- |
 | `id` | 时间槽主键，修改时间不改变 ID |
 | `plan_id` | 所属计划外键 |
-| `local_time` | 每日执行时间 |
+| `local_time` | 执行日内的具体时间（`HH:mm`） |
 | `active` | 是否仍属于当前计划，移除后保留记录 |
 | `sort_order` | 界面稳定排序，展示时仍按时间排序 |
 
@@ -70,6 +74,7 @@ erDiagram
 | `scheduled_date`、`scheduled_time` | 当前执行日期与时间，时间可空 |
 | `schedule_zone`、`due_at_ms` | 当前执行时间的时区与 UTC 解析值；无时间时到期值为空 |
 | `title`、`scene` | 实例内容快照，不动态联表覆盖历史 |
+| `priority` | `urgent`（🔥 紧急，待办列表自动置顶排序）或 `normal`（普通日常），默认 `normal` |
 | `status` | `pending`、`completed`、`cancelled` |
 | `cancel_reason` | 本次删除、计划暂停、计划变更或计划结束；未取消时为空 |
 | `manual_override` | 是否经过手动迁移，防止被计划协调器覆盖 |
@@ -79,6 +84,8 @@ erDiagram
 | `version`、`created_at_ms`、`updated_at_ms` | 并发检查和记录时间 |
 
 重复实例逻辑身份为 `(plan_id, source_date, slot_id)`，与执行日期、是否完成、是否取消无关。这个身份解决三类问题：删除本次后不复活；移到今天后原日期不补副本；同槽改时间后不产生两条同日任务。
+
+待办列表排序按 `priority = 'urgent'` 优先于 `normal`，同一优先级内再按 `scheduled_time` 升序（无时间排在有时间之后）及标题排序。
 
 完成记录首版直接保存在实例中，不另外维护一张可与任务状态失配的完成表。撤销表示当前完成记录失效，不提供多次完成与撤销的审计流水。
 
@@ -112,7 +119,16 @@ erDiagram
 
 ### 2.6 app_settings 类型化偏好
 
-单例记录保存固定下班时间、默认提醒开关、窗口置顶、上次完整或仅桌宠模式、窗口逻辑坐标、当前宠物 ID，以及按宠物 ID 保存的显示参数覆盖值。设置字段有明确类型和版本；不接受任意键名与文件路径写入。
+单例记录保存：
+- 固定下班时间（`offworkTime`）
+- 默认提醒开关（`defaultReminderEnabled`）
+- **提醒摇铃声音开关（`reminderSoundEnabled: boolean`，默认 `true`）**
+- **开机自启动开关（`openAtLogin: boolean`，默认 `false`）**
+- **窗口置顶 / 仅留在桌面模式（`alwaysOnTop: boolean`）**
+- **展开态自定义窗口宽高尺寸（`expandedSize: { width: number, height: number }`，默认 `356 × 560`）**
+- 上次完整或仅桌宠模式（`displayMode`）、窗口逻辑坐标（`position`）、当前宠物 ID（`petId`），以及按宠物 ID 保存的显示参数覆盖值（`petDisplay`）。
+
+设置字段有明确类型和版本；不接受任意键名与文件路径写入。
 
 隐藏状态与退出意图不持久化成下次必须隐藏启动的状态。首次启动显示完整界面，正常重新打开恢复最后的内容布局。
 

@@ -78,17 +78,32 @@
       50% { opacity: 1; }
       100% { transform: translateY(-14px) scale(1.05); opacity: 0; }
     }
+    @keyframes bellShake {
+      0%, 100% { transform: rotate(0deg); }
+      15% { transform: rotate(-22deg) scale(1.08); }
+      30% { transform: rotate(20deg) scale(1.08); }
+      45% { transform: rotate(-18deg) scale(1.05); }
+      60% { transform: rotate(16deg) scale(1.05); }
+      75% { transform: rotate(-8deg); }
+    }
+    @keyframes noteFloat {
+      0% { transform: translate(0, 4px) scale(0.75); opacity: 0; }
+      40% { opacity: 1; }
+      100% { transform: translate(8px, -16px) scale(1.1); opacity: 0; }
+    }
     .anim-idle { animation: petBreathe 3s ease-in-out infinite; }
     .anim-happy { animation: petJump 0.7s ease-in-out 2; }
     .anim-alert { animation: petAlert 0.6s ease-in-out 3; }
     .anim-heart { animation: floatHeart 2.4s ease-in-out infinite; }
     .anim-cup-sip { animation: cupSip 1.4s ease-in-out infinite; transform-origin: center bottom; }
     .anim-water-drop { animation: waterDropRise 1.4s ease-out infinite; }
+    .anim-bell-shake { animation: bellShake 0.75s ease-in-out infinite; transform-origin: 96px 76px; }
+    .anim-note-float { animation: noteFloat 1.2s ease-out infinite; }
     .task-highlight { animation: highlightTask 1.8s ease-in-out 2; }
 
     /* Collapsible Main Task Card (Hide/Expand Menu) */
     .main-card-collapsible {
-      max-height: 520px;
+      max-height: 760px;
       opacity: 1;
       transform: translateY(0) scale(1);
       transform-origin: top left;
@@ -196,11 +211,11 @@
     <div class="flex flex-wrap items-center justify-between gap-3">
       <div>
         <div class="flex items-center gap-2">
-          <span class="px-2.5 py-0.5 rounded-full text-xs font-medium bg-[var(--primary)] text-[var(--primary-foreground)]">P0 原型设计</span>
+          <span class="px-2.5 py-0.5 rounded-full text-xs font-medium bg-[var(--primary)] text-[var(--primary-foreground)]">v0.3 原型升级</span>
           <h1 class="text-base font-semibold text-[var(--foreground)]">桌面任务助手与互动宠物 · 双平台交互原型</h1>
         </div>
         <p class="text-xs text-[var(--muted-foreground)] mt-1">
-          还原参考图治愈系视觉（宠物跨卡片叠放 + 下班倒计时气泡 + 进度条 + 胶囊清單），并补齐双平台托盘/菜单栏、重复计划、跨天移到今天与到点提醒闭环。
+          已完整纳入用户 6 项试用反馈：<strong>开机自启动</strong>、<strong>仅显示在桌面（打开其他软件遮挡）</strong>、<strong>框框自由拉大记忆尺寸</strong>、<strong>🔥 紧急任务自动排最前</strong>、<strong>周计划 / 月计划</strong>、<strong>🔔 提醒摇铃声音</strong>。
         </p>
       </div>
 
@@ -217,27 +232,34 @@
 
     <!-- Quick Acceptance Scenario Bar -->
     <div class="mt-3 pt-3 border-t border-[var(--border)] flex flex-wrap items-center gap-2">
-      <span class="text-xs font-medium text-[var(--muted-foreground)]">验收场景演练：</span>
+      <span class="text-xs font-semibold text-[var(--foreground)]">🌟 新增反馈演练：</span>
+      <button onclick="simulateBellReminderWithSound()" class="px-2.5 py-1 rounded-md text-xs bg-amber-500 text-white hover:bg-amber-600 transition font-medium shadow-2xs">
+        🔔 模拟「摇铃有声提醒」 (A19)
+      </button>
+      <button onclick="demoDesktopOnlyWithOtherApp()" id="btn-sim-desktop-layer" class="px-2.5 py-1 rounded-md text-xs bg-indigo-600 text-white hover:bg-indigo-700 transition font-medium shadow-2xs">
+        🖥 演示「仅在桌面 · 打开其他软件遮挡」 (A18)
+      </button>
+      <button onclick="toggleWidgetPresetSize()" id="btn-sim-resize" class="px-2.5 py-1 rounded-md text-xs bg-emerald-600 text-white hover:bg-emerald-700 transition font-medium shadow-2xs">
+        ↘️ 拉大框框尺寸 (或拖拽右下角) (A17)
+      </button>
+      <button onclick="demoQuickUrgentTask()" class="px-2.5 py-1 rounded-md text-xs bg-rose-500 text-white hover:bg-rose-600 transition font-medium shadow-2xs">
+        🔥 新增「紧急任务」排最前 (A15)
+      </button>
+      <button onclick="demoWeeklyMonthlyPlanModal()" class="px-2.5 py-1 rounded-md text-xs bg-violet-600 text-white hover:bg-violet-700 transition font-medium shadow-2xs">
+        📆 周计划 / 月计划 (A16)
+      </button>
+      <span class="text-slate-300">|</span>
       <button onclick="simulateWaterGifReminder()" class="px-2.5 py-1 rounded-md text-xs bg-sky-600 text-white hover:bg-sky-700 transition font-medium shadow-2xs">
-        💧 模拟「请喝水 GIF」语音提醒
+        💧 请喝水 GIF
       </button>
       <button onclick="toggleTaskMenuCard()" id="btn-sim-collapse" class="px-2.5 py-1 rounded-md text-xs bg-teal-600 text-white hover:bg-teal-700 transition font-medium shadow-2xs">
-        🔼 隐藏下方菜单 (仅留桌宠)
-      </button>
-      <button onclick="simulateSingleReminder()" class="px-2.5 py-1 rounded-md text-xs bg-[var(--secondary)] text-[var(--secondary-foreground)] hover:opacity-90 transition">
-        🙆‍♂️ 模拟运动拉伸提醒 (A06)
-      </button>
-      <button onclick="simulateResumeBatchReminder()" class="px-2.5 py-1 rounded-md text-xs bg-[var(--secondary)] text-[var(--secondary-foreground)] hover:opacity-90 transition">
-        💤 休眠恢复汇总 (A09)
+        🔼 仅留桌宠
       </button>
       <button onclick="toggleHistoryDate()" id="btn-sim-history" class="px-2.5 py-1 rounded-md text-xs bg-[var(--secondary)] text-[var(--secondary-foreground)] hover:opacity-90 transition">
-        📅 昨日未完成移到今天 (A05)
+        📅 昨日移到今天 (A05)
       </button>
-      <button onclick="openModal('pets')" class="px-2.5 py-1 rounded-md text-xs bg-[var(--primary)] text-[var(--primary-foreground)] hover:opacity-90 transition font-medium">
-        🐾 宠物资源库
-      </button>
-      <button onclick="openModal('close')" class="px-2.5 py-1 rounded-md text-xs bg-[var(--secondary)] text-[var(--secondary-foreground)] hover:opacity-90 transition">
-        ✖️ 关闭弹窗 (A08)
+      <button onclick="openModal('settings')" class="px-2.5 py-1 rounded-md text-xs bg-[var(--secondary)] text-[var(--secondary-foreground)] hover:opacity-90 transition font-medium">
+        🚀 自启动与设置 (A20)
       </button>
     </div>
   </div>
@@ -246,7 +268,63 @@
   <div class="max-w-6xl mx-auto grid grid-cols-1 lg:grid-cols-12 gap-4">
 
     <!-- Simulated OS Desktop Canvas (8 cols) -->
-    <div class="lg:col-span-8 relative rounded-2xl overflow-hidden border border-[var(--border)] shadow-lg" style="min-height: 680px; background: linear-gradient(145deg, #d4eaef 0%, #c3e0e8 50%, #bad8e3 100%);">
+    <div id="desktop-canvas" class="lg:col-span-8 relative rounded-2xl overflow-hidden border border-[var(--border)] shadow-lg" style="min-height: 740px; background: linear-gradient(145deg, #d4eaef 0%, #c3e0e8 50%, #bad8e3 100%);">
+
+      <!-- Simulated Desktop Icons (Bottom-left wallpaper layer, z-0) -->
+      <div class="absolute left-5 top-12 z-0 flex flex-col gap-4 select-none pointer-events-none opacity-85">
+        <div class="flex flex-col items-center gap-1 w-16 text-center">
+          <div class="w-11 h-11 rounded-2xl bg-white/60 backdrop-blur-xs border border-white/80 flex items-center justify-center text-2xl shadow-2xs">🗂️</div>
+          <span class="text-[11px] font-medium text-slate-700 drop-shadow-2xs">工作项目</span>
+        </div>
+        <div class="flex flex-col items-center gap-1 w-16 text-center">
+          <div class="w-11 h-11 rounded-2xl bg-white/60 backdrop-blur-xs border border-white/80 flex items-center justify-center text-2xl shadow-2xs">🖼️</div>
+          <span class="text-[11px] font-medium text-slate-700 drop-shadow-2xs">参考素材</span>
+        </div>
+        <div class="flex flex-col items-center gap-1 w-16 text-center">
+          <div class="w-11 h-11 rounded-2xl bg-white/60 backdrop-blur-xs border border-white/80 flex items-center justify-center text-2xl shadow-2xs">📝</div>
+          <span class="text-[11px] font-medium text-slate-700 drop-shadow-2xs">周报草稿</span>
+        </div>
+      </div>
+
+      <!-- Simulated Foreground Third-Party App Window (For testing "仅显示在桌面，打开其他软件看不到它" A18, z-25) -->
+      <div id="sim-other-app-window" class="hidden absolute z-25 rounded-2xl bg-white/95 backdrop-blur-md shadow-2xl border border-slate-300/90 overflow-hidden transition-all" style="width: 440px; height: 340px; left: 110px; top: 150px;">
+        <div onpointerdown="startOtherAppDrag(event)" class="h-9 px-3.5 bg-slate-800 text-white flex items-center justify-between text-xs cursor-grab active:cursor-grabbing select-none">
+          <div class="flex items-center gap-2">
+            <span class="w-2.5 h-2.5 rounded-full bg-rose-400 inline-block"></span>
+            <span class="w-2.5 h-2.5 rounded-full bg-amber-400 inline-block"></span>
+            <span class="w-2.5 h-2.5 rounded-full bg-emerald-400 inline-block"></span>
+            <span class="ml-1 font-medium">🌐 模拟打开的其他软件（浏览器 / 办公文档）</span>
+          </div>
+          <button onclick="toggleOtherAppWindow(false)" class="px-2 py-0.5 rounded bg-white/15 hover:bg-white/25 text-xs">关闭软件窗口 ✕</button>
+        </div>
+        <div class="p-5 text-xs text-slate-700 space-y-3">
+          <div class="p-3 rounded-xl bg-indigo-50 border border-indigo-200/80 text-indigo-950">
+            <div class="font-semibold flex items-center justify-between">
+              <span>💡 正在验证用户反馈：「只想让他待在桌面，打开其他软件时看不到它」</span>
+              <span id="other-app-layer-badge" class="px-2 py-0.5 rounded-full bg-indigo-600 text-white text-[11px]">仅在桌面模式</span>
+            </div>
+            <p id="other-app-layer-desc" class="mt-1.5 text-indigo-800 leading-relaxed">
+              当前桌宠处于 <strong>「🖥 仅留在桌面」</strong> 模式（层级低于普通软件窗口），所以当你打开这个软件窗口时，<strong>桌宠乖乖待在背后的桌面上被自然遮挡</strong>，完全不挡视线！
+            </p>
+          </div>
+          <div class="space-y-2 bg-slate-50 p-3.5 rounded-xl border border-slate-200/70">
+            <div class="font-medium text-slate-800">你可以拖动本窗口，或点击下方按钮对比两种层级效果：</div>
+            <div class="flex flex-wrap items-center gap-2 pt-1">
+              <button onclick="toggleAlwaysOnTop()" class="px-3 py-1.5 rounded-lg bg-sky-600 text-white hover:bg-sky-700 font-medium transition">
+                🔄 切换桌宠为「📌 始终置顶 / 🖥 仅留在桌面」
+              </button>
+              <button onclick="toggleOtherAppWindow(false)" class="px-3 py-1.5 rounded-lg bg-slate-200 text-slate-700 hover:bg-slate-300 font-medium transition">
+                📥 最小化本软件（回到桌面看桌宠）
+              </button>
+            </div>
+          </div>
+          <div class="grid grid-cols-3 gap-2 pt-1 opacity-60">
+            <div class="h-14 rounded-lg bg-slate-100 border border-slate-200 p-2">文档段落 A...</div>
+            <div class="h-14 rounded-lg bg-slate-100 border border-slate-200 p-2">数据报表 B...</div>
+            <div class="h-14 rounded-lg bg-slate-100 border border-slate-200 p-2">设计画板 C...</div>
+          </div>
+        </div>
+      </div>
 
       <!-- macOS Top Menu Bar -->
       <div id="mac-menubar" class="h-7 px-3 bg-white/75 backdrop-blur-md border-b border-black/5 flex items-center justify-between text-xs text-slate-800 z-30 relative">
@@ -258,6 +336,9 @@
           <span class="text-slate-600">显示</span>
         </div>
         <div class="flex items-center gap-3">
+          <button onclick="toggleOtherAppWindow()" class="px-2 py-0.5 rounded bg-indigo-500/15 text-indigo-900 font-medium hover:bg-indigo-500/25 transition" title="打开/关闭模拟的其他软件窗口，测试桌宠层级遮挡">
+            🌐 模拟打开其他软件
+          </button>
           <!-- App Menu Bar Icon -->
           <button onclick="toggleSystemMenu()" class="flex items-center gap-1 px-2 py-0.5 rounded bg-sky-600/15 text-sky-900 font-medium hover:bg-sky-600/25 transition" title="点击展开 macOS 菜单栏入口">
             <span>🐱</span>
@@ -270,7 +351,7 @@
       </div>
 
       <!-- System Tray / Menu Bar Dropdown Menu -->
-      <div id="system-menu-popup" class="hidden absolute z-40 w-56 rounded-xl bg-white/95 backdrop-blur-md shadow-xl border border-slate-200/80 p-1.5 text-xs text-slate-700" style="top: 34px; right: 110px;">
+      <div id="system-menu-popup" class="hidden absolute z-40 w-60 rounded-xl bg-white/95 backdrop-blur-md shadow-xl border border-slate-200/80 p-1.5 text-xs text-slate-700" style="top: 34px; right: 110px;">
         <div class="px-2.5 py-1.5 border-b border-slate-100 flex items-center justify-between">
           <span class="font-semibold text-slate-800">桌面任务助手</span>
           <span id="menu-platform-badge" class="text-xs px-1.5 py-0.5 rounded bg-slate-100 text-slate-600">macOS 菜单栏</span>
@@ -281,11 +362,15 @@
             <span class="text-slate-400">点击唤起</span>
           </button>
           <button onclick="toggleAlwaysOnTop()" class="w-full text-left px-2.5 py-1.5 rounded-lg hover:bg-sky-50 hover:text-sky-700 flex items-center justify-between">
-            <span>窗口始终置顶</span>
-            <span id="menu-pin-status" class="text-sky-600 font-medium">✓ 已开启</span>
+            <span>显示层级模式</span>
+            <span id="menu-pin-status" class="text-sky-600 font-medium">📌 始终置顶</span>
+          </button>
+          <button onclick="toggleOpenAtLogin()" class="w-full text-left px-2.5 py-1.5 rounded-lg hover:bg-sky-50 hover:text-sky-700 flex items-center justify-between">
+            <span>开机自动启动</span>
+            <span id="menu-autostart-status" class="text-emerald-600 font-medium">✓ 已开启</span>
           </button>
           <button onclick="openNewTaskModal(); toggleSystemMenu(false)" class="w-full text-left px-2.5 py-1.5 rounded-lg hover:bg-sky-50 hover:text-sky-700 flex items-center justify-between">
-            <span>新增任务 / 重复计划...</span>
+            <span>新增任务 / 周月计划...</span>
             <span class="text-slate-400">＋</span>
           </button>
           <button onclick="openModal('settings'); toggleSystemMenu(false)" class="w-full text-left px-2.5 py-1.5 rounded-lg hover:bg-sky-50 hover:text-sky-700 flex items-center justify-between">
@@ -307,7 +392,7 @@
           <div class="w-9 h-9 rounded-xl bg-sky-100 flex items-center justify-center text-lg shrink-0">🐱</div>
           <div class="flex-1 min-w-0">
             <div class="flex items-center justify-between">
-              <span class="text-xs font-semibold text-slate-900">桌面任务助手 · 到点提醒</span>
+              <span class="text-xs font-semibold text-slate-900">桌面任务助手 · 到点提醒 🔔</span>
               <span class="text-xs text-slate-400">现在</span>
             </div>
             <p id="os-notif-body" class="text-xs text-slate-600 mt-0.5 truncate">⏰ 15:00 起身运动（点击定位任务）</p>
@@ -332,13 +417,18 @@
       </div>
 
       <!-- ========================================================= -->
-      <!-- THE TRANSPARENT DESKTOP WIDGET (360px wide container)     -->
+      <!-- THE TRANSPARENT DESKTOP WIDGET (Resizable container)      -->
       <!-- ========================================================= -->
-      <div id="desktop-widget" class="relative mx-auto my-6 w-[356px] transition-all duration-200">
+      <div id="desktop-widget" class="relative mx-auto my-5 w-[356px] z-30 transition-[opacity,transform] duration-200">
+
+        <!-- Live Resize Dimensions Pill (Shown while dragging resize handle or hovering) -->
+        <div id="resize-dimensions-badge" class="hidden absolute -top-6 right-1 z-40 px-2.5 py-0.5 rounded-full bg-slate-900/85 text-white text-[11px] font-medium shadow-md whitespace-nowrap">
+          📐 窗口尺寸：356 × 560 px (已自动记忆)
+        </div>
 
         <!-- Transparent Bounds Indicator (Toggleable for Dev Inspection) -->
         <div id="wireframe-box" class="hidden absolute -inset-2 border border-dashed border-sky-700/50 rounded-3xl pointer-events-none z-30">
-          <span class="absolute -top-5 left-2 text-xs text-sky-900 bg-sky-100/90 px-1.5 rounded">透明无边框窗口边界 (356 × 560 px)</span>
+          <span id="wireframe-label" class="absolute -top-5 left-2 text-xs text-sky-900 bg-sky-100/90 px-1.5 rounded">透明无边框窗口边界 (356 × 560 px)</span>
         </div>
 
         <!-- 1. TOP PET & SPEECH BUBBLE LAYER (Overlapping top of white card) -->
@@ -353,7 +443,7 @@
             class="absolute left-3 -bottom-5 w-[132px] h-[126px] cursor-grab active:cursor-grabbing group touch-none"
             title="按住可自由拖动宠物与窗口 · 单击互动 · 双击收起/展开菜单 · 右键快捷菜单"
           >
-            <!-- GIF Scene Badge (Shown when playing scene GIF like drink_water.gif) -->
+            <!-- GIF Scene Badge (Shown when playing scene GIF like drink_water.gif or remind_bell.gif) -->
             <div id="pet-gif-badge" class="hidden absolute -top-3 left-1/2 -translate-x-1/2 z-30 px-2 py-0.5 rounded-full bg-sky-600 text-white text-xs font-medium shadow-sm whitespace-nowrap">
               🎬 drink_water.gif
             </div>
@@ -434,15 +524,45 @@
                     <circle cx="61" cy="86.5" r="5.5" fill="#5282a1" stroke="#231f20" stroke-width="2"/>
                   </g>
                 </g>
+
+                <!-- SCENE GIF OVERLAY 3: REMINDER HANDBELL & SOUND NOTES (Hidden by default, A19) -->
+                <g id="pet-gif-prop-bell" class="hidden">
+                  <g class="anim-bell-shake">
+                    <!-- Bell Handle -->
+                    <rect x="93" y="64" width="6" height="10" rx="3" fill="#b45309" stroke="#231f20" stroke-width="2"/>
+                    <circle cx="96" cy="63" r="3" fill="#fbbf24" stroke="#231f20" stroke-width="1.8"/>
+                    <!-- Golden Bell Cone -->
+                    <path d="M84 90 L88 73 C89 69, 103 69, 104 73 L108 90 Z" fill="#fbbf24" stroke="#231f20" stroke-width="2.4" stroke-linejoin="round"/>
+                    <ellipse cx="96" cy="90" rx="12" ry="3.5" fill="#f59e0b" stroke="#231f20" stroke-width="2"/>
+                    <!-- Clapper -->
+                    <circle cx="96" cy="93" r="3.2" fill="#d97706" stroke="#231f20" stroke-width="1.8"/>
+                    <!-- Sound Waves -->
+                    <path d="M112 73 Q117 80 112 87" stroke="#f59e0b" stroke-width="2.2" stroke-linecap="round" fill="none"/>
+                    <path d="M116 69 Q123 80 116 91" stroke="#fbbf24" stroke-width="1.8" stroke-linecap="round" fill="none"/>
+                  </g>
+                  <!-- Floating Musical Notes -->
+                  <g class="anim-note-float">
+                    <text x="112" y="62" font-size="14" font-weight="bold" fill="#d97706">♪</text>
+                    <text x="125" y="52" font-size="12" font-weight="bold" fill="#f59e0b">♫</text>
+                  </g>
+                </g>
               </svg>
             </div>
           </div>
 
           <!-- Pet Right-Click Context Menu (For quick hide/expand menu & actions) -->
-          <div id="pet-context-menu" class="hidden absolute left-28 top-2 z-50 w-44 rounded-2xl bg-white/95 backdrop-blur-md shadow-xl border border-slate-200/90 p-1.5 text-xs text-slate-700">
+          <div id="pet-context-menu" class="hidden absolute left-28 top-2 z-50 w-48 rounded-2xl bg-white/95 backdrop-blur-md shadow-xl border border-slate-200/90 p-1.5 text-xs text-slate-700">
             <button onclick="toggleTaskMenuCard(); closePetContextMenu()" class="w-full text-left px-2.5 py-1.5 rounded-xl hover:bg-sky-50 hover:text-sky-700 flex items-center justify-between font-medium">
               <span id="ctx-menu-toggle-label">🔼 隐藏下方菜单</span>
               <span class="text-slate-400">双击</span>
+            </button>
+            <button onclick="toggleAlwaysOnTop(); closePetContextMenu()" class="w-full text-left px-2.5 py-1.5 rounded-xl hover:bg-sky-50 hover:text-sky-700 flex items-center justify-between">
+              <span id="ctx-menu-pin-label">🖥 切换为「仅留在桌面」</span>
+              <span class="text-slate-400">层级</span>
+            </button>
+            <button onclick="simulateBellReminderWithSound(); closePetContextMenu()" class="w-full text-left px-2.5 py-1.5 rounded-xl hover:bg-amber-50 hover:text-amber-700 flex items-center justify-between">
+              <span>🔔 演示摇铃有声提醒</span>
+              <span class="text-amber-500">声音</span>
             </button>
             <button onclick="simulateWaterGifReminder(); closePetContextMenu()" class="w-full text-left px-2.5 py-1.5 rounded-xl hover:bg-sky-50 hover:text-sky-700 flex items-center justify-between">
               <span>💧 演示请喝水动画</span>
@@ -468,7 +588,7 @@
 
           <!-- Right Speech Bubble (Off-work Countdown / Pet-Voiced Reminder / Pet Feedback) -->
           <div class="absolute right-1 top-3 z-30 flex flex-col items-end">
-            <div id="pet-bubble" onclick="handleBubbleClick()" class="relative bg-white/95 rounded-2xl px-3.5 py-2.5 shadow-md border border-white/90 cursor-pointer transition-all hover:scale-[1.01]" style="min-width: 184px; max-width: 204px;">
+            <div id="pet-bubble" onclick="handleBubbleClick()" class="relative bg-white/95 rounded-2xl px-3.5 py-2.5 shadow-md border border-white/90 cursor-pointer transition-all hover:scale-[1.01]" style="min-width: 188px; max-width: 224px;">
               <!-- Left pointer triangle -->
               <div class="absolute -left-2 top-5 w-0 h-0 border-t-[6px] border-t-transparent border-r-[8px] border-r-white/95 border-b-[6px] border-b-transparent"></div>
               <div id="bubble-text" class="text-xs font-medium text-slate-700 text-center tracking-wide leading-relaxed">
@@ -479,6 +599,9 @@
                 <button onclick="event.stopPropagation(); completeActiveReminderFromBubble()" class="px-2.5 py-1 rounded-lg bg-[#6f9bb6] text-white text-xs font-medium hover:opacity-90 transition whitespace-nowrap">
                   ✓ <span id="bubble-btn-done-text">我喝完啦</span>
                 </button>
+                <button onclick="event.stopPropagation(); playReminderBellSound(true)" class="px-2 py-1 rounded-lg bg-amber-50 text-amber-700 hover:bg-amber-100 border border-amber-200/70 text-xs whitespace-nowrap transition" title="点击再次试听提醒摇铃声音">
+                  🔔 铃声
+                </button>
                 <button onclick="event.stopPropagation(); expandAndLocateReminderTask()" class="px-2 py-1 rounded-lg bg-slate-100 text-slate-600 hover:bg-slate-200 text-xs whitespace-nowrap transition">
                   <span id="bubble-btn-secondary-text">清单 ▾</span>
                 </button>
@@ -487,7 +610,7 @@
           </div>
         </div>
 
-        <!-- 2. MAIN WHITE ROUNDED WIDGET CARD (Collapsible via toggleTaskMenuCard) -->
+        <!-- 2. MAIN WHITE ROUNDED WIDGET CARD (Collapsible & Resizable) -->
         <div id="main-task-card" class="main-card-collapsible relative rounded-[28px] p-5 pt-4 shadow-xl border border-white/90" style="background-color: #f4f6f9;">
 
           <!-- Notification Disabled Warning Strip (A14, hidden by default) -->
@@ -505,7 +628,7 @@
           <!-- Top Bar: Window Controls (Left) + Clock & Date (Right) - Blank area supports dragging! -->
           <div onpointerdown="startWidgetDrag(event, 'header')" class="flex items-start justify-between gap-2 mb-2 cursor-grab active:cursor-grabbing touch-none">
             <!-- Left Control Circles (Matching reference screenshot) + Compact Icon-Only Entry -->
-            <div class="flex items-center gap-2 pt-2.5 shrink-0">
+            <div class="flex items-center gap-1.5 pt-2.5 shrink-0">
               <!-- Minimize / Collapse Menu Button (Blue circle with minus: collapses task card into Pet-Only Mode!) -->
               <button onclick="toggleTaskMenuCard()" class="w-5 h-5 rounded-full flex items-center justify-center text-white shadow-xs hover:opacity-85 transition shrink-0" style="background-color: #7ea7c0;" title="收起任务面板（仅在桌面保留宠物与气泡）">
                 <span class="text-xs font-bold leading-none">−</span>
@@ -515,15 +638,19 @@
                 <span class="text-xs font-bold leading-none">×</span>
               </button>
 
-              <!-- Clean Icon-Only Buttons (No cramped vertical text wrapping!) -->
-              <div class="ml-1 flex items-center gap-1">
-                <button onclick="toggleHistoryDate()" id="btn-header-date" class="w-6 h-6 rounded-full bg-slate-200/70 hover:bg-slate-300/80 flex items-center justify-center text-xs text-slate-600 transition" title="查看昨日历史记录 (F05)">
+              <!-- Clean Icon-Only Buttons + Desktop Layer Pin Toggle -->
+              <div class="ml-0.5 flex items-center gap-1">
+                <button onclick="toggleHistoryDate()" id="btn-header-date" class="w-6 h-6 rounded-full bg-slate-200/70 hover:bg-slate-300/80 flex items-center justify-center text-xs text-slate-600 transition" title="查看历史记录与未来安排 (F05)">
                   📅
+                </button>
+                <button onclick="toggleAlwaysOnTop()" id="btn-header-pin" class="h-6 px-2 rounded-full bg-sky-100/90 hover:bg-sky-200/80 border border-sky-300/70 flex items-center gap-0.5 text-[11px] font-medium text-sky-800 transition" title="点击切换「始终置顶」或「仅留在桌面（打开其他软件时看不到它）」(A18)">
+                  <span id="btn-header-pin-icon">📌</span>
+                  <span id="btn-header-pin-text">置顶</span>
                 </button>
                 <button onclick="openModal('pets')" class="w-6 h-6 rounded-full bg-slate-200/70 hover:bg-slate-300/80 flex items-center justify-center text-xs text-slate-600 transition" title="宠物资源库与配置 (切换角色/导入素材包)">
                   🐾
                 </button>
-                <button onclick="openModal('settings')" class="w-6 h-6 rounded-full bg-slate-200/70 hover:bg-slate-300/80 flex items-center justify-center text-xs text-slate-600 transition" title="偏好设置 (下班时间/窗口置顶)">
+                <button onclick="openModal('settings')" class="w-6 h-6 rounded-full bg-slate-200/70 hover:bg-slate-300/80 flex items-center justify-center text-xs text-slate-600 transition" title="偏好设置 (开机自启动/铃声/下班时间/尺寸)">
                   ⚙
                 </button>
               </div>
@@ -550,51 +677,80 @@
           <!-- Progress Row (Matching reference screenshot: 待办进度 1/6 ... 17%) -->
           <div class="mt-2 mb-3">
             <div class="flex items-center justify-between text-xs font-medium mb-1.5">
-              <span id="progress-label" class="text-slate-500">待办进度 1/6</span>
-              <span id="progress-percent" style="color: #6c98b4;" class="font-semibold">17%</span>
+              <span id="progress-label" class="text-slate-500">待办进度 1/8</span>
+              <span id="progress-percent" style="color: #6c98b4;" class="font-semibold">13%</span>
             </div>
             <div class="w-full h-2 rounded-full overflow-hidden" style="background-color: #dce2e8;">
-              <div id="progress-bar-fill" class="h-full rounded-full transition-all duration-300" style="width: 17%; background-color: #749eb8;"></div>
+              <div id="progress-bar-fill" class="h-full rounded-full transition-all duration-300" style="width: 13%; background-color: #749eb8;"></div>
             </div>
           </div>
 
           <!-- Segmented 3-Tab Pill Bar (待办 | 已完成 | 重复计划) -->
-          <!-- Note: Reference screenshot had "打卡" as 3rd tab; per requirements.md 1.1 "打卡首版不做", replaced with "重复计划" (F02/F03) -->
           <div class="p-1 rounded-full grid grid-cols-3 text-xs font-medium mb-3.5" style="background-color: #e6eaef;">
             <button id="tab-todo" onclick="switchTab('todo')" class="py-1.5 rounded-full transition-all text-white shadow-xs" style="background-color: #6f9bb6;">
-              待办 <span id="badge-todo" class="ml-0.5 opacity-90">(5)</span>
+              待办 <span id="badge-todo" class="ml-0.5 opacity-90">(7)</span>
             </button>
             <button id="tab-done" onclick="switchTab('done')" class="py-1.5 rounded-full transition-all text-slate-500 hover:text-slate-700">
               已完成 <span id="badge-done" class="ml-0.5 opacity-80">(1)</span>
             </button>
             <button id="tab-plans" onclick="switchTab('plans')" class="py-1.5 rounded-full transition-all text-slate-500 hover:text-slate-700">
-              重复计划 <span id="badge-plans" class="ml-0.5 opacity-80">(2)</span>
+              周/月/日计划 <span id="badge-plans" class="ml-0.5 opacity-80">(4)</span>
             </button>
           </div>
 
-          <!-- Task List Container (with custom right scrollbar matching screenshot) -->
-          <div id="task-list-container" class="widget-scroll overflow-y-auto overflow-x-hidden pr-1.5 space-y-2.5" style="height: 230px;">
+          <!-- Task List Container (with custom right scrollbar & dynamic height when resized) -->
+          <div id="task-list-container" class="widget-scroll overflow-y-auto overflow-x-hidden pr-1.5 space-y-2.5 transition-[height] duration-75" style="height: 230px;">
             <!-- Populated dynamically via JS -->
           </div>
 
-          <!-- Bottom Quick Input Row (Matching reference screenshot: Rounded white pill input + circular blue '+' button) -->
-          <div class="mt-3.5 flex items-center gap-2.5">
-            <div class="flex-1 relative flex items-center bg-white rounded-full shadow-xs border border-slate-200/70 px-3.5 py-2">
+          <!-- Bottom Quick Input Row (With 🔥 Urgent Quick Toggle + 🕒 Timed/Repeat Trigger + '+' Button) -->
+          <div class="mt-3.5 flex items-center gap-2">
+            <div class="flex-1 relative flex items-center bg-white rounded-full shadow-xs border border-slate-200/70 pl-3.5 pr-1.5 py-1.5">
               <input
                 id="quick-task-input"
                 type="text"
-                placeholder="新增待办"
+                placeholder="新增待办（支持一键标为紧急）"
                 maxlength="60"
                 onkeydown="if(event.key==='Enter') handleQuickAdd()"
-                class="w-full bg-transparent text-xs text-slate-700 placeholder-slate-400 focus:outline-none text-left pr-20"
+                class="w-full bg-transparent text-xs text-slate-700 placeholder-slate-400 focus:outline-none text-left pr-2"
               />
-              <button onclick="openNewTaskModal()" class="absolute right-2.5 text-xs text-slate-400 hover:text-sky-600 px-1.5 py-0.5 rounded-full bg-slate-100 hover:bg-sky-50 transition" title="设置执行日期、提醒时间或每日重复计划">
-                🕒 定时/重复
-              </button>
+              <div class="flex items-center gap-1 shrink-0">
+                <button
+                  type="button"
+                  id="quick-urgent-btn"
+                  onclick="toggleQuickUrgent()"
+                  class="text-[11px] text-slate-500 hover:text-rose-600 px-2 py-0.5 rounded-full bg-slate-100 hover:bg-rose-50 transition font-medium whitespace-nowrap"
+                  title="标记为「紧急任务」，添加后自动排到待办最前面 (A15)"
+                >
+                  🔥 紧急
+                </button>
+                <button
+                  type="button"
+                  onclick="openNewTaskModal()"
+                  class="text-[11px] text-slate-500 hover:text-sky-600 px-2 py-0.5 rounded-full bg-slate-100 hover:bg-sky-50 transition whitespace-nowrap"
+                  title="设置执行日期、提醒时间或每日/每周/每月重复计划 (A16)"
+                >
+                  🕒 周期
+                </button>
+              </div>
             </div>
             <button onclick="handleQuickAddOrModal()" class="w-9 h-9 rounded-full flex items-center justify-center text-white shadow-md hover:opacity-90 active:scale-95 transition shrink-0" style="background-color: #6f9bb6;" title="快捷新增今日待办（输入框为空时打开详细面板）">
               <span class="text-lg font-medium leading-none">＋</span>
             </button>
+          </div>
+
+          <!-- Bottom-Right Custom Resize Handle (A17: "这个框框能拉大吗 / 自定义大小") -->
+          <div
+            id="widget-resize-handle"
+            onpointerdown="startWidgetResize(event)"
+            ondblclick="event.stopPropagation(); toggleWidgetPresetSize()"
+            class="absolute bottom-1.5 right-2 w-6 h-6 flex items-end justify-end p-1 cursor-nwse-resize text-slate-400 hover:text-sky-600 transition select-none touch-none"
+            title="按住右下角拖拽可自由拉大框框 · 双击切换大号/标准尺寸 (A17)"
+          >
+            <svg viewBox="0 0 12 12" class="w-3.5 h-3.5 stroke-current" stroke-width="1.8" stroke-linecap="round">
+              <line x1="10" y1="3" x2="3" y2="10"></line>
+              <line x1="10" y1="7" x2="7" y2="10"></line>
+            </svg>
           </div>
 
         </div>
@@ -624,10 +780,10 @@
           </div>
         </div>
 
-        <!-- 2. Task / Repeating Plan Editor Modal (F01 / F02 / F03) -->
-        <div id="modal-plan" class="hidden bg-white rounded-2xl p-5 w-80 shadow-2xl border border-slate-100 text-slate-800">
+        <!-- 2. Task / Repeating Plan Editor Modal (F01 / F02 / F03 / A15 / A16) -->
+        <div id="modal-plan" class="hidden bg-white rounded-2xl p-5 w-[348px] shadow-2xl border border-slate-100 text-slate-800 max-h-[640px] overflow-y-auto widget-scroll">
           <div class="flex items-center justify-between mb-3">
-            <h3 id="plan-modal-title" class="text-sm font-semibold text-slate-900">新增任务与重复计划</h3>
+            <h3 id="plan-modal-title" class="text-sm font-semibold text-slate-900">新增任务与周期计划</h3>
             <button onclick="closeModal()" class="text-slate-400 hover:text-slate-600 text-xs">✕</button>
           </div>
 
@@ -638,13 +794,26 @@
                 一次性任务 (F01)
               </button>
               <button id="type-btn-repeat" onclick="setEditorTaskType('repeat')" class="py-1.5 rounded-lg font-medium text-slate-500">
-                每日重复计划 (F02)
+                周/月/日重复计划 (F02)
               </button>
             </div>
 
             <div>
-              <label class="block text-slate-600 mb-1 font-medium">任务名称</label>
-              <input id="editor-title" type="text" placeholder="例如：起身运动 / 饭后吃药" class="w-full px-3 py-1.5 rounded-lg border border-slate-200 focus:outline-none focus:border-sky-500"/>
+              <label class="block text-slate-600 mb-1 font-medium">任务 / 计划名称</label>
+              <input id="editor-title" type="text" placeholder="例如：提交周报 / 信用卡还款 / 起身运动" class="w-full px-3 py-1.5 rounded-lg border border-slate-200 focus:outline-none focus:border-sky-500"/>
+            </div>
+
+            <!-- Priority Selector (A15: 紧急任务自动排到最前) -->
+            <div>
+              <label class="block text-slate-600 mb-1 font-medium">任务优先级（紧急任务自动排在待办最前面）</label>
+              <div class="grid grid-cols-2 gap-1.5">
+                <button type="button" id="prio-btn-normal" onclick="setEditorPriority('normal')" class="py-1.5 px-2.5 rounded-xl border border-slate-300 bg-slate-100 text-slate-800 font-medium flex items-center justify-center gap-1 transition">
+                  <span>📋 普通日常任务</span>
+                </button>
+                <button type="button" id="prio-btn-urgent" onclick="setEditorPriority('urgent')" class="py-1.5 px-2.5 rounded-xl border border-slate-200 bg-white text-slate-500 font-medium flex items-center justify-center gap-1 transition">
+                  <span>🔥 紧急任务 (排最前)</span>
+                </button>
+              </div>
             </div>
 
             <!-- One-off Task Fields -->
@@ -659,11 +828,53 @@
               </div>
             </div>
 
-            <!-- Repeating Plan Fields (Multi-time slots with add & remove) -->
-            <div id="editor-repeat-fields" class="hidden space-y-2">
+            <!-- Repeating Plan Fields (Daily / Weekly / Monthly + Multi-time slots, A16) -->
+            <div id="editor-repeat-fields" class="hidden space-y-2.5">
+              <!-- Repeat Frequency Selector: Daily | Weekly | Monthly -->
+              <div>
+                <label class="block text-slate-600 mb-1 font-medium">重复周期类型（支持日计划 / 周计划 / 月计划）</label>
+                <div class="grid grid-cols-3 gap-1 bg-slate-100 p-1 rounded-xl">
+                  <button type="button" id="freq-btn-daily" onclick="setEditorRepeatCycle('daily')" class="py-1 rounded-lg font-medium bg-white text-slate-800 shadow-xs">
+                    ↻ 每天
+                  </button>
+                  <button type="button" id="freq-btn-weekly" onclick="setEditorRepeatCycle('weekly')" class="py-1 rounded-lg font-medium text-slate-500">
+                    📆 每周计划
+                  </button>
+                  <button type="button" id="freq-btn-monthly" onclick="setEditorRepeatCycle('monthly')" class="py-1 rounded-lg font-medium text-slate-500">
+                    🗓 每月计划
+                  </button>
+                </div>
+              </div>
+
+              <!-- Weekly Days Selector (Shown when cycle == 'weekly') -->
+              <div id="editor-weekly-box" class="hidden p-2.5 rounded-xl bg-violet-50/70 border border-violet-200/80">
+                <div class="flex items-center justify-between mb-1.5">
+                  <span class="font-medium text-violet-900">选择每周几执行（可多选）</span>
+                  <span class="text-[11px] text-violet-600">一周完成一次或多次</span>
+                </div>
+                <div id="editor-weekday-pills" class="grid grid-cols-7 gap-1">
+                  <!-- Populated dynamically by renderEditorCycleSelectors() -->
+                </div>
+              </div>
+
+              <!-- Monthly Days Selector (Shown when cycle == 'monthly') -->
+              <div id="editor-monthly-box" class="hidden p-2.5 rounded-xl bg-amber-50/70 border border-amber-200/80 space-y-2">
+                <div class="flex items-center justify-between">
+                  <span class="font-medium text-amber-900">选择每月几号执行（可多选）</span>
+                  <span class="text-[11px] text-amber-700">一个月完成一次或多次</span>
+                </div>
+                <div id="editor-monthday-pills" class="flex flex-wrap gap-1">
+                  <!-- Populated dynamically by renderEditorCycleSelectors() -->
+                </div>
+                <div class="flex items-center gap-1.5 pt-0.5">
+                  <input id="editor-custom-monthday" type="number" min="1" max="31" placeholder="输入 1~31 号" class="w-28 px-2 py-1 rounded-lg border border-amber-200 bg-white text-xs"/>
+                  <button type="button" onclick="addCustomMonthDay()" class="px-2.5 py-1 rounded-lg bg-amber-100 hover:bg-amber-200 text-amber-900 font-medium">+ 添加日期</button>
+                </div>
+              </div>
+
               <div>
                 <div class="flex items-center justify-between mb-1">
-                  <label class="block text-slate-600 font-medium">每天执行时间槽（可增删，独立打卡）</label>
+                  <label class="block text-slate-600 font-medium">执行时间槽（可增删，独立打卡）</label>
                   <span id="editor-slot-hint" class="text-slate-400">点击 × 可移除</span>
                 </div>
                 <div id="editor-timeslots" class="flex flex-wrap gap-1.5 mb-1.5 min-h-[26px]">
@@ -687,7 +898,7 @@
             </div>
 
             <label class="flex items-center justify-between pt-1 cursor-pointer">
-              <span class="text-slate-700 font-medium">到点发送系统通知与宠物气泡提醒</span>
+              <span class="text-slate-700 font-medium">到点发送通知、气泡与摇铃提醒 🔔</span>
               <input id="editor-remind" type="checkbox" checked class="rounded text-sky-600"/>
             </label>
           </div>
@@ -698,39 +909,73 @@
           </div>
         </div>
 
-        <!-- 3. Settings Modal (F09 / F13) -->
-        <div id="modal-settings" class="hidden bg-white rounded-2xl p-5 w-80 shadow-2xl border border-slate-100 text-slate-800">
+        <!-- 3. Settings Modal (F09 / F13 / A17 / A18 / A19 / A20) -->
+        <div id="modal-settings" class="hidden bg-white rounded-2xl p-5 w-[348px] shadow-2xl border border-slate-100 text-slate-800">
           <div class="flex items-center justify-between mb-3">
             <h3 class="text-sm font-semibold text-slate-900">组件偏好设置 (F13)</h3>
             <button onclick="closeModal()" class="text-slate-400 hover:text-slate-600 text-xs">✕</button>
           </div>
-          <div class="space-y-3 text-xs">
+          <div class="space-y-2.5 text-xs">
+            <div class="p-2.5 rounded-xl bg-slate-50 border border-slate-200/80 space-y-2">
+              <label class="flex items-center justify-between cursor-pointer">
+                <div>
+                  <div class="text-slate-800 font-semibold">🚀 开机自动启动 (A20)</div>
+                  <div class="text-[11px] text-slate-400">随电脑开机自动在桌面唤醒桌宠与提醒</div>
+                </div>
+                <input id="setting-autostart" type="checkbox" checked onchange="toggleOpenAtLogin(this.checked)" class="rounded text-sky-600 w-4 h-4"/>
+              </label>
+              <div class="border-t border-slate-200/70 pt-2 flex items-center justify-between">
+                <div>
+                  <div class="text-slate-800 font-semibold">🔔 提醒摇铃声音 (A19)</div>
+                  <div class="text-[11px] text-slate-400">到点提醒时播放清脆手摇铃声</div>
+                </div>
+                <div class="flex items-center gap-2">
+                  <button type="button" onclick="playReminderBellSound(true)" class="px-2 py-1 rounded-lg bg-amber-100 hover:bg-amber-200 text-amber-800 font-medium text-[11px]">🔊 试听</button>
+                  <input id="setting-bell-sound" type="checkbox" checked onchange="toggleReminderBellSound(this.checked)" class="rounded text-sky-600 w-4 h-4"/>
+                </div>
+              </div>
+            </div>
+
+            <div class="p-2.5 rounded-xl bg-slate-50 border border-slate-200/80 space-y-2">
+              <div class="flex items-center justify-between">
+                <div>
+                  <div class="text-slate-800 font-semibold">🖥 窗口显示层级 (A18)</div>
+                  <div id="setting-layer-desc" class="text-[11px] text-slate-400">当前：始终置顶显示</div>
+                </div>
+                <button type="button" id="setting-layer-btn" onclick="toggleAlwaysOnTop()" class="px-2.5 py-1 rounded-lg bg-sky-100 text-sky-800 hover:bg-sky-200 font-medium">
+                  切换为「仅在桌面」
+                </button>
+              </div>
+              <div class="border-t border-slate-200/70 pt-2 flex items-center justify-between">
+                <div>
+                  <div class="text-slate-800 font-semibold">📐 框框尺寸自定义 (A17)</div>
+                  <div id="setting-size-label" class="text-[11px] text-slate-400">当前：356 × 560 px (可拖拽右下角)</div>
+                </div>
+                <div class="flex items-center gap-1">
+                  <button type="button" onclick="applyWidgetDimensions(356, 230, true)" class="px-2 py-1 rounded-lg bg-slate-200/80 hover:bg-slate-300 text-slate-700">标准</button>
+                  <button type="button" onclick="applyWidgetDimensions(436, 360, true)" class="px-2 py-1 rounded-lg bg-emerald-100 hover:bg-emerald-200 text-emerald-800 font-medium">拉大框框</button>
+                </div>
+              </div>
+            </div>
+
             <div>
               <div class="flex items-center justify-between mb-1">
                 <label class="block text-slate-600 font-medium">固定下班时间 (F09 倒计时基准)</label>
                 <div class="flex items-center gap-1">
                   <button type="button" onclick="updateOffworkTime('18:00')" class="px-1.5 py-0.5 rounded bg-slate-100 hover:bg-slate-200 text-slate-600">18:00</button>
-                  <button type="button" onclick="updateOffworkTime('11:00')" class="px-1.5 py-0.5 rounded bg-emerald-50 hover:bg-emerald-100 text-emerald-700" title="测试已到下班时间 (A12)">测已下班</button>
+                  <button type="button" onclick="updateOffworkTime('11:00')" class="px-1.5 py-0.5 rounded bg-emerald-50 hover:bg-emerald-100 text-emerald-700" title="测试已到下班时间">测已下班</button>
                   <button type="button" onclick="updateOffworkTime('')" class="px-1.5 py-0.5 rounded bg-amber-50 hover:bg-amber-100 text-amber-700" title="测试未设置下班时间">清空</button>
                 </div>
               </div>
               <input id="setting-offwork" type="time" value="18:00" oninput="updateOffworkTime(this.value)" onchange="updateOffworkTime(this.value)" class="w-full px-3 py-1.5 rounded-lg border border-slate-200"/>
-              <p class="text-xs text-slate-400 mt-1">基于组件当前时间 (<span id="setting-cur-clock">11:43</span>) 实时计算差值，到点后显示“已下班 🎉”</p>
+              <p class="text-[11px] text-slate-400 mt-0.5">基于组件当前时间 (<span id="setting-cur-clock">11:43</span>) 实时计算差值</p>
             </div>
-            <label class="flex items-center justify-between py-1 cursor-pointer">
-              <span class="text-slate-700 font-medium">窗口始终置顶 (Always on Top)</span>
-              <input id="setting-ontop" type="checkbox" checked onchange="toggleAlwaysOnTop()" class="rounded text-sky-600"/>
-            </label>
-            <label class="flex items-center justify-between py-1 cursor-pointer">
-              <span class="text-slate-700 font-medium">新建任务默认开启到点提醒</span>
-              <input type="checkbox" checked class="rounded text-sky-600"/>
-            </label>
-            <label class="flex items-center justify-between py-1 cursor-pointer">
+            <label class="flex items-center justify-between py-0.5 cursor-pointer">
               <span class="text-slate-700 font-medium">显示透明窗口边界辅助线 (开发视图)</span>
               <input type="checkbox" onchange="document.getElementById('wireframe-box').classList.toggle('hidden', !this.checked)" class="rounded text-sky-600"/>
             </label>
           </div>
-          <div class="mt-4">
+          <div class="mt-3.5">
             <button onclick="closeModal()" class="w-full py-2 rounded-xl text-xs font-medium text-white" style="background-color: #6f9bb6;">完成</button>
           </div>
         </div>
@@ -853,29 +1098,29 @@
       <!-- Platform & Architecture Summary Card -->
       <div class="bg-[var(--card)] border border-[var(--border)] rounded-xl p-4 shadow-sm">
         <h2 class="text-sm font-semibold text-[var(--foreground)] flex items-center justify-between">
-          <span>📐 原型设计规格与边界</span>
+          <span>📐 v0.3 用户反馈升级规格</span>
           <span id="spec-platform-tag" class="text-xs px-2 py-0.5 rounded bg-[var(--secondary)] text-[var(--secondary-foreground)]">当前：macOS</span>
         </h2>
 
-        <div class="mt-3 space-y-2.5 text-xs text-[var(--muted-foreground)]">
+        <div class="mt-3 space-y-2 text-xs text-[var(--muted-foreground)]">
           <div class="p-2.5 rounded-lg bg-[var(--background)] border border-[var(--border)]">
-            <div class="font-medium text-[var(--foreground)]">1. 透明无边框单窗口结构</div>
-            <p class="mt-0.5">总窗口 <code class="text-[var(--foreground)]">356 × 560 px</code>，上方预留 <code class="text-[var(--foreground)]">112px</code> 透明出血层供宠物动画与气泡展开，下方为 <code class="text-[var(--foreground)]">28px</code> 大圆角任务卡片，拖动时整体移动。</p>
+            <div class="font-medium text-[var(--foreground)]">1. 框框自由拉大 + 仅显示在桌面 (A17/A18)</div>
+            <p class="mt-0.5">支持拖拽右下角 <code class="text-[var(--foreground)]">↘</code> 自由调整宽高并记忆尺寸；顶栏一键切换 <code class="text-[var(--foreground)]">📌 置顶 / 🖥 贴桌面</code>，贴桌面时打开其他软件自动遮挡桌宠。</p>
           </div>
 
           <div class="p-2.5 rounded-lg bg-[var(--background)] border border-[var(--border)]">
-            <div class="font-medium text-[var(--foreground)]">2. 参考图差异收敛（已按需求文档对齐）</div>
+            <div class="font-medium text-[var(--foreground)]">2. 紧急优先排序 + 周计划/月计划 (A15/A16)</div>
             <ul class="mt-1 list-disc list-inside space-y-0.5">
-              <li>移除参考图顶部的社交平台头像/关注/页码水印</li>
-              <li>第 3 个标签由参考图“打卡”调整为<strong>“重复计划”</strong>（对应 F02/F03 每日多时间槽计划管理）</li>
-              <li>补充<strong>历史日期切换</strong>与昨日未完成<strong>「移到今天」</strong>操作</li>
+              <li><strong>🔥 紧急任务</strong>自动排在普通日常任务最前面，支持行内一键切换</li>
+              <li>重复计划扩展支持 <strong>每天 / 每周几 / 每月几号</strong> 三种周期</li>
+              <li>内置<strong>🔔 提醒摇铃清脆音效</strong>（Web Audio 合成）与<strong>🚀 开机自启动</strong></li>
             </ul>
           </div>
 
           <div class="p-2.5 rounded-lg bg-[var(--background)] border border-[var(--border)]">
             <div class="font-medium text-[var(--foreground)]" id="platform-diff-title">3. macOS 专属交互规范</div>
             <p class="mt-0.5" id="platform-diff-desc">
-              驻留顶部 Menu Bar（显示实时完成比 1/6）；点击卡片内 <code class="text-[var(--foreground)]">×</code> 弹出 3 选 1 确认框，而按系统快捷键 <code class="text-[var(--foreground)]">⌘Q</code> 直接遵循退出语义，不二次弹窗拦截。
+              驻留顶部 Menu Bar（显示实时完成比）；点击卡片内 <code class="text-[var(--foreground)]">×</code> 弹出 3 选 1 确认框，而按系统快捷键 <code class="text-[var(--foreground)]">⌘Q</code> 直接遵循退出语义。
             </p>
           </div>
         </div>
@@ -884,13 +1129,19 @@
       <!-- Pet Animation State Switcher & Configurable Library Entry -->
       <div class="bg-[var(--card)] border border-[var(--border)] rounded-xl p-4 shadow-sm">
         <div class="flex items-center justify-between">
-          <h2 class="text-sm font-semibold text-[var(--foreground)]">🐾 宠物状态机与资源库 (F08)</h2>
+          <h2 class="text-sm font-semibold text-[var(--foreground)]">🐾 宠物状态机与摇铃音效 (F08/A19)</h2>
           <button onclick="openModal('pets')" class="text-xs px-2 py-0.5 rounded-md bg-[var(--primary)] text-[var(--primary-foreground)] hover:opacity-90 transition">
             切换/配置宠物 ▸
           </button>
         </div>
-        <p class="text-xs text-[var(--muted-foreground)] mt-0.5">当前角色：<strong id="inspector-pet-name" class="text-[var(--foreground)]">小八猫 (hachiware)</strong> · 点击按钮体验动作：</p>
+        <p class="text-xs text-[var(--muted-foreground)] mt-0.5">当前角色：<strong id="inspector-pet-name" class="text-[var(--foreground)]">小八猫 (hachiware)</strong> · 点击体验：</p>
         <div class="grid grid-cols-2 gap-2 mt-2.5 text-xs">
+          <button onclick="simulateBellReminderWithSound()" class="px-2.5 py-1.5 rounded-lg border border-amber-400/70 bg-amber-500/10 hover:border-amber-500 text-left">
+            🔔 <strong>remind_bell</strong> 摇铃+声音
+          </button>
+          <button onclick="simulateWaterGifReminder()" class="px-2.5 py-1.5 rounded-lg border border-sky-400/60 bg-sky-500/10 hover:border-sky-500 text-left">
+            💧 <strong>drink_gif</strong> 请喝水提醒
+          </button>
           <button onclick="clearActiveReminder(); setPetState('idle')" class="px-2.5 py-1.5 rounded-lg border border-[var(--border)] bg-[var(--background)] hover:border-[var(--primary)] text-left">
             😌 <strong>idle</strong> 待机呼吸
           </button>
@@ -899,12 +1150,6 @@
           </button>
           <button onclick="setPetState('happy', '完成一项！继续保持 ✨')" class="px-2.5 py-1.5 rounded-lg border border-[var(--border)] bg-[var(--background)] hover:border-[var(--primary)] text-left">
             ✨ <strong>celebrate</strong> 单项庆祝
-          </button>
-          <button onclick="setPetState('happy', '🎉 太棒啦！今日任务全部达成！')" class="px-2.5 py-1.5 rounded-lg border border-[var(--border)] bg-[var(--background)] hover:border-[var(--primary)] text-left">
-            🏆 <strong>all_done</strong> 全部完成
-          </button>
-          <button onclick="simulateWaterGifReminder()" class="px-2.5 py-1.5 rounded-lg border border-sky-400/60 bg-sky-500/10 hover:border-sky-500 text-left">
-            💧 <strong>drink_gif</strong> 请喝水提醒
           </button>
           <button onclick="toggleTaskMenuCard()" class="px-2.5 py-1.5 rounded-lg border border-teal-400/60 bg-teal-500/10 hover:border-teal-500 text-left">
             🔼 <strong>mini_mode</strong> 收起/展开菜单
@@ -919,8 +1164,8 @@
           <button onclick="clearLog()" class="text-xs text-[var(--muted-foreground)] hover:text-[var(--foreground)]">清空</button>
         </div>
         <div id="ipc-log" class="flex-1 bg-[var(--background)] border border-[var(--border)] rounded-lg p-2.5 text-xs font-mono space-y-1.5 overflow-y-auto" style="max-height: 210px;">
-          <div class="text-[var(--muted-foreground)]">[11:43:00] 主进程启动，生成今日 (11-02) 任务实例，共 6 项</div>
-          <div class="text-[var(--muted-foreground)]">[11:43:00] 宠物进入 idle 待机循环，下班倒计时目标 18:00</div>
+          <div class="text-[var(--muted-foreground)]">[11:43:00] 主进程启动，已加载开机自启动配置 (openAtLogin=true)</div>
+          <div class="text-[var(--muted-foreground)]">[11:43:00] 生成今日 (11-02 周一) 实例：含每日计划、每周一计划与每月2日计划</div>
         </div>
       </div>
 
@@ -929,55 +1174,104 @@
 
   <script>
     // =========================================================================
-    // STATE DATA (Aligned with docs/requirements.md & docs/technical-selection.md)
+    // STATE DATA (Aligned with docs/requirements.md v0.3 & docs/prototype-design.md)
     // =========================================================================
-    const TODAY_DATE = '2026-11-02';
+    const TODAY_DATE = '2026-11-02'; // 2026-11-02 is Monday (周一) & 2nd day of month (2号)
     let selectedDate = '2026-11-02';
     let dateBarVisible = false;
     let currentPlatform = 'mac'; // 'mac' | 'win'
     let currentTab = 'todo';     // 'todo' | 'done' | 'plans'
     let viewingYesterday = false;
-    let alwaysOnTop = true;
+    let alwaysOnTop = true;      // true = 📌 始终置顶, false = 🖥 仅留在桌面 (打开其他软件时被遮挡)
+    let openAtLogin = true;      // 🚀 开机自动启动 (A20)
+    let reminderSoundEnabled = true; // 🔔 提醒摇铃声音开关 (A19)
     let notifPermissionGranted = true;
     let offworkTime = '18:00';
     let currentCountdownStr = '06:16:28';
     let activeReminderTaskId = null;
     let activeReminderState = null; // Stores P0 reminder snapshot so P1 clicks cannot overwrite it
+
+    // Editor state
     let editorTaskType = 'once';
+    let editorPriority = 'normal'; // 'normal' | 'urgent'
+    let editorRepeatCycle = 'daily'; // 'daily' | 'weekly' | 'monthly'
+    let editorDaysOfWeek = [1, 5];   // 1=周一 ... 7=周日
+    let editorDaysOfMonth = [2, 15]; // 1..31
     let editorSlots = ['10:00', '15:00'];
     let editingTargetId = null;     // null = creating new, string = editing existing taskId or planId
+    let quickAddUrgent = false;     // Quick input bar 🔥 紧急 toggle state
     let bubbleResetTimer = null;
 
+    // Resizable widget state (A17)
+    let widgetWidth = 356;
+    let widgetListHeight = 230;
     let isMenuCardHidden = false;
-    let activeSceneProp = null; // null | 'water' | 'stretch'
+    let activeSceneProp = null; // null | 'water' | 'stretch' | 'bell'
 
-    // All task occurrences across dates (keyed by scheduledDate, supporting Yesterday / Today / Tomorrow & custom dates)
+    // All task occurrences across dates (keyed by scheduledDate, supporting Priority & Repeat Cycles)
     let allTasks = [
-      // Today (2026-11-02): 4 one-off + 2 repeating instances = 6 total, 1 done => 1/6 = 17%
-      { id: 't1', scheduledDate: '2026-11-02', title: '回一下上午那条消息', time: '10:30', remind: true, done: false, doneAt: null, isRepeat: false, planId: null, originDate: null, scene: 'water', petVoice: '咕嘟咕嘟～今天要记得多喝水哦！快端起杯子陪我喝口水吧 💧' },
-      { id: 't2', scheduledDate: '2026-11-02', title: '整理素材文件夹', time: null, remind: true, done: false, doneAt: null, isRepeat: false, planId: null, originDate: null },
-      { id: 't3', scheduledDate: '2026-11-02', title: '喝一杯温水补充水分', time: '15:00', remind: true, done: false, doneAt: null, isRepeat: true, planId: 'p1', originDate: null, scene: 'water', petVoice: '咕嘟咕嘟～主人今天要喝水啦！快端起杯子陪我喝口温水吧 💧' },
-      { id: 't4', scheduledDate: '2026-11-02', title: '下班前发日报', time: '17:30', remind: true, done: false, doneAt: null, isRepeat: false, planId: null, originDate: null },
-      { id: 't5', scheduledDate: '2026-11-02', title: '10条demo递交', time: null, remind: true, done: false, doneAt: null, isRepeat: false, planId: null, originDate: null },
-      { id: 't6', scheduledDate: '2026-11-02', title: '起身运动拉伸 5 分钟', time: '10:00', remind: true, done: true, doneAt: '10:05', isRepeat: true, planId: 'p1', originDate: null, scene: 'stretch' },
+      // Today (2026-11-02): Urgent tasks automatically sort to the top!
+      { id: 't_urg_1', scheduledDate: '2026-11-02', title: '确认客户合同终稿并盖章', time: '14:00', priority: 'urgent', remind: true, done: false, doneAt: null, isRepeat: false, planId: null, originDate: null, scene: 'bell' },
+      { id: 't1', scheduledDate: '2026-11-02', title: '回一下上午那条消息', time: '10:30', priority: 'normal', remind: true, done: false, doneAt: null, isRepeat: false, planId: null, originDate: null, scene: 'bell' },
+      { id: 't2', scheduledDate: '2026-11-02', title: '整理素材文件夹', time: null, priority: 'normal', remind: true, done: false, doneAt: null, isRepeat: false, planId: null, originDate: null },
+      { id: 't3', scheduledDate: '2026-11-02', title: '喝一杯温水补充水分', time: '15:00', priority: 'normal', remind: true, done: false, doneAt: null, isRepeat: true, planId: 'p1', originDate: null, scene: 'water', petVoice: '咕嘟咕嘟～主人今天要喝水啦！快端起杯子陪我喝口温水吧 💧' },
+      { id: 't4', scheduledDate: '2026-11-02', title: '下班前发日报', time: '17:30', priority: 'urgent', remind: true, done: false, doneAt: null, isRepeat: false, planId: null, originDate: null, scene: 'bell' },
+      { id: 't6', scheduledDate: '2026-11-02', title: '起身运动拉伸 5 分钟', time: '10:00', priority: 'normal', remind: true, done: true, doneAt: '10:05', isRepeat: true, planId: 'p1', originDate: null, scene: 'stretch' },
 
       // Yesterday (2026-11-01): For F05 / A04 / A05 verification
-      { id: 'y1', scheduledDate: '2026-11-01', title: '核对上周报销单据', time: '16:00', remind: true, done: false, doneAt: null, isRepeat: false, planId: null, originDate: '11-01', movedToToday: false },
-      { id: 'y2', scheduledDate: '2026-11-01', title: '准备早饭与维生素', time: '08:30', remind: true, done: true, doneAt: '08:35', isRepeat: true, planId: 'p2', originDate: '11-01', movedToToday: false },
-      { id: 'y3', scheduledDate: '2026-11-01', title: '起身运动拉伸 5 分钟', time: '15:00', remind: true, done: true, doneAt: '15:10', isRepeat: true, planId: 'p1', originDate: '11-01', movedToToday: false }
+      { id: 'y1', scheduledDate: '2026-11-01', title: '核对上周报销单据', time: '16:00', priority: 'urgent', remind: true, done: false, doneAt: null, isRepeat: false, planId: null, originDate: '11-01', movedToToday: false },
+      { id: 'y2', scheduledDate: '2026-11-01', title: '准备早饭与维生素', time: '08:30', priority: 'normal', remind: true, done: true, doneAt: '08:35', isRepeat: true, planId: 'p2', originDate: '11-01', movedToToday: false },
+      { id: 'y3', scheduledDate: '2026-11-01', title: '起身运动拉伸 5 分钟', time: '15:00', priority: 'normal', remind: true, done: true, doneAt: '15:10', isRepeat: true, planId: 'p1', originDate: '11-01', movedToToday: false }
     ];
 
-    // Repeating Plans (F02 / F03)
+    // Repeating Plans (F02 / F03 / A16: Supports daily, weekly, and monthly plans!)
     let repeatPlans = [
-      { id: 'p1', title: '起身运动拉伸 5 分钟', slots: ['10:00', '15:00'], status: 'active', startDate: '2026-10-20', endDate: null, remind: true },
-      { id: 'p2', title: '准备早饭与饭后维生素', slots: ['08:30'], status: 'active', startDate: '2026-10-15', endDate: '2026-11-01', remind: true }
+      { id: 'p1', title: '起身运动拉伸 5 分钟', repeatType: 'daily', daysOfWeek: [], daysOfMonth: [], priority: 'normal', slots: ['10:00', '15:00'], status: 'active', startDate: '2026-10-20', endDate: null, remind: true },
+      { id: 'p_week_1', title: '每周周报汇总与任务盘点', repeatType: 'weekly', daysOfWeek: [1, 5], daysOfMonth: [], priority: 'urgent', slots: ['16:30'], status: 'active', startDate: '2026-10-01', endDate: null, remind: true },
+      { id: 'p_month_1', title: '信用卡账单核对与月度复盘', repeatType: 'monthly', daysOfWeek: [], daysOfMonth: [2, 15], priority: 'normal', slots: ['11:30'], status: 'active', startDate: '2026-10-01', endDate: null, remind: true },
+      { id: 'p2', title: '准备早饭与饭后维生素', repeatType: 'daily', daysOfWeek: [], daysOfMonth: [], priority: 'normal', slots: ['08:30'], status: 'active', startDate: '2026-10-15', endDate: '2026-11-01', remind: true }
     ];
 
-    // Ensure repeating plan instances are generated for a date if within [startDate, endDate] inclusive (Rule 4.1)
+    const WEEKDAY_NAMES = { 1: '一', 2: '二', 3: '三', 4: '四', 5: '五', 6: '六', 7: '日' };
+
+    function getIsoWeekday(dateStr) {
+      const dt = new Date(dateStr + 'T00:00:00');
+      if (isNaN(dt.getTime())) return 1;
+      const d = dt.getDay();
+      return d === 0 ? 7 : d;
+    }
+
+    function getDayOfMonth(dateStr) {
+      const parts = dateStr.split('-');
+      return parts.length === 3 ? parseInt(parts[2], 10) : 1;
+    }
+
+    function formatPlanCycleBadge(plan) {
+      if (!plan || !plan.repeatType || plan.repeatType === 'daily') return '↻ 每日';
+      if (plan.repeatType === 'weekly') {
+        const days = (plan.daysOfWeek || []).map(d => WEEKDAY_NAMES[d] || d).join('/');
+        return `📆 每周${days || '一'}`;
+      }
+      if (plan.repeatType === 'monthly') {
+        const days = (plan.daysOfMonth || []).map(d => `${d}日`).join('/');
+        return `🗓 每月${days || '1日'}`;
+      }
+      return '↻ 重复';
+    }
+
+    // Ensure repeating plan instances are generated for a date if within [startDate, endDate] AND matching cycle (Rule 4.1 & A16)
     function isDateWithinPlan(dateStr, plan) {
       if (plan.status !== 'active') return false;
       if (plan.startDate && dateStr < plan.startDate) return false;
       if (plan.endDate && dateStr > plan.endDate) return false;
+      if (plan.repeatType === 'weekly') {
+        const wk = getIsoWeekday(dateStr);
+        return Array.isArray(plan.daysOfWeek) && plan.daysOfWeek.includes(wk);
+      }
+      if (plan.repeatType === 'monthly') {
+        const dom = getDayOfMonth(dateStr);
+        return Array.isArray(plan.daysOfMonth) && plan.daysOfMonth.includes(dom);
+      }
       return true;
     }
 
@@ -998,18 +1292,19 @@
                 scheduledDate: dateStr,
                 title: plan.title,
                 time: slot,
+                priority: plan.priority || 'normal',
                 remind: plan.remind !== false,
                 done: false,
                 doneAt: null,
                 isRepeat: true,
                 planId: plan.id,
                 originDate: null,
-                scene: plan.title.includes('喝') ? 'water' : 'stretch'
+                scene: plan.title.includes('喝') ? 'water' : plan.title.includes('运动') ? 'stretch' : 'bell'
               });
             }
           });
         }
-        // Remove unfinished occurrences on >=TODAY_DATE if slot was removed or date fell out of [startDate, endDate]
+        // Remove unfinished occurrences on >=TODAY_DATE if slot was removed or date fell out of cycle/range
         if (dateStr >= TODAY_DATE) {
           for (let i = allTasks.length - 1; i >= 0; i--) {
             const t = allTasks[i];
@@ -1018,6 +1313,7 @@
                 allTasks.splice(i, 1);
               } else {
                 t.title = plan.title;
+                t.priority = plan.priority || 'normal';
                 t.remind = plan.remind !== false;
               }
             }
@@ -1040,17 +1336,20 @@
     }
 
     // =========================================================================
-    // RENDER & PROGRESS LOGIC
+    // RENDER & PROGRESS LOGIC (With Urgent Priority Auto-Top Sorting A15)
     // =========================================================================
     function renderAll() {
       viewingYesterday = (selectedDate === '2026-11-01');
       const sourceList = getTasksForDate(selectedDate);
       const todayList = getTasksForDate(TODAY_DATE);
 
-      // Sort Todo: timed tasks ascending first, untimed tasks after (Rule 4.1)
+      // Sort Todo: 1st by priority ('urgent' before 'normal'), 2nd by timed ascending, untimed after (Rule 4.1 & A15)
       const todoItems = sourceList
         .filter(t => !t.done)
         .sort((a, b) => {
+          const aUrgent = a.priority === 'urgent' ? 0 : 1;
+          const bUrgent = b.priority === 'urgent' ? 0 : 1;
+          if (aUrgent !== bUrgent) return aUrgent - bUrgent;
           if (a.time && b.time) return a.time.localeCompare(b.time);
           if (a.time && !b.time) return -1;
           if (!a.time && b.time) return 1;
@@ -1093,6 +1392,7 @@
       const pctEl = document.getElementById('progress-percent');
       const fillEl = document.getElementById('progress-bar-fill');
 
+      const urgentCount = todoItems.filter(t => t.priority === 'urgent').length;
       const prefixLabel = selectedDate === TODAY_DATE
         ? '待办进度'
         : `${formatShortDateLabel(selectedDate)} 进度`;
@@ -1102,7 +1402,7 @@
         pctEl.textContent = '0%';
         fillEl.style.width = '0%';
       } else {
-        labelEl.textContent = `${prefixLabel} ${doneCount}/${totalCount}`;
+        labelEl.innerHTML = `${prefixLabel} ${doneCount}/${totalCount}${urgentCount > 0 ? ` <span class="ml-1.5 text-[11px] px-1.5 py-0.2 rounded-full bg-rose-100 text-rose-700 font-semibold">🔥 ${urgentCount}项紧急置顶</span>` : ''}`;
         pctEl.textContent = `${pct}%`;
         fillEl.style.width = `${pct}%`;
       }
@@ -1142,23 +1442,37 @@
           return;
         }
         todoItems.forEach(item => {
+          const isUrgent = item.priority === 'urgent';
+          const planObj = item.planId ? repeatPlans.find(p => p.id === item.planId) : null;
+          const repeatBadgeText = item.isRepeat ? formatPlanCycleBadge(planObj) : '';
+          const repeatBadgeColor = planObj?.repeatType === 'weekly'
+            ? 'bg-violet-50 text-violet-700 border border-violet-200/60'
+            : planObj?.repeatType === 'monthly'
+            ? 'bg-amber-50 text-amber-800 border border-amber-200/60'
+            : 'bg-sky-50 text-sky-700';
+
           const row = document.createElement('div');
           row.id = 'task-row-' + item.id;
-          row.className = 'task-row-item bg-white rounded-2xl px-3.5 py-2.5 flex items-center justify-between shadow-xs border border-slate-100/80 hover:border-slate-200 group';
+          row.className = `task-row-item rounded-2xl px-3.5 py-2.5 flex items-center justify-between shadow-xs border transition group ${
+            isUrgent
+              ? 'bg-[#fff9f8] border-rose-200/90 hover:border-rose-300'
+              : 'bg-white border-slate-100/80 hover:border-slate-200'
+          }`;
           const isHistorical = selectedDate < TODAY_DATE;
           row.innerHTML = `
             <div class="flex items-center gap-2.5 min-w-0 flex-1" ondblclick="openEditTaskModal('${item.id}')" title="双击可编辑该任务">
               <button
                 id="check-btn-${item.id}"
                 onclick="toggleTaskDone('${item.id}', event)"
-                class="relative w-5 h-5 rounded-full border-2 border-slate-300 hover:border-[#6f9bb6] hover:scale-110 flex items-center justify-center shrink-0 transition-all cursor-pointer"
+                class="relative w-5 h-5 rounded-full border-2 ${isUrgent ? 'border-rose-400 hover:border-rose-500' : 'border-slate-300 hover:border-[#6f9bb6]'} hover:scale-110 flex items-center justify-center shrink-0 transition-all cursor-pointer"
                 title="点击完成任务（动画期间再次点击可取消）"
               ></button>
               <div class="min-w-0 flex-1">
                 <div class="flex items-center gap-1.5 flex-wrap">
-                  <span id="title-span-${item.id}" class="strike-line text-xs font-medium text-slate-700 truncate transition-colors duration-200">${escapeHtml(item.title)}</span>
+                  ${isUrgent ? `<span class="text-[11px] px-1.5 py-0.2 rounded-md bg-rose-500 text-white font-semibold shrink-0">🔥 紧急</span>` : ''}
+                  <span id="title-span-${item.id}" class="strike-line text-xs ${isUrgent ? 'font-semibold text-slate-800' : 'font-medium text-slate-700'} truncate transition-colors duration-200">${escapeHtml(item.title)}</span>
                   ${item.time ? `<span class="text-xs px-1.5 py-0.2 rounded bg-slate-100 text-slate-500">${item.time}</span>` : ''}
-                  ${item.isRepeat ? `<span class="text-xs px-1.5 py-0.2 rounded bg-sky-50 text-sky-700" title="每日重复计划实例">↻ 每日</span>` : ''}
+                  ${item.isRepeat ? `<span class="text-[11px] px-1.5 py-0.2 rounded ${repeatBadgeColor}" title="周期重复计划生成的实例">${repeatBadgeText}</span>` : ''}
                   ${item.originDate ? `<span class="text-xs px-1.5 py-0.2 rounded bg-amber-50 text-amber-700" title="从历史未完成迁移至今天">原 ${item.originDate}</span>` : ''}
                 </div>
               </div>
@@ -1169,8 +1483,10 @@
                 <button onclick="moveYesterdayTaskToToday('${item.id}')" class="px-2 py-0.5 rounded-lg bg-indigo-50 text-indigo-700 hover:bg-indigo-100 text-xs font-medium transition">
                   移到今天
                 </button>
-              ` : ''}
-              <button id="edit-btn-${item.id}" onclick="openEditTaskModal('${item.id}')" class="text-slate-400 hover:text-sky-600 text-xs px-1 leading-none transition" title="${item.isRepeat ? '编辑所属每日重复计划 (F03)' : '编辑任务名称/日期/时间 (F01)'}">✎</button>
+              ` : `
+                <button onclick="toggleTaskPriority('${item.id}')" class="text-xs px-1 leading-none transition ${isUrgent ? 'text-rose-500 opacity-100' : 'text-slate-300 hover:text-rose-500 opacity-70 group-hover:opacity-100'}" title="${isUrgent ? '当前为紧急任务（排最前），点击改为普通日常任务' : '点击标为「🔥 紧急任务」并自动排到最前面 (A15)'}">🔥</button>
+              `}
+              <button id="edit-btn-${item.id}" onclick="openEditTaskModal('${item.id}')" class="text-slate-400 hover:text-sky-600 text-xs px-1 leading-none transition" title="${item.isRepeat ? '编辑所属周期重复计划 (F03)' : '编辑任务名称/优先级/日期/时间 (F01)'}">✎</button>
               <button id="del-btn-${item.id}" onclick="deleteTaskInstance('${item.id}')" class="text-slate-400 hover:text-rose-500 text-sm px-1 leading-none transition" title="${item.isRepeat ? '仅删除今天本次安排，不影响后续重复计划' : '删除任务'}">×</button>
             </div>
           `;
@@ -1192,6 +1508,7 @@
             <div class="flex items-center gap-2.5 min-w-0 flex-1">
               <button onclick="toggleTaskDone('${item.id}', event)" class="w-5 h-5 rounded-full flex items-center justify-center text-white text-xs shrink-0 hover:opacity-85 transition" style="background-color: #6f9bb6;" title="点击撤销完成">✓</button>
               <div class="min-w-0 flex-1">
+                ${item.priority === 'urgent' ? `<span class="text-[10px] px-1 py-0.2 rounded bg-rose-100 text-rose-600 mr-1">🔥紧急</span>` : ''}
                 <span class="text-xs text-slate-400 line-through truncate">${escapeHtml(item.title)}</span>
                 ${item.doneAt ? `<span class="ml-1.5 text-xs text-slate-400">(${item.doneAt} 完成)</span>` : ''}
               </div>
@@ -1201,25 +1518,44 @@
           container.appendChild(row);
         });
       } else if (currentTab === 'plans') {
+        // Add quick button at top of Plans list to create Weekly / Monthly / Daily plan
+        const topBar = document.createElement('div');
+        topBar.className = 'flex items-center justify-between px-1 pb-1 text-xs';
+        topBar.innerHTML = `
+          <span class="text-slate-500">支持<strong>每日 / 每周 / 每月</strong>自动生成待办</span>
+          <button onclick="demoWeeklyMonthlyPlanModal()" class="px-2.5 py-1 rounded-full bg-sky-600 text-white hover:bg-sky-700 font-medium text-[11px] shadow-2xs">+ 新建周/月/日计划</button>
+        `;
+        container.appendChild(topBar);
+
         repeatPlans.forEach(plan => {
           const row = document.createElement('div');
           row.className = 'bg-white rounded-2xl px-3.5 py-2.5 border border-slate-100 shadow-xs space-y-1.5';
           const isPaused = plan.status === 'paused';
+          const cycleBadge = formatPlanCycleBadge(plan);
+          const cycleClass = plan.repeatType === 'weekly'
+            ? 'bg-violet-100 text-violet-800'
+            : plan.repeatType === 'monthly'
+            ? 'bg-amber-100 text-amber-800'
+            : 'bg-sky-100 text-sky-800';
           const dateRangeLabel = plan.endDate
             ? `${plan.startDate.slice(5)} ~ ${plan.endDate.slice(5)}`
             : `${plan.startDate.slice(5)} 起`;
           row.innerHTML = `
             <div class="flex items-center justify-between gap-2">
-              <span class="text-xs font-semibold text-slate-700 truncate ${isPaused ? 'line-through text-slate-400' : ''}">↻ ${escapeHtml(plan.title)}</span>
+              <div class="flex items-center gap-1.5 min-w-0">
+                <span class="text-[11px] px-1.5 py-0.2 rounded-md font-medium shrink-0 ${cycleClass}">${cycleBadge}</span>
+                ${plan.priority === 'urgent' ? `<span class="text-[11px] px-1.5 py-0.2 rounded-md bg-rose-500 text-white font-semibold shrink-0">🔥紧急</span>` : ''}
+                <span class="text-xs font-semibold text-slate-700 truncate ${isPaused ? 'line-through text-slate-400' : ''}">${escapeHtml(plan.title)}</span>
+              </div>
               <div class="flex items-center gap-1 shrink-0">
-                <span class="text-xs px-1.5 py-0.2 rounded bg-slate-100 text-slate-500">${dateRangeLabel}</span>
-                <span class="text-xs px-2 py-0.5 rounded-full ${isPaused ? 'bg-amber-50 text-amber-700' : 'bg-emerald-50 text-emerald-700'}">
+                <span class="text-[11px] px-1.5 py-0.2 rounded bg-slate-100 text-slate-500">${dateRangeLabel}</span>
+                <span class="text-[11px] px-2 py-0.5 rounded-full ${isPaused ? 'bg-amber-50 text-amber-700' : 'bg-emerald-50 text-emerald-700'}">
                   ${isPaused ? '已暂停' : '生效中'}
                 </span>
               </div>
             </div>
             <div class="flex items-center justify-between text-xs text-slate-500">
-              <span class="truncate pr-2">每日：${plan.slots.join('、')}</span>
+              <span class="truncate pr-2">时间槽：${plan.slots.join('、')}</span>
               <div class="flex items-center gap-2 shrink-0">
                 <button onclick="openEditPlanModal('${plan.id}')" class="text-sky-700 hover:underline font-medium">编辑</button>
                 <button onclick="togglePlanPause('${plan.id}')" class="text-slate-600 hover:text-sky-700 hover:underline">${isPaused ? '恢复' : '暂停'}</button>
@@ -1230,6 +1566,69 @@
           container.appendChild(row);
         });
       }
+    }
+
+    // =========================================================================
+    // PRIORITY TOGGLE (A15: 紧急任务与普通任务区分，紧急自动排前面)
+    // =========================================================================
+    function toggleQuickUrgent() {
+      quickAddUrgent = !quickAddUrgent;
+      const btn = document.getElementById('quick-urgent-btn');
+      if (!btn) return;
+      if (quickAddUrgent) {
+        btn.className = 'text-[11px] text-white px-2 py-0.5 rounded-full bg-rose-500 hover:bg-rose-600 transition font-semibold whitespace-nowrap shadow-2xs';
+        btn.textContent = '🔥 紧急✓';
+      } else {
+        btn.className = 'text-[11px] text-slate-500 hover:text-rose-600 px-2 py-0.5 rounded-full bg-slate-100 hover:bg-rose-50 transition font-medium whitespace-nowrap';
+        btn.textContent = '🔥 紧急';
+      }
+    }
+
+    function toggleTaskPriority(taskId) {
+      const item = allTasks.find(t => t.id === taskId);
+      if (!item) return;
+      item.priority = item.priority === 'urgent' ? 'normal' : 'urgent';
+      if (item.isRepeat && item.planId) {
+        const plan = repeatPlans.find(p => p.id === item.planId);
+        if (plan) plan.priority = item.priority;
+      }
+      renderAll();
+      if (item.priority === 'urgent') {
+        setPetState('happy', `🔥 已将「${item.title.slice(0, 8)}」设为紧急，自动排到最前面！`);
+        appendLog(`任务「${item.title}」切换为【🔥 紧急任务】-> 待办列表自动置顶排到最前面 (A15)`);
+      } else {
+        appendLog(`任务「${item.title}」恢复为【普通日常任务】-> 按时间顺序排列 (A15)`);
+      }
+    }
+
+    function demoQuickUrgentTask() {
+      if (isMenuCardHidden) toggleTaskMenuCard(true);
+      currentTab = 'todo';
+      switchSelectedDate(TODAY_DATE, true);
+      const urgentTask = {
+        id: 't_urg_' + Date.now(),
+        scheduledDate: TODAY_DATE,
+        title: '紧急修复线上反馈问题（自动排最前）',
+        time: '18:00',
+        priority: 'urgent',
+        remind: true,
+        done: false,
+        doneAt: null,
+        isRepeat: false,
+        planId: null,
+        originDate: null,
+        scene: 'bell'
+      };
+      allTasks.push(urgentTask);
+      renderAll();
+      const row = document.getElementById('task-row-' + urgentTask.id);
+      if (row) {
+        row.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+        row.classList.add('task-highlight');
+        setTimeout(() => row.classList.remove('task-highlight'), 2400);
+      }
+      setPetState('happy', '🔥 紧急任务已添加，已自动帮你排到待办最前面啦！');
+      appendLog('演练 [A15 紧急任务优先]：新增 18:00 的紧急任务，虽然时间较晚，仍自动排在普通日常任务最前面');
     }
 
     // =========================================================================
@@ -1481,24 +1880,28 @@
         switchSelectedDate(TODAY_DATE, true);
       }
 
+      const priority = quickAddUrgent ? 'urgent' : 'normal';
       const newTask = {
         id: 't_' + Date.now(),
         scheduledDate: targetDate,
         title,
         time: null,
+        priority,
         remind: true,
         done: false,
         doneAt: null,
         isRepeat: false,
         planId: null,
-        originDate: null
+        originDate: null,
+        scene: 'bell'
       };
       allTasks.push(newTask);
       input.value = '';
+      if (quickAddUrgent) toggleQuickUrgent();
       currentTab = 'todo';
       renderAll();
-      setPetState('happy', `已添加「${title.slice(0, 8)}」✨`);
-      appendLog(`快捷新增一次性任务：「${title}」（执行日期：${targetDate}）`);
+      setPetState('happy', priority === 'urgent' ? `🔥 紧急待办「${title.slice(0, 8)}」已置顶！` : `已添加「${title.slice(0, 8)}」✨`);
+      appendLog(`快捷新增${priority === 'urgent' ? '【🔥 紧急】' : '普通'}任务：「${title}」（执行日期：${targetDate}）`);
     }
 
     function handleQuickAddOrModal() {
@@ -1550,7 +1953,7 @@
       if (simBtn) {
         simBtn.textContent = selectedDate === '2026-11-01'
           ? '📅 返回今日清单'
-          : '📅 查看昨日未完成并移到今天 (A04/A05)';
+          : '📅 昨日移到今天 (A05)';
       }
 
       appendLog(`切换日期视图至：${formatShortDateLabel(selectedDate)}`);
@@ -1558,18 +1961,15 @@
     }
 
     function toggleHistoryDate() {
-      const banner = document.getElementById('history-mode-banner');
       if (!dateBarVisible && selectedDate === TODAY_DATE) {
-        // Switch directly to Yesterday and show the date switcher bar
         switchSelectedDate('2026-11-01');
       } else {
-        // Return to Today and hide bar
         switchSelectedDate(TODAY_DATE, true);
       }
     }
 
     // =========================================================================
-    // TASK & REPEATING PLAN ADD / EDIT WORKFLOW (F01 / F02 / F03)
+    // TASK & REPEATING PLAN (DAILY / WEEKLY / MONTHLY) WORKFLOW (F01-F03 / A15 / A16)
     // =========================================================================
     function togglePlanPause(planId) {
       const plan = repeatPlans.find(p => p.id === planId);
@@ -1584,7 +1984,6 @@
       if (idx === -1) return;
       const plan = repeatPlans[idx];
       repeatPlans.splice(idx, 1);
-      // Remove unfinished occurrences from today onwards, keep completed history (Rule 4.3)
       for (let i = allTasks.length - 1; i >= 0; i--) {
         if (allTasks[i].planId === planId && !allTasks[i].done && allTasks[i].scheduledDate >= TODAY_DATE) {
           allTasks.splice(i, 1);
@@ -1592,6 +1991,91 @@
       }
       renderAll();
       appendLog(`已结束重复计划「${plan.title}」，未完成后续安排已清理，历史已完成记录保留 (Rule 4.3)`);
+    }
+
+    function setEditorPriority(prio) {
+      editorPriority = prio;
+      const btnNormal = document.getElementById('prio-btn-normal');
+      const btnUrgent = document.getElementById('prio-btn-urgent');
+      if (!btnNormal || !btnUrgent) return;
+      if (prio === 'urgent') {
+        btnUrgent.className = 'py-1.5 px-2.5 rounded-xl border border-rose-400 bg-rose-50 text-rose-700 font-semibold flex items-center justify-center gap-1 transition shadow-2xs';
+        btnNormal.className = 'py-1.5 px-2.5 rounded-xl border border-slate-200 bg-white text-slate-500 font-medium flex items-center justify-center gap-1 transition';
+      } else {
+        btnNormal.className = 'py-1.5 px-2.5 rounded-xl border border-slate-300 bg-slate-100 text-slate-800 font-semibold flex items-center justify-center gap-1 transition shadow-2xs';
+        btnUrgent.className = 'py-1.5 px-2.5 rounded-xl border border-slate-200 bg-white text-slate-500 font-medium flex items-center justify-center gap-1 transition';
+      }
+    }
+
+    function setEditorRepeatCycle(cycle) {
+      editorRepeatCycle = cycle;
+      ['daily', 'weekly', 'monthly'].forEach(c => {
+        const btn = document.getElementById('freq-btn-' + c);
+        if (!btn) return;
+        btn.className = c === cycle
+          ? 'py-1 rounded-lg font-semibold bg-white text-slate-800 shadow-xs'
+          : 'py-1 rounded-lg font-medium text-slate-500 hover:text-slate-700';
+      });
+      const weeklyBox = document.getElementById('editor-weekly-box');
+      const monthlyBox = document.getElementById('editor-monthly-box');
+      if (weeklyBox) weeklyBox.classList.toggle('hidden', cycle !== 'weekly');
+      if (monthlyBox) monthlyBox.classList.toggle('hidden', cycle !== 'monthly');
+      renderEditorCycleSelectors();
+    }
+
+    function renderEditorCycleSelectors() {
+      const weekContainer = document.getElementById('editor-weekday-pills');
+      if (weekContainer) {
+        weekContainer.innerHTML = [1, 2, 3, 4, 5, 6, 7].map(d => {
+          const active = editorDaysOfWeek.includes(d);
+          return `<button type="button" onclick="toggleEditorWeekday(${d})" class="py-1 rounded-lg text-xs font-medium border transition ${
+            active ? 'bg-violet-600 text-white border-violet-600 shadow-2xs' : 'bg-white text-slate-600 border-violet-200 hover:bg-violet-100/50'
+          }">周${WEEKDAY_NAMES[d]}</button>`;
+        }).join('');
+      }
+
+      const monthContainer = document.getElementById('editor-monthday-pills');
+      if (monthContainer) {
+        const presetDays = Array.from(new Set([1, 2, 5, 10, 15, 20, 25, 28, ...editorDaysOfMonth])).sort((a, b) => a - b);
+        monthContainer.innerHTML = presetDays.map(d => {
+          const active = editorDaysOfMonth.includes(d);
+          return `<button type="button" onclick="toggleEditorMonthDay(${d})" class="px-2 py-0.5 rounded-lg text-xs font-medium border transition ${
+            active ? 'bg-amber-600 text-white border-amber-600 shadow-2xs' : 'bg-white text-slate-600 border-amber-200 hover:bg-amber-100/50'
+          }">${d}号</button>`;
+        }).join('');
+      }
+    }
+
+    function toggleEditorWeekday(d) {
+      if (editorDaysOfWeek.includes(d)) {
+        if (editorDaysOfWeek.length > 1) editorDaysOfWeek = editorDaysOfWeek.filter(x => x !== d);
+      } else {
+        editorDaysOfWeek.push(d);
+        editorDaysOfWeek.sort((a, b) => a - b);
+      }
+      renderEditorCycleSelectors();
+    }
+
+    function toggleEditorMonthDay(d) {
+      if (editorDaysOfMonth.includes(d)) {
+        if (editorDaysOfMonth.length > 1) editorDaysOfMonth = editorDaysOfMonth.filter(x => x !== d);
+      } else {
+        editorDaysOfMonth.push(d);
+        editorDaysOfMonth.sort((a, b) => a - b);
+      }
+      renderEditorCycleSelectors();
+    }
+
+    function addCustomMonthDay() {
+      const input = document.getElementById('editor-custom-monthday');
+      const val = parseInt(input.value, 10);
+      if (isNaN(val) || val < 1 || val > 31) return;
+      if (!editorDaysOfMonth.includes(val)) {
+        editorDaysOfMonth.push(val);
+        editorDaysOfMonth.sort((a, b) => a - b);
+      }
+      input.value = '';
+      renderEditorCycleSelectors();
     }
 
     function setEditorTaskType(type) {
@@ -1611,6 +2095,7 @@
         btnOnce.className = 'py-1.5 rounded-lg font-medium text-slate-500';
         onceFields.classList.add('hidden');
         repeatFields.classList.remove('hidden');
+        setEditorRepeatCycle(editorRepeatCycle);
         renderEditorTimeSlots();
       }
     }
@@ -1645,7 +2130,7 @@
 
     function openNewTaskModal() {
       editingTargetId = null;
-      document.getElementById('plan-modal-title').textContent = '新增任务与重复计划';
+      document.getElementById('plan-modal-title').textContent = '新增任务与周期计划';
       document.getElementById('type-btn-once').disabled = false;
       document.getElementById('type-btn-repeat').disabled = false;
 
@@ -1657,16 +2142,38 @@
       document.getElementById('editor-end-date').value = '';
       document.getElementById('editor-remind').checked = true;
       editorSlots = ['10:00', '15:00'];
-      setEditorTaskType('once');
+      editorRepeatCycle = 'daily';
+      editorDaysOfWeek = [1, 5];
+      editorDaysOfMonth = [2, 15];
+      setEditorPriority(quickAddUrgent ? 'urgent' : 'normal');
+      setEditorTaskType(currentTab === 'plans' ? 'repeat' : 'once');
       renderEditorTimeSlots();
       openModal('plan');
+    }
+
+    function demoWeeklyMonthlyPlanModal() {
+      if (isMenuCardHidden) toggleTaskMenuCard(true);
+      editingTargetId = null;
+      document.getElementById('plan-modal-title').textContent = '新增周计划 / 月计划 (A16)';
+      document.getElementById('editor-title').value = '每周五团队周会与复盘';
+      document.getElementById('editor-start-date').value = TODAY_DATE;
+      document.getElementById('editor-end-date').value = '';
+      document.getElementById('editor-remind').checked = true;
+      editorSlots = ['16:00'];
+      editorRepeatCycle = 'weekly';
+      editorDaysOfWeek = [1, 5];
+      editorDaysOfMonth = [2, 15];
+      setEditorPriority('normal');
+      setEditorTaskType('repeat');
+      renderEditorTimeSlots();
+      openModal('plan');
+      appendLog('打开【周计划 / 月计划】配置面板：支持选择「每天 / 每周几 / 每月几号」自动生成待办 (A16)');
     }
 
     function openEditTaskModal(taskId) {
       const item = allTasks.find(t => t.id === taskId);
       if (!item) return;
 
-      // If this task is an instance of a repeating plan, open the repeating plan editor (F03)
       if (item.isRepeat && item.planId) {
         openEditPlanModal(item.planId);
         return;
@@ -1674,6 +2181,7 @@
 
       editingTargetId = item.id;
       document.getElementById('plan-modal-title').textContent = '编辑一次性任务 (F01)';
+      setEditorPriority(item.priority || 'normal');
       setEditorTaskType('once');
       document.getElementById('editor-title').value = item.title;
       document.getElementById('editor-date').value = item.scheduledDate || TODAY_DATE;
@@ -1687,8 +2195,12 @@
       if (!plan) return;
 
       editingTargetId = plan.id;
-      document.getElementById('plan-modal-title').textContent = '编辑每日重复计划 (F03)';
+      document.getElementById('plan-modal-title').textContent = '编辑周期重复计划 (F03 / A16)';
       editorSlots = [...plan.slots];
+      editorRepeatCycle = plan.repeatType || 'daily';
+      editorDaysOfWeek = plan.daysOfWeek?.length ? [...plan.daysOfWeek] : [1, 5];
+      editorDaysOfMonth = plan.daysOfMonth?.length ? [...plan.daysOfMonth] : [2, 15];
+      setEditorPriority(plan.priority || 'normal');
       setEditorTaskType('repeat');
       document.getElementById('editor-title').value = plan.title;
       document.getElementById('editor-start-date').value = plan.startDate || TODAY_DATE;
@@ -1700,7 +2212,7 @@
 
     function saveTaskFromModal() {
       const titleInput = document.getElementById('editor-title');
-      const title = titleInput.value.trim() || (editorTaskType === 'repeat' ? '每日喝水提醒' : '下午茶休息');
+      const title = titleInput.value.trim() || (editorTaskType === 'repeat' ? '每周固定复盘计划' : '下午茶休息');
       const remind = document.getElementById('editor-remind').checked;
 
       if (editorTaskType === 'once') {
@@ -1711,10 +2223,11 @@
           const existing = allTasks.find(t => t.id === editingTargetId);
           if (existing) {
             existing.title = title;
+            existing.priority = editorPriority;
             existing.scheduledDate = scheduledDate;
             existing.time = time;
             existing.remind = remind;
-            appendLog(`已更新一次性任务：「${title}」（日期：${scheduledDate}，时间：${time || '无时间'}）`);
+            appendLog(`已更新一次性任务：「${title}」（优先级：${editorPriority === 'urgent' ? '🔥紧急' : '普通'}，日期：${scheduledDate}）`);
           }
         } else {
           allTasks.push({
@@ -1722,24 +2235,25 @@
             scheduledDate,
             title,
             time,
+            priority: editorPriority,
             remind,
             done: false,
             doneAt: null,
             isRepeat: false,
             planId: null,
-            originDate: null
+            originDate: null,
+            scene: 'bell'
           });
-          appendLog(`新增一次性任务：「${title}」（执行日期：${scheduledDate}，时间：${time || '无时间'}）`);
+          appendLog(`新增一次性任务：「${title}」（优先级：${editorPriority === 'urgent' ? '🔥紧急' : '普通'}，执行日期：${scheduledDate}）`);
         }
 
-        // Switch to the task's scheduledDate so user immediately sees where it went!
         currentTab = 'todo';
         if (scheduledDate !== selectedDate) {
           switchSelectedDate(scheduledDate);
           setPetState('happy', `已安排至 ${formatShortDateLabel(scheduledDate)} ✨`);
         } else {
           renderAll();
-          setPetState('happy', editingTargetId ? '任务修改已保存 ✨' : '新任务已安排好啦 ✨');
+          setPetState('happy', editorPriority === 'urgent' ? '🔥 紧急任务已排到最前面 ✨' : '新任务已安排好啦 ✨');
         }
       } else {
         if (editorSlots.length === 0) {
@@ -1756,18 +2270,26 @@
         if (editingTargetId && repeatPlans.some(p => p.id === editingTargetId)) {
           const plan = repeatPlans.find(p => p.id === editingTargetId);
           plan.title = title;
+          plan.repeatType = editorRepeatCycle;
+          plan.daysOfWeek = [...editorDaysOfWeek];
+          plan.daysOfMonth = [...editorDaysOfMonth];
+          plan.priority = editorPriority;
           plan.slots = [...editorSlots];
           plan.startDate = startDate;
           plan.endDate = endDate;
           plan.remind = remind;
           syncRepeatPlanInstancesForDate(TODAY_DATE);
           syncRepeatPlanInstancesForDate(selectedDate);
-          appendLog(`已更新重复计划「${title}」：时间槽 [${editorSlots.join(', ')}]，有效期 ${startDate} ~ ${endDate || '长期'}`);
+          appendLog(`已更新周期计划「${title}」（${formatPlanCycleBadge(plan)}）：时间槽 [${editorSlots.join(', ')}]`);
         } else {
           const planId = 'p_' + Date.now();
           const newPlan = {
             id: planId,
             title,
+            repeatType: editorRepeatCycle,
+            daysOfWeek: [...editorDaysOfWeek],
+            daysOfMonth: [...editorDaysOfMonth],
+            priority: editorPriority,
             slots: [...editorSlots],
             status: 'active',
             startDate,
@@ -1778,17 +2300,86 @@
           syncRepeatPlanInstancesForDate(TODAY_DATE);
           syncRepeatPlanInstancesForDate(selectedDate);
           const generatedToday = isDateWithinPlan(TODAY_DATE, newPlan) ? editorSlots.length : 0;
-          appendLog(`新增每日重复计划「${title}」（有效期 ${startDate} ~ ${endDate || '长期'}），今日生成 ${generatedToday} 个实例`);
+          appendLog(`新增周期计划「${title}」（${formatPlanCycleBadge(newPlan)}），今日匹配生成 ${generatedToday} 个实例 (A16)`);
         }
 
         currentTab = editingTargetId ? 'plans' : 'todo';
         renderAll();
-        setPetState('happy', editingTargetId ? '重复计划已更新 ✨' : '新重复计划已生效 ✨');
+        setPetState('happy', editingTargetId ? '周期计划已更新 ✨' : '新周期计划已生效 ✨');
       }
 
       document.getElementById('quick-task-input').value = '';
       editingTargetId = null;
       closeModal();
+    }
+
+    // =========================================================================
+    // REMINDER BELL SOUND SYNTHESIZER (Web Audio API, A19: "这个提醒摇铃会有声音吗")
+    // =========================================================================
+    let audioCtx = null;
+    function playReminderBellSound(forcePlay = false) {
+      if (!reminderSoundEnabled && !forcePlay) {
+        appendLog('提醒摇铃声音当前已关闭（静音模式），仅展示摇铃动画与气泡');
+        return;
+      }
+      try {
+        const AudioContextClass = window.AudioContext || window.webkitAudioContext;
+        if (!AudioContextClass) return;
+        if (!audioCtx) audioCtx = new AudioContextClass();
+        if (audioCtx.state === 'suspended') audioCtx.resume();
+
+        // Synthesize a bright, cute 3-note handbell chime ("叮-铃-铃~ 🔔")
+        const now = audioCtx.currentTime;
+        const notes = [
+          { freq: 1318.5, delay: 0.0,  dur: 0.28, gain: 0.18 }, // E6
+          { freq: 1760.0, delay: 0.14, dur: 0.30, gain: 0.20 }, // A6
+          { freq: 1318.5, delay: 0.28, dur: 0.26, gain: 0.16 }, // E6
+          { freq: 2093.0, delay: 0.42, dur: 0.55, gain: 0.22 }  // C7
+        ];
+
+        notes.forEach(n => {
+          const osc = audioCtx.createOscillator();
+          const overtone = audioCtx.createOscillator();
+          const gainNode = audioCtx.createGain();
+          const overtoneGain = audioCtx.createGain();
+
+          osc.type = 'sine';
+          osc.frequency.setValueAtTime(n.freq, now + n.delay);
+
+          overtone.type = 'triangle';
+          overtone.frequency.setValueAtTime(n.freq * 2.0, now + n.delay);
+
+          gainNode.gain.setValueAtTime(0.001, now + n.delay);
+          gainNode.gain.linearRampToValueAtTime(n.gain, now + n.delay + 0.015);
+          gainNode.gain.exponentialRampToValueAtTime(0.0008, now + n.delay + n.dur);
+
+          overtoneGain.gain.setValueAtTime(0.001, now + n.delay);
+          overtoneGain.gain.linearRampToValueAtTime(n.gain * 0.3, now + n.delay + 0.01);
+          overtoneGain.gain.exponentialRampToValueAtTime(0.0005, now + n.delay + n.dur * 0.65);
+
+          osc.connect(gainNode);
+          overtone.connect(overtoneGain);
+          gainNode.connect(audioCtx.destination);
+          overtoneGain.connect(audioCtx.destination);
+
+          osc.start(now + n.delay);
+          overtone.start(now + n.delay);
+          osc.stop(now + n.delay + n.dur + 0.02);
+          overtone.stop(now + n.delay + n.dur + 0.02);
+        });
+
+        appendLog('🔊 播放清脆手摇铃提醒音效：「叮铃铃～🔔」 (Web Audio 双泛音合成，A19)');
+      } catch (err) {
+        console.warn('Audio play blocked or unsupported:', err);
+      }
+    }
+
+    function toggleReminderBellSound(enabled) {
+      reminderSoundEnabled = typeof enabled === 'boolean' ? enabled : !reminderSoundEnabled;
+      const checkbox = document.getElementById('setting-bell-sound');
+      if (checkbox) checkbox.checked = reminderSoundEnabled;
+      if (reminderSoundEnabled) playReminderBellSound(true);
+      appendLog(`提醒摇铃声音已${reminderSoundEnabled ? '开启 🔔（到点将播放清脆铃声）' : '关闭 🔕（静音提醒）'} (A19)`);
     }
 
     // =========================================================================
@@ -1798,10 +2389,12 @@
       activeSceneProp = sceneType;
       const waterProp = document.getElementById('pet-gif-prop-water');
       const stretchProp = document.getElementById('pet-gif-prop-stretch');
+      const bellProp = document.getElementById('pet-gif-prop-bell');
       const badge = document.getElementById('pet-gif-badge');
 
       if (waterProp) waterProp.classList.toggle('hidden', sceneType !== 'water');
       if (stretchProp) stretchProp.classList.toggle('hidden', sceneType !== 'stretch');
+      if (bellProp) bellProp.classList.toggle('hidden', sceneType !== 'bell');
       if (badge) {
         if (sceneType) {
           badge.textContent = badgeText || '🎬 remind.gif';
@@ -1849,6 +2442,32 @@
       document.getElementById('os-notification').classList.add('hidden');
     }
 
+    function simulateBellReminderWithSound() {
+      const todayList = getTasksForDate(TODAY_DATE);
+      const target = todayList.find(t => !t.done && t.priority === 'urgent') || todayList.find(t => !t.done) || todayList[0];
+      const taskTitle = target ? target.title : '确认客户合同终稿并盖章';
+      const pack = getCurrentPetPack();
+      const petLine = `“叮铃铃 🔔～主人，${target?.priority === 'urgent' ? '【🔥紧急】' : ''}「${taskTitle}」时间到啦！摇铃提醒你快处理哦 ♪”`;
+
+      playReminderBellSound();
+
+      activateP0ReminderState({
+        taskId: target ? target.id : null,
+        petLine,
+        sceneType: 'bell',
+        badgeText: '🔔 remind_bell.gif + 铃声',
+        doneBtnLabel: '搞定啦',
+        petAnimState: 'alert'
+      });
+
+      if (notifPermissionGranted) {
+        const notif = document.getElementById('os-notification');
+        document.getElementById('os-notif-body').textContent = `🔔 ${pack.name}摇铃：${petLine}`;
+        notif.classList.remove('hidden');
+      }
+      appendLog(`触发【摇铃有声提醒 (A19)】：宠物手摇金铃动画 + 清脆铃声 + 气泡「${petLine}」`);
+    }
+
     function simulateWaterGifReminder() {
       const todayList = getTasksForDate(TODAY_DATE);
       let waterTask = todayList.find(t => !t.done && t.title.includes('喝'));
@@ -1858,6 +2477,7 @@
           scheduledDate: TODAY_DATE,
           title: '喝一杯温水补充水分',
           time: '14:30',
+          priority: 'normal',
           remind: true,
           done: false,
           doneAt: null,
@@ -1873,6 +2493,8 @@
       const pack = getCurrentPetPack();
       const petLine = `“咕嘟咕嘟～主人今天要喝水啦！快端起杯子陪我喝口温水吧 💧”`;
 
+      playReminderBellSound();
+
       activateP0ReminderState({
         taskId: waterTask.id,
         petLine,
@@ -1887,7 +2509,7 @@
         document.getElementById('os-notif-body').textContent = `${pack.icon} ${pack.name}：${petLine}`;
         notif.classList.remove('hidden');
       }
-      appendLog(`触发【请喝水】P0 宠物语音提醒：播放 drink_water.gif 动画 + 气泡台词 ${petLine}（P0 优先级锁定，不被普通点击覆盖）`);
+      appendLog(`触发【请喝水】P0 宠物语音提醒：播放 drink_water.gif 动画 + 提醒铃声 + 气泡台词 ${petLine}`);
     }
 
     function simulateSingleReminder() {
@@ -1897,12 +2519,7 @@
         setPetState('happy', '今天任务都完成啦，无需提醒 🎉');
         return;
       }
-      const isWater = target.title.includes('喝');
-      if (isWater) {
-        simulateWaterGifReminder();
-        return;
-      }
-
+      playReminderBellSound();
       const pack = getCurrentPetPack();
       const petLine = `“主人久坐好久啦～到了「${target.title}」的时间，起来陪我活动一下吧 🙆‍♂️”`;
 
@@ -1919,10 +2536,10 @@
         const notif = document.getElementById('os-notification');
         document.getElementById('os-notif-body').textContent = `${pack.icon} ${pack.name}：${petLine}`;
         notif.classList.remove('hidden');
-        appendLog(`到点提醒触发：宠物展示 stretch.gif 动画并说出「${petLine}」 (A06)`);
+        appendLog(`到点提醒触发：宠物展示 stretch.gif 动画 + 摇铃音效并说出「${petLine}」 (A06/A19)`);
       } else {
         document.getElementById('notif-disabled-strip').classList.remove('hidden');
-        appendLog(`到点提醒触发：系统通知权限被拒，仅展示组件内宠物语音气泡与 GIF 动画 (A14)`);
+        appendLog(`到点提醒触发：系统通知权限被拒，仅展示组件内宠物语音气泡与摇铃音效 (A14)`);
       }
     }
 
@@ -2020,11 +2637,15 @@
     }
 
     // =========================================================================
-    // POINTER DRAG VS CLICK GESTURE (Rule 6: >=5px drags widget, <5px clicks pet)
+    // POINTER DRAG VS CLICK GESTURE & FREE RESIZE + OTHER APP DRAG
     // =========================================================================
     let widgetOffsetX = 0;
     let widgetOffsetY = 0;
     let dragState = null;
+    let resizeState = null;
+    let otherAppOffsetX = 0;
+    let otherAppOffsetY = 0;
+    let otherAppDragState = null;
 
     function startWidgetDrag(e, source) {
       // Only left mouse button or touch
@@ -2048,7 +2669,113 @@
       widget.style.transition = 'none';
     }
 
+    function startWidgetResize(e) {
+      e.preventDefault();
+      e.stopPropagation();
+      if (isMenuCardHidden) return;
+      closePetContextMenu();
+
+      const widget = document.getElementById('desktop-widget');
+      const taskList = document.getElementById('task-list-container');
+      const badge = document.getElementById('resize-dimensions-badge');
+      if (!widget || !taskList) return;
+
+      resizeState = {
+        startX: e.clientX,
+        startY: e.clientY,
+        initialWidth: widgetWidth,
+        initialListHeight: taskListHeight
+      };
+
+      widget.style.transition = 'none';
+      if (badge) badge.classList.remove('hidden');
+    }
+
+    function applyWidgetDimensions(newWidth, newListHeight, logChange = false) {
+      widgetWidth = Math.max(340, Math.min(520, Math.round(newWidth)));
+      taskListHeight = Math.max(220, Math.min(500, Math.round(newListHeight)));
+
+      const widget = document.getElementById('desktop-widget');
+      const taskList = document.getElementById('task-list-container');
+      const badge = document.getElementById('resize-dimensions-badge');
+      const totalApproxH = Math.round(taskListHeight + 250);
+
+      if (widget) widget.style.width = `${widgetWidth}px`;
+      if (taskList) taskList.style.height = `${taskListHeight}px`;
+      if (badge) badge.textContent = `${widgetWidth} × ${totalApproxH}`;
+
+      const isLarge = widgetWidth >= 420 || taskListHeight >= 340;
+      const ctxSizeLabel = document.getElementById('ctx-menu-size-label');
+      const menuSizeStatus = document.getElementById('menu-size-status');
+      const btnPresetStandard = document.getElementById('btn-size-preset-standard');
+      const btnPresetLarge = document.getElementById('btn-size-preset-large');
+
+      if (ctxSizeLabel) {
+        ctxSizeLabel.textContent = isLarge ? '📐 恢复标准尺寸 (356×490)' : '↘️ 拉大框框尺寸 (450×630)';
+      }
+      if (menuSizeStatus) {
+        menuSizeStatus.textContent = `${widgetWidth}×${totalApproxH}`;
+      }
+      if (btnPresetStandard && btnPresetLarge) {
+        if (isLarge) {
+          btnPresetLarge.className = 'px-2.5 py-1 rounded-lg bg-sky-50 border border-sky-300 text-sky-700 font-medium text-xs transition cursor-pointer';
+          btnPresetStandard.className = 'px-2.5 py-1 rounded-lg bg-white border border-slate-200 text-slate-600 hover:border-sky-400 font-medium text-xs transition cursor-pointer';
+        } else {
+          btnPresetStandard.className = 'px-2.5 py-1 rounded-lg bg-sky-50 border border-sky-300 text-sky-700 font-medium text-xs transition cursor-pointer';
+          btnPresetLarge.className = 'px-2.5 py-1 rounded-lg bg-white border border-slate-200 text-slate-600 hover:border-sky-400 font-medium text-xs transition cursor-pointer';
+        }
+      }
+
+      if (logChange) {
+        appendLog(`自定义框框大小：窗口尺寸已调整为 ${widgetWidth}×${totalApproxH}px（任务列表可视区高度 ${taskListHeight}px，自动持久化 expandedSize） (A17)`);
+      }
+    }
+
+    function toggleWidgetPresetSize() {
+      if (isMenuCardHidden) toggleTaskMenuCard(true);
+      const isLarge = widgetWidth >= 420 || taskListHeight >= 340;
+      if (isLarge) {
+        applyWidgetDimensions(356, 240, true);
+        setPetState('happy', '框框已恢复为标准精巧尺寸 ✨');
+      } else {
+        applyWidgetDimensions(450, 380, true);
+        setPetState('happy', '框框已拉大！计划再多也能一眼看清啦 ↘️✨');
+      }
+    }
+
+    function startOtherAppDrag(e) {
+      if (e.button !== undefined && e.button !== 0) return;
+      if (e.target.closest('button')) return;
+      const win = document.getElementById('sim-other-app-window');
+      if (!win) return;
+      otherAppDragState = {
+        startX: e.clientX,
+        startY: e.clientY,
+        initialX: otherAppOffsetX,
+        initialY: otherAppOffsetY
+      };
+    }
+
     window.addEventListener('pointermove', (e) => {
+      if (resizeState) {
+        const dx = e.clientX - resizeState.startX;
+        const dy = e.clientY - resizeState.startY;
+        applyWidgetDimensions(resizeState.initialWidth + dx, resizeState.initialListHeight + dy, false);
+        return;
+      }
+
+      if (otherAppDragState) {
+        const dx = e.clientX - otherAppDragState.startX;
+        const dy = e.clientY - otherAppDragState.startY;
+        otherAppOffsetX = Math.max(-220, Math.min(220, otherAppDragState.initialX + dx));
+        otherAppOffsetY = Math.max(-90, Math.min(180, otherAppDragState.initialY + dy));
+        const win = document.getElementById('sim-other-app-window');
+        if (win) {
+          win.style.transform = `translate(${otherAppOffsetX}px, ${otherAppOffsetY}px)`;
+        }
+        return;
+      }
+
       if (!dragState) return;
       const dx = e.clientX - dragState.startX;
       const dy = e.clientY - dragState.startY;
@@ -2070,6 +2797,21 @@
     });
 
     window.addEventListener('pointerup', () => {
+      if (resizeState) {
+        resizeState = null;
+        const widget = document.getElementById('desktop-widget');
+        const badge = document.getElementById('resize-dimensions-badge');
+        if (widget) widget.style.transition = '';
+        if (badge) setTimeout(() => badge.classList.add('hidden'), 600);
+        applyWidgetDimensions(widgetWidth, taskListHeight, true);
+        return;
+      }
+
+      if (otherAppDragState) {
+        otherAppDragState = null;
+        return;
+      }
+
       if (!dragState) return;
       const { source, hasMoved } = dragState;
       dragState = null;
@@ -2668,11 +3410,131 @@
       appendLog('重新显示桌面小组件：恢复当前任务列表状态与宠物待机动画');
     }
 
-    function toggleAlwaysOnTop() {
-      alwaysOnTop = !alwaysOnTop;
-      document.getElementById('menu-pin-status').textContent = alwaysOnTop ? '✓ 已开启' : '未开启';
-      document.getElementById('setting-ontop').checked = alwaysOnTop;
-      appendLog(`窗口置顶设置变更为：${alwaysOnTop ? '始终置顶' : '普通层级'}`);
+    function syncAlwaysOnTopUI() {
+      const widget = document.getElementById('desktop-widget');
+      const headerBtn = document.getElementById('btn-header-pin');
+      const menuStatus = document.getElementById('menu-pin-status');
+      const ctxLabel = document.getElementById('ctx-menu-pin-label');
+      const settingCheck = document.getElementById('setting-ontop');
+      const settingLayerDesc = document.getElementById('setting-layer-desc');
+      const settingLayerBtn = document.getElementById('setting-layer-btn');
+      const otherAppBadge = document.getElementById('other-app-layer-badge');
+      const otherAppDesc = document.getElementById('other-app-layer-desc');
+      const simDesktopBtn = document.getElementById('btn-sim-desktop-only');
+
+      if (widget) {
+        if (alwaysOnTop) {
+          widget.classList.remove('z-10');
+          widget.classList.add('z-30');
+        } else {
+          widget.classList.remove('z-30');
+          widget.classList.add('z-10');
+        }
+      }
+
+      if (headerBtn) {
+        if (alwaysOnTop) {
+          headerBtn.textContent = '📌 置顶';
+          headerBtn.className = 'px-1.5 h-6 rounded-md bg-sky-50 border border-sky-200/80 text-sky-700 hover:bg-sky-100 flex items-center justify-center text-[11px] font-medium transition cursor-pointer';
+          headerBtn.title = '当前：始终置顶（点击切换为「仅留在桌面，打开其他软件时自动被遮挡」）';
+        } else {
+          headerBtn.textContent = '🖥 贴桌面';
+          headerBtn.className = 'px-1.5 h-6 rounded-md bg-amber-50 border border-amber-300/90 text-amber-800 hover:bg-amber-100 flex items-center justify-center text-[11px] font-medium transition cursor-pointer';
+          headerBtn.title = '当前：仅留在桌面（打开其他软件时看不到桌宠；点击恢复「始终置顶」）';
+        }
+      }
+
+      if (menuStatus) menuStatus.textContent = alwaysOnTop ? '📌 置顶' : '🖥 贴桌面';
+      if (ctxLabel) ctxLabel.textContent = alwaysOnTop ? '🖥 切换为「仅留在桌面」' : '📌 切换为「始终置顶」';
+      if (settingCheck) settingCheck.checked = alwaysOnTop;
+
+      if (settingLayerDesc) {
+        settingLayerDesc.textContent = alwaysOnTop
+          ? '当前：📌 始终置顶（关闭后仅留在桌面，打开其他软件时看不到它）'
+          : '当前：🖥 仅留在桌面（打开其他软件时自动被遮挡，回到桌面可见）';
+      }
+      if (settingLayerBtn) {
+        settingLayerBtn.textContent = alwaysOnTop ? '切换为「仅留在桌面」' : '恢复「始终置顶」';
+      }
+
+      if (otherAppBadge) {
+        if (alwaysOnTop) {
+          otherAppBadge.textContent = '当前：📌 始终置顶 (桌宠在软件上方)';
+          otherAppBadge.className = 'px-2 py-0.5 rounded-full text-[11px] font-semibold bg-sky-100 text-sky-700';
+        } else {
+          otherAppBadge.textContent = '当前：🖥 仅留在桌面 (桌宠已被本软件遮挡)';
+          otherAppBadge.className = 'px-2 py-0.5 rounded-full text-[11px] font-semibold bg-amber-100 text-amber-800';
+        }
+      }
+      if (otherAppDesc) {
+        otherAppDesc.innerHTML = alwaysOnTop
+          ? '当前桌宠处于 <b>📌 始终置顶 (z-30)</b>，因此浮在本软件窗口上方；点击下方按钮切换为 <b>🖥 仅留在桌面 (z-10)</b> 后，本软件窗口将自然遮盖住桌宠！'
+          : '当前桌宠处于 <b>🖥 仅留在桌面 (z-10)</b>，已被本软件窗口 <b>(z-25)</b> 自然遮挡！你可以拖动本窗口或关闭本窗口回到桌面查看桌宠。';
+      }
+      if (simDesktopBtn) {
+        simDesktopBtn.textContent = alwaysOnTop
+          ? '🖥 演示「仅在桌面 · 打开其他软件遮挡」 (A18)'
+          : '📌 恢复「始终置顶」模式 (A18)';
+      }
+    }
+
+    function toggleAlwaysOnTop(forceState) {
+      if (typeof forceState === 'boolean') {
+        alwaysOnTop = forceState;
+      } else {
+        alwaysOnTop = !alwaysOnTop;
+      }
+      syncAlwaysOnTopUI();
+      if (alwaysOnTop) {
+        setPetState('happy', '已开启「始终置顶」📌 我会一直陪在屏幕最前面～');
+        appendLog('窗口层级切换 -> 📌 始终置顶 (mainWindow.setAlwaysOnTop(true)) (A18)');
+      } else {
+        setPetState('happy', '已切换为「仅留在桌面」🖥 打开其他软件时我会自动躲在后面不打扰你～');
+        appendLog('窗口层级切换 -> 🖥 仅留在桌面 (mainWindow.setAlwaysOnTop(false))，打开其他软件窗口时自然遮挡桌宠 (A18)');
+      }
+    }
+
+    function toggleOtherAppWindow(forceState) {
+      const win = document.getElementById('sim-other-app-window');
+      if (!win) return;
+      const shouldShow = typeof forceState === 'boolean' ? forceState : win.classList.contains('hidden');
+      win.classList.toggle('hidden', !shouldShow);
+      syncAlwaysOnTopUI();
+      if (shouldShow) {
+        appendLog(`模拟打开其他软件窗口 (Notion / 浏览器)：当前桌宠为「${alwaysOnTop ? '📌 始终置顶（浮在软件上方）' : '🖥 仅留在桌面（被软件窗口自然遮挡）'}」 (A18)`);
+      } else {
+        appendLog('关闭其他软件窗口 -> 回到桌面，桌宠重新完整呈现 (A18)');
+      }
+    }
+
+    function demoDesktopOnlyWithOtherApp() {
+      const win = document.getElementById('sim-other-app-window');
+      const isWinHidden = win ? win.classList.contains('hidden') : true;
+
+      if (alwaysOnTop) {
+        toggleAlwaysOnTop(false);
+        toggleOtherAppWindow(true);
+      } else if (isWinHidden) {
+        toggleOtherAppWindow(true);
+      } else {
+        toggleAlwaysOnTop(true);
+      }
+    }
+
+    function toggleOpenAtLogin(forceState) {
+      if (typeof forceState === 'boolean') {
+        openAtLogin = forceState;
+      } else {
+        openAtLogin = !openAtLogin;
+      }
+      const checkEl = document.getElementById('setting-autostart');
+      const menuStatus = document.getElementById('menu-autostart-status');
+      if (checkEl) checkEl.checked = openAtLogin;
+      if (menuStatus) {
+        menuStatus.textContent = openAtLogin ? '✓ 已开启' : '未开启';
+        menuStatus.className = openAtLogin ? 'text-xs font-medium text-emerald-400' : 'text-xs text-slate-400';
+      }
+      appendLog(`开机自启动设置变更为：${openAtLogin ? '已开启' : '已关闭'} -> 调用 app.setLoginItemSettings({ openAtLogin: ${openAtLogin} }) 并持久化到 SQLite (A20)`);
     }
 
     function switchTab(tab) {
