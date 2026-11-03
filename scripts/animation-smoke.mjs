@@ -6,7 +6,8 @@ import { join, resolve } from 'node:path'
 import assert from 'node:assert/strict'
 
 const require = createRequire(import.meta.url)
-const directory = resolve('.cache/animation-runs', String(Date.now()))
+const executable = process.argv.find(value => value.startsWith('--executable='))?.slice('--executable='.length)
+const directory = resolve('.cache/animation-runs', `${executable ? 'packaged' : 'built'}-${Date.now()}`)
 await mkdir(directory, { recursive: true })
 const env = { ...process.env, TIA_M0_DATA_DIR: join(directory, 'data') }
 delete env.ELECTRON_RUN_AS_NODE
@@ -14,7 +15,7 @@ delete env.ELECTRON_RENDERER_URL
 const report = { directory, checks: [], errors: [], status: 'running' }
 let app
 try {
-  app = await _electron.launch({ executablePath: require('electron'), args: [resolve('.')], env, timeout: 30_000 })
+  app = await _electron.launch({ executablePath: executable ? resolve(executable) : require('electron'), args: executable ? [] : [resolve('.')], env, timeout: 30_000 })
   const page = await app.firstWindow()
   page.setDefaultTimeout(10_000)
   page.on('pageerror', error => report.errors.push(error.message))
@@ -135,6 +136,7 @@ try {
   assert.equal(plan.ok, true)
   await button('日期与历史').click()
   await page.getByLabel('查看日期', { exact: true }).fill(tomorrow)
+  await button('查看').click()
   await row('未来预览动效').waitFor()
   await button('完成：未来预览动效').click()
   await button('取消完成：未来预览动效').press('Enter')

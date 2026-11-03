@@ -16,7 +16,9 @@ export async function runWorkspaceChecks(context) {
   async function selectDate(date) {
     if (!await page.getByLabel('查看日期', { exact: true }).isVisible()) await page.getByRole('button', { name: '日期与历史', exact: true }).click()
     await page.getByLabel('查看日期', { exact: true }).fill(date)
-    await waitUntil(async () => await page.getByLabel('查看日期', { exact: true }).inputValue() === date && !await page.getByText('正在读取这一天…', { exact: true }).isVisible(), 'selected date rendered')
+    await dialog().getByRole('button', { name: '查看', exact: true }).click()
+    await dialog().waitFor({ state: 'hidden' })
+    await waitUntil(async () => !await page.getByText('正在读取这一天…', { exact: true }).isVisible(), 'selected date rendered')
   }
   async function saveEditor() {
     await dialog().getByRole('button', { name: '保存安排', exact: true }).click()
@@ -167,9 +169,11 @@ export async function runWorkspaceChecks(context) {
   assert.equal((await snapshot(page)).today.progress.total, totalAfterMove)
   await selectDate(shiftDate(today, -10))
   await page.getByText('没有生成记录', { exact: true }).waitFor()
-  await page.getByRole('button', { name: '明天', exact: true }).click()
-  await page.getByRole('button', { name: '昨天', exact: true }).click()
-  await page.getByRole('button', { name: '明天', exact: true }).click()
+  for (const name of ['明天', '昨天', '明天']) {
+    await page.getByRole('button', { name: '日期与历史', exact: true }).click()
+    await page.getByRole('button', { name, exact: true }).click()
+    await dialog().waitFor({ state: 'hidden' })
+  }
   await tab('待办').click()
   assert.equal(await row('整理资料改').count(), 0)
   await tab('已完成').click()

@@ -3,7 +3,7 @@ import type { CSSProperties, PointerEvent as ReactPointerEvent } from 'react'
 import type { DayItem, RepeatPlan } from '../../shared/tasks'
 import { useWorkspace } from './features/tasks/use-workspace'
 import { itemKey, TaskList } from './features/tasks/TaskList'
-import { DateNavigator } from './features/calendar/DateNavigator'
+import { DateNavigator, shiftDate } from './features/calendar/DateNavigator'
 import { PlanList } from './features/plans/PlanList'
 import { EndPlanDialog, TaskEditor } from './features/editor/TaskEditor'
 import type { EditorTarget } from './features/editor/TaskEditor'
@@ -70,15 +70,15 @@ export function App(): React.JSX.Element {
   useEffect(() => {
     const id = snapshot?.focusedReminderId
     if (id && id !== lastFocus.current) {
-      lastFocus.current = id; setFocusedId(id); setSelectedDate(null); setTab('todo'); setShowSettings(false); setShowPet(false)
+      lastFocus.current = id; setFocusedId(id); setSelectedDate(null); setTab('todo'); setShowSettings(false); setShowPet(false); setShowCalendar(false)
     }
   }, [snapshot?.focusedReminderId])
   useEffect(() => {
     if (focusedId && day && tab === 'todo') document.querySelector(`[data-occurrence-id="${CSS.escape(focusedId)}"]`)?.scrollIntoView({ block: 'nearest' })
   }, [focusedId, day, tab])
   useEffect(() => {
-    if ((editor || ending) && snapshot?.window.mode === 'compact') void command(() => api.setMode('expanded'))
-  }, [editor, ending, snapshot?.window.mode, command])
+    if ((editor || ending || showCalendar) && snapshot?.window.mode === 'compact') void command(() => api.setMode('expanded'))
+  }, [editor, ending, showCalendar, snapshot?.window.mode, command])
   useEffect(() => () => {
     if (feedbackTimer.current) clearTimeout(feedbackTimer.current)
     if (clickTimer.current) clearTimeout(clickTimer.current)
@@ -104,7 +104,7 @@ export function App(): React.JSX.Element {
   }
   function openNew(type: 'once' | 'repeat' = 'once'): void {
     if (!snapshot) return
-    setError('')
+    setError(''); setShowCalendar(false)
     setEditor({ kind: 'new', requestId: crypto.randomUUID(), title, type,
       date: selectedDate && selectedDate > snapshot.today.date ? selectedDate : snapshot.today.date,
       reminderEnabled: snapshot.settings.defaultReminderEnabled })
@@ -138,11 +138,13 @@ export function App(): React.JSX.Element {
   async function quickAdd(): Promise<void> {
     if (!title.trim()) { openNew(); return }
     if (!snapshot) return
+    const date = selectedDate ?? snapshot.today.date
+    if (date < snapshot.today.date) return
     await withBusy('quick', async () => {
       const result = await command(() => api.tasks.createOnce({ requestId: quickRequest.current, title,
-        scheduledDate: snapshot.today.date, scheduledTime: null, reminderEnabled: snapshot.settings.defaultReminderEnabled }))
+        scheduledDate: date, scheduledTime: null, reminderEnabled: snapshot.settings.defaultReminderEnabled }))
       if (result.ok) {
-        quickRequest.current = crypto.randomUUID(); setTitle(''); setSelectedDate(null); setTab('todo'); say('今日待办已保存 🐾')
+        quickRequest.current = crypto.randomUUID(); setTitle(''); setTab('todo'); say(`${date === snapshot.today.date ? '今日' : date.slice(5).replace('-', '月') + '日'}待办已保存 🐾`)
       }
     })
   }
@@ -198,6 +200,8 @@ export function App(): React.JSX.Element {
   if (!workspace || !snapshot) return <main className="loading">{error || '桌面伙伴正在醒来…'}{error && <button onClick={() => { void refresh() }}>重新读取</button>}</main>
   const compact = snapshot.window.mode === 'compact'
   const date = selectedDate ?? snapshot.today.date
+  const past = date < snapshot.today.date
+  const dateLabel = date === snapshot.today.date ? '今日进度' : `${Number(date.slice(5, 7))}月${Number(date.slice(8))}日 · ${date === shiftDate(snapshot.today.date, 1) ? '明天' : past ? '历史' : '未来'}`
   const active = snapshot.activeReminderIds.map(id => snapshot.reminders.find(item => item.id === id)).filter(item => !!item)
   const current = active[0]
   const currentItem = current && snapshot.today.items.find(item => item.kind === 'saved' && item.occurrence.id === current.id)
@@ -237,7 +241,9 @@ export function App(): React.JSX.Element {
         <button className="round coral" aria-label="关闭桌面伙伴" onClick={() => { void command(() => api.requestClose()) }}>
           <svg viewBox="0 0 12 12" fill="none" aria-hidden="true" focusable="false"><path d="m3 3 6 6m0-6L3 9" stroke="currentColor" strokeWidth="1.7" strokeLinecap="round" /></svg>
         </button>
-        <button className={`settings-button ${showCalendar ? 'active' : ''}`} aria-label="日期与历史" onClick={() => { setShowCalendar(value => !value); setShowSettings(false); setShowPet(false) }}>▦</button>
+        <button className={`settings-button calendar-button ${showCalendar ? 'active' : ''}`} aria-label="日期与历史" title="查看历史待办和未来安排"
+          aria-haspopup="dialog" aria-expanded={showCalendar} onClick={event => { event.currentTarget.focus(); setShowCalendar(true); setShowSettings(false); setShowPet(false) }}>
+          <svg viewBox="0 0 16 16" fill="none" aria-hidden="true"><rect x="2" y="3.5" width="12" height="10.5" rx="2" /><path d="M5 2v3M11 2v3M2 7h12M5 10h2" /></svg></button>
         <button className={`settings-button ${showPet ? 'active' : ''}`} aria-label="桌宠动作" onClick={() => { setShowPet(value => !value); setShowSettings(false); setShowCalendar(false) }}>🐾</button>
         <button className="settings-button" aria-label="设置与验证状态" onClick={() => { setShowSettings(value => !value); setShowPet(false) }}>⚙</button>
       </div><div className="clock"><strong>{new Date(now).toLocaleTimeString('zh-CN', { hour: '2-digit', minute: '2-digit', hour12: false })}</strong>
@@ -257,10 +263,8 @@ export function App(): React.JSX.Element {
         <button className="secondary wide" onClick={() => { void command(() => api.hide()) }}>隐藏到托盘 / 菜单栏</button>
         <button className="text-button wide" onClick={() => { void command(() => api.quit()) }}>退出软件</button>
       </section> : <>
-        {showCalendar && <DateNavigator today={snapshot.today.date} selected={date} historyDates={workspace.historyDates} onSelect={selectDate} />}
-        {date !== snapshot.today.date && <div className="selected-day-banner"><span>{date} · {date < snapshot.today.date ? '历史' : '未来安排'}</span>
-          <button onClick={() => { setSelectedDate(null); setShowCalendar(false) }}>返回今天</button></div>}
-        <div className="progress-caption" aria-live="polite"><span>{date === snapshot.today.date ? '今日' : date.slice(5)}进度 {day ? `${done}/${total}` : '读取中…'}</span><span>{day?.progress.percentage ?? 0}%</span></div>
+        <div className="progress-caption" aria-live="polite"><span title={date}>{dateLabel} {day ? `${done}/${total}` : '读取中…'}</span>
+          <span className="progress-tools">{date !== snapshot.today.date && <button aria-label="返回今天" onClick={() => selectDate(snapshot.today.date)}>回今天</button>}{day?.progress.percentage ?? 0}%</span></div>
         <div className="progress-track"><div style={{ width: `${day?.progress.percentage ?? 0}%` }} /></div>
         <nav className="tabs" aria-label="任务清单分类">
           <button className={tab === 'todo' ? 'selected' : ''} onClick={() => setTab('todo')}>待办 ({total - done})</button>
@@ -273,14 +277,15 @@ export function App(): React.JSX.Element {
           : day && !loading ? <TaskList day={day} tab={tab} busy={busy} pending={completion.pending} focusedId={focusedId}
             onComplete={(item, desired, button) => { if (desired) completion.toggle(item, button); else void complete(item, false) }} onEdit={editItem}
             onRemove={item => { void remove(item) }} onMove={item => { void move(item) }} /> : <div className="empty-state"><p>{loading ? '正在读取这一天…' : '这一天暂时无法读取'}</p><button onClick={() => { void refresh() }}>重新读取</button></div>}
-        <form className="quick-add" onSubmit={event => { event.preventDefault(); void quickAdd() }}>
-          <div><input aria-label="新增待办" maxLength={120} placeholder="新增今日待办" value={title} disabled={busy.has('quick')} onChange={event => setTitle(event.target.value)} />
+        {past ? <p className="history-note">历史待办可点「移到今天」继续处理</p> : <form className="quick-add" onSubmit={event => { event.preventDefault(); void quickAdd() }}>
+          <div><input aria-label="新增待办" maxLength={120} placeholder={date === snapshot.today.date ? '新增今日待办' : '新增这一天的待办'} value={title} disabled={busy.has('quick')} onChange={event => setTitle(event.target.value)} />
             <button type="button" aria-label="定时或重复" onClick={() => openNew(tab === 'plans' ? 'repeat' : 'once')}>◷ 定时/重复</button></div>
           <button type="submit" className="add-button" aria-label="快捷新增任务" disabled={busy.has('quick')}>＋</button>
-        </form>
+        </form>}
       </>}
     </section>
     <CompletionEffects pending={completion.pending} />
+    {showCalendar && <DateNavigator today={snapshot.today.date} selected={date} historyDates={workspace.historyDates} onSelect={selectDate} onClose={() => setShowCalendar(false)} />}
     {editor && <TaskEditor key={editorKey(editor)} target={editor} now={now} command={command} onClose={() => { setEditor(null); setError('') }} onReload={reloadEditor}
       onSaved={result => {
         const wasNew = editor.kind === 'new'
