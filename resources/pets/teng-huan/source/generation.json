@@ -1,0 +1,102 @@
+{
+  "date": "2026-11-03",
+  "id": "teng-huan",
+  "name": "滕环 · 前端工程师",
+  "generator": "Built-in image_gen",
+  "mode": "reference-guided generation",
+  "transparent_background": true,
+  "reference": "reference.png",
+  "continuityReference": "sheets/idle.png (used as second reference for all six other actions)",
+  "prompts": "prompts.md",
+  "originalSheetSize": [
+    1536,
+    1024
+  ],
+  "originalGrid": [
+    6,
+    4
+  ],
+  "candidateDrawingsPerAction": 24,
+  "exportedFrameSize": [
+    320,
+    320
+  ],
+  "exportedSheetColumns": 8,
+  "playbackFps": 24,
+  "generatedOutputs": {
+    "idle": "/Users/tenghuan/.codex/generated_images/01a1a019-d208-7b23-bcde-ecdbab886134/exec-56e2652a-d5fe-4715-835b-4c5c30f2bde8.png",
+    "react": "/Users/tenghuan/.codex/generated_images/01a1a019-d208-7b23-bcde-ecdbab886134/exec-d011b670-7dfd-44dd-a59e-680d80bb8d20.png",
+    "celebrate": "/Users/tenghuan/.codex/generated_images/01a1a019-d208-7b23-bcde-ecdbab886134/exec-1e3ba347-479f-480b-9ed4-83faa1ab88b7.png",
+    "all_done": "/Users/tenghuan/.codex/generated_images/01a1a019-d208-7b23-bcde-ecdbab886134/exec-319bef5a-193f-4043-aa1a-0945b176d5a4.png",
+    "remind": "/Users/tenghuan/.codex/generated_images/01a1a019-d208-7b23-bcde-ecdbab886134/exec-c2a66ecd-27ab-4d43-abde-359e4e9ca6a4.png",
+    "drink_water": "/Users/tenghuan/.codex/generated_images/01a1a019-d208-7b23-bcde-ecdbab886134/exec-8ab7d20e-72f7-49ac-a914-d92c51652bf5.png",
+    "stretch": "/Users/tenghuan/.codex/generated_images/01a1a019-d208-7b23-bcde-ecdbab886134/exec-ba78ecfe-50e7-4ede-9327-39fea18cf987.png"
+  },
+  "processing": [
+    "Copy every generated source sheet into this resource pack; originals left in place.",
+    "Slice 24 equal cells; preserve generated alpha, clear alpha values <= 4/255.",
+    "Uniform scale per action based on first neutral drawing; center shoe anchor and register soles.",
+    "Keep source airborne displacement for jump drawings 10-15.",
+    "Bake exposure timeline into eight-column sprite sheets and APNG; store exact rational 1/24-second APNG delays.",
+    "Build self-contained offline preview from local manifest and images."
+  ],
+  "scope": "Resource pack and built-in application registration; no commit, push or installer rebuild performed.",
+  "revisions": [
+    {
+      "date": "2026-11-03",
+      "version": "1.0.1",
+      "action": "remind",
+      "generator": "Built-in image_gen",
+      "mode": "precise-object-edit",
+      "prompt": "remind-revision-prompt.md",
+      "smoothingPrompt": "remind-smoothing-prompt.md",
+      "original": "history/remind-v1.png",
+      "uprightCandidate": "history/remind-upright-candidate.png",
+      "output": "/Users/tenghuan/.codex/generated_images/01a1a019-d208-7b23-bcde-ecdbab886134/exec-a28eb448-c2fb-4bf9-b90e-73bf569f0157.png",
+      "changes": [
+        "Keep the bell body below the handle throughout; remove upside-down cup-like frames.",
+        "Refine small wrist tilts and return through intermediate drawings for two gentle shakes.",
+        "Retiming uses smooth return paths and brief blink exposure; 72 playback frames at 24 FPS are retained."
+      ],
+      "unaffectedActionsHashRecord": "history/remind-v1-unaffected-hashes.json"
+    },
+    {
+      "date": "2026-11-03",
+      "version": "1.0.2",
+      "action": "remind",
+      "generator": "Built-in image_gen",
+      "mode": "precise-object-edit + local asset assembly",
+      "prompt": "remind-style-prompt.md",
+      "originalApprovedArt": "history/remind-v1.png",
+      "previous": "history/remind-v1.0.1.png",
+      "output": "/Users/tenghuan/.codex/generated_images/01a1a019-d208-7b23-bcde-ecdbab886134/exec-f1de7ba4-def8-4463-9e6c-8145f4b470e1.png",
+      "localRepair": "edits/remind-handbell.png",
+      "assembly": "compose-remind.swift",
+      "assemblyRecord": "remind-assembly.json",
+      "validation": "remind-style-validation.json",
+      "changes": [
+        "Use the original approved image as the base; keep its facial expressions, hair, outfit and sharp warm linework.",
+        "Assemble only the generated wrist/handbell region into the original raster; all pixels outside that region are retained exactly.",
+        "Keep the bell mouth down and small wrist movement; avoid the largest tilt candidate and the extra blink candidate.",
+        "Keep the original 72 playback frames and 24 FPS."
+      ]
+    }
+  ],
+  "applicationIntegration": {
+    "date": "2026-11-03",
+    "version": "1.0.2",
+    "registration": [
+      "src/shared/pet.ts",
+      "src/renderer/src/features/pet/pet-pack.ts"
+    ],
+    "selection": "Existing settings.petId flow, persisted through the existing versioned settings repository",
+    "validation": {
+      "build": "passed",
+      "unitTests": 36,
+      "electronRuntimeChecks": 10,
+      "builtSheetsMatchConfirmedAssets": true
+    },
+    "evidence": "docs/teng-huan-integration-evidence",
+    "installersRebuilt": false
+  }
+}

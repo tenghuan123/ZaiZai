@@ -1,0 +1,77 @@
+{
+  "date": "2026-11-03",
+  "passed": true,
+  "browser": "Chrome headless",
+  "loadedFrom": "embedded HTML without file base URL",
+  "actions": [
+    {
+      "id": "idle",
+      "width": 2560,
+      "height": 3840,
+      "frames": 96,
+      "frameStepPassed": true,
+      "characterVisible": true
+    },
+    {
+      "id": "react",
+      "width": 2560,
+      "height": 2240,
+      "frames": 56,
+      "frameStepPassed": true,
+      "characterVisible": true
+    },
+    {
+      "id": "celebrate",
+      "width": 2560,
+      "height": 2240,
+      "frames": 56,
+      "frameStepPassed": true,
+      "characterVisible": true
+    },
+    {
+      "id": "all_done",
+      "width": 2560,
+      "height": 2560,
+      "frames": 64,
+      "frameStepPassed": true,
+      "characterVisible": true
+    },
+    {
+      "id": "remind",
+      "width": 2560,
+      "height": 2880,
+      "frames": 72,
+      "frameStepPassed": true,
+      "characterVisible": true
+    },
+    {
+      "id": "drink_water",
+      "width": 2560,
+      "height": 3840,
+      "frames": 96,
+      "frameStepPassed": true,
+      "characterVisible": true
+    },
+    {
+      "id": "stretch",
+      "width": 2560,
+      "height": 3840,
+      "frames": 96,
+      "frameStepPassed": true,
+      "characterVisible": true
+    }
+  ],
+  "backgrounds": [
+    "light",
+    "dark",
+    "checker"
+  ],
+  "speedSelection": true,
+  "singlePlayCompletes": true,
+  "lateSelectionIgnored": true,
+  "mobileWidth": 390,
+  "horizontalOverflow": false,
+  "loadedThumbnails": 7,
+  "externalRequests": [],
+  "pageErrors": []
+}

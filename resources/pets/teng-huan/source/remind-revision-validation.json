@@ -1,0 +1,24 @@
+{
+  "date": "2026-11-03",
+  "version": "1.0.1",
+  "action": "remind",
+  "passed": true,
+  "unaffectedActions": [
+    "idle",
+    "react",
+    "celebrate",
+    "all_done",
+    "drink_water",
+    "stretch"
+  ],
+  "unchangedImageFiles": 157,
+  "comparison": "SHA-256 byte equality",
+  "referenceRecord": "history/remind-v1-unaffected-hashes.json",
+  "visualInspection": {
+    "bellMouthFacesDownThroughout": true,
+    "handleHeldBySameRightHand": true,
+    "smallWristTilts": true
+  },
+  "playbackFrames": 72,
+  "fps": 24
+}

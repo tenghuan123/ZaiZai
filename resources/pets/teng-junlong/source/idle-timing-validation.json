@@ -1,0 +1,113 @@
+{
+  "date": "2026-11-03",
+  "version": "1.0.1",
+  "passed": true,
+  "mode": "retime existing original drawings",
+  "fps": 24,
+  "playbackFrames": 96,
+  "durationSeconds": 4,
+  "halfClosedPauseBeforeMs": 541.67,
+  "halfClosedPauseAfterMs": 41.67,
+  "fullyClosedHoldMs": 83.33,
+  "skippedDrawing": 20,
+  "unaffectedAssetHashesMatched": 156,
+  "otherSixTimelinesUnchanged": true,
+  "exposures": [
+    {
+      "drawing": 1,
+      "ticks": 21
+    },
+    {
+      "drawing": 2,
+      "ticks": 3
+    },
+    {
+      "drawing": 3,
+      "ticks": 3
+    },
+    {
+      "drawing": 4,
+      "ticks": 3
+    },
+    {
+      "drawing": 5,
+      "ticks": 3
+    },
+    {
+      "drawing": 6,
+      "ticks": 3
+    },
+    {
+      "drawing": 7,
+      "ticks": 3
+    },
+    {
+      "drawing": 8,
+      "ticks": 3
+    },
+    {
+      "drawing": 9,
+      "ticks": 3
+    },
+    {
+      "drawing": 10,
+      "ticks": 3
+    },
+    {
+      "drawing": 11,
+      "ticks": 3
+    },
+    {
+      "drawing": 12,
+      "ticks": 3
+    },
+    {
+      "drawing": 13,
+      "ticks": 3
+    },
+    {
+      "drawing": 14,
+      "ticks": 3
+    },
+    {
+      "drawing": 15,
+      "ticks": 3
+    },
+    {
+      "drawing": 16,
+      "ticks": 3
+    },
+    {
+      "drawing": 17,
+      "ticks": 15
+    },
+    {
+      "drawing": 18,
+      "ticks": 1
+    },
+    {
+      "drawing": 19,
+      "ticks": 2
+    },
+    {
+      "drawing": 21,
+      "ticks": 1
+    },
+    {
+      "drawing": 22,
+      "ticks": 1
+    },
+    {
+      "drawing": 23,
+      "ticks": 1
+    },
+    {
+      "drawing": 24,
+      "ticks": 1
+    },
+    {
+      "drawing": 1,
+      "ticks": 8
+    }
+  ]
+}

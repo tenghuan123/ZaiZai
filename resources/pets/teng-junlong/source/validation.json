@@ -1,0 +1,118 @@
+{
+  "date": "2026-11-03",
+  "passed": true,
+  "actions": [
+    {
+      "id": "idle",
+      "drawnFrames": 24,
+      "playbackFrames": 96,
+      "fps": 24,
+      "seconds": 4.0,
+      "loop": true,
+      "sheetSize": [
+        2560,
+        3840
+      ],
+      "minimumPadding": 15,
+      "maximumEncodingDifference": 0,
+      "apngDelays": "1/24 s, exact",
+      "transparentCorners": true
+    },
+    {
+      "id": "react",
+      "drawnFrames": 24,
+      "playbackFrames": 56,
+      "fps": 24,
+      "seconds": 2.3333,
+      "loop": false,
+      "sheetSize": [
+        2560,
+        2240
+      ],
+      "minimumPadding": 15,
+      "maximumEncodingDifference": 0,
+      "apngDelays": "1/24 s, exact",
+      "transparentCorners": true
+    },
+    {
+      "id": "celebrate",
+      "drawnFrames": 24,
+      "playbackFrames": 56,
+      "fps": 24,
+      "seconds": 2.3333,
+      "loop": false,
+      "sheetSize": [
+        2560,
+        2240
+      ],
+      "minimumPadding": 15,
+      "maximumEncodingDifference": 0,
+      "apngDelays": "1/24 s, exact",
+      "transparentCorners": true
+    },
+    {
+      "id": "all_done",
+      "drawnFrames": 24,
+      "playbackFrames": 64,
+      "fps": 24,
+      "seconds": 2.6667,
+      "loop": false,
+      "sheetSize": [
+        2560,
+        2560
+      ],
+      "minimumPadding": 15,
+      "maximumEncodingDifference": 0,
+      "apngDelays": "1/24 s, exact",
+      "transparentCorners": true
+    },
+    {
+      "id": "remind",
+      "drawnFrames": 24,
+      "playbackFrames": 72,
+      "fps": 24,
+      "seconds": 3.0,
+      "loop": true,
+      "sheetSize": [
+        2560,
+        2880
+      ],
+      "minimumPadding": 15,
+      "maximumEncodingDifference": 0,
+      "apngDelays": "1/24 s, exact",
+      "transparentCorners": true
+    },
+    {
+      "id": "drink_water",
+      "drawnFrames": 24,
+      "playbackFrames": 96,
+      "fps": 24,
+      "seconds": 4.0,
+      "loop": true,
+      "sheetSize": [
+        2560,
+        3840
+      ],
+      "minimumPadding": 16,
+      "maximumEncodingDifference": 0,
+      "apngDelays": "1/24 s, exact",
+      "transparentCorners": true
+    },
+    {
+      "id": "stretch",
+      "drawnFrames": 24,
+      "playbackFrames": 96,
+      "fps": 24,
+      "seconds": 4.0,
+      "loop": true,
+      "sheetSize": [
+        2560,
+        3840
+      ],
+      "minimumPadding": 15,
+      "maximumEncodingDifference": 0,
+      "apngDelays": "1/24 s, exact",
+      "transparentCorners": true
+    }
+  ]
+}

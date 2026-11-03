@@ -1,0 +1,90 @@
+{
+  "states": [
+    {
+      "id": "idle",
+      "playbackFrames": 96,
+      "durationMs": 3999.9999999999945,
+      "closedEyeKeysReviewed": [
+        20
+      ],
+      "closedEyeExposureMs": 83.33333333333333,
+      "blinkStartPlaybackFrame": 85
+    },
+    {
+      "id": "react",
+      "playbackFrames": 56,
+      "durationMs": 2333.333333333334,
+      "closedEyeKeysReviewed": [
+        14,
+        15
+      ],
+      "closedEyeExposureMs": 83.33333333333333,
+      "blinkStartPlaybackFrame": 30
+    },
+    {
+      "id": "celebrate",
+      "playbackFrames": 56,
+      "durationMs": 2333.333333333334,
+      "closedEyeKeysReviewed": [
+        9
+      ],
+      "closedEyeExposureMs": 41.666666666666664,
+      "blinkStartPlaybackFrame": 18
+    },
+    {
+      "id": "all_done",
+      "playbackFrames": 64,
+      "durationMs": 2666.666666666666,
+      "closedEyeKeysReviewed": [
+        11,
+        12,
+        13
+      ],
+      "closedEyeExposureMs": 125,
+      "blinkStartPlaybackFrame": 28
+    },
+    {
+      "id": "remind",
+      "playbackFrames": 72,
+      "durationMs": 2999.999999999998,
+      "closedEyeKeysReviewed": [
+        12,
+        13
+      ],
+      "closedEyeExposureMs": 83.33333333333333,
+      "blinkStartPlaybackFrame": 30
+    },
+    {
+      "id": "drink_water",
+      "playbackFrames": 96,
+      "durationMs": 3999.9999999999945,
+      "closedEyeKeysReviewed": [
+        17,
+        18
+      ],
+      "closedEyeExposureMs": 83.33333333333333,
+      "blinkStartPlaybackFrame": 52
+    },
+    {
+      "id": "stretch",
+      "playbackFrames": 96,
+      "durationMs": 3999.9999999999945,
+      "closedEyeKeysReviewed": [
+        19,
+        20
+      ],
+      "closedEyeExposureMs": 83.33333333333333,
+      "blinkStartPlaybackFrame": 70
+    }
+  ],
+  "errors": [],
+  "previewChecks": {
+    "allSevenStatesDecoded": true,
+    "allSevenBlinkJumpControls": true,
+    "frameStepping": true,
+    "faceZoom": true,
+    "manualFacialActingReviewed": true,
+    "naturalBentElbowWaveReviewed": true,
+    "browserConsoleErrors": 0
+  }
+}

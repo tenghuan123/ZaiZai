@@ -1,0 +1,80 @@
+{
+  "id": "strawberry-bunny",
+  "name": "草莓兔女孩",
+  "version": "1.0.0",
+  "canvasSize": [
+    512,
+    512
+  ],
+  "displaySize": [
+    132,
+    126
+  ],
+  "scale": 1,
+  "anchorOffset": {
+    "x": 0,
+    "y": -12
+  },
+  "states": {
+    "idle": {
+      "src": "idle.png",
+      "frames": 8,
+      "cols": 4,
+      "fps": 6,
+      "loop": true
+    },
+    "react": {
+      "src": "react.png",
+      "frames": 8,
+      "cols": 4,
+      "fps": 8,
+      "loop": false
+    },
+    "celebrate": {
+      "src": "celebrate.png",
+      "frames": 8,
+      "cols": 4,
+      "fps": 8,
+      "loop": false
+    },
+    "all_done": {
+      "src": "all_done.png",
+      "frames": 8,
+      "cols": 4,
+      "fps": 5,
+      "loop": false
+    },
+    "remind": {
+      "src": "remind.png",
+      "frames": 8,
+      "cols": 4,
+      "fps": 6,
+      "loop": true
+    },
+    "drink_water": {
+      "src": "drink_water.png",
+      "frames": 8,
+      "cols": 4,
+      "fps": 8,
+      "loop": true
+    },
+    "stretch": {
+      "src": "stretch.png",
+      "frames": 8,
+      "cols": 4,
+      "fps": 8,
+      "loop": true
+    }
+  },
+  "quotes": {
+    "react": [
+      "今天也陪你一起加油呀～",
+      "收到！我在这里陪着你。"
+    ],
+    "celebrate": "又完成一项，真棒！",
+    "allDone": "今天的任务全部完成啦！",
+    "remind": "到时间啦，记得看看你的任务。",
+    "drinkWater": "喝口水，休息一下吧～",
+    "stretch": "起来伸个懒腰，活动一下吧。"
+  }
+}

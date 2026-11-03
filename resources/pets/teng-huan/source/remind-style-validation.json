@@ -1,0 +1,19 @@
+{
+  "date": "2026-11-03",
+  "version": "1.0.2",
+  "passed": true,
+  "sourceComparison": "decoded RGBA equality to original approved sheet",
+  "changedInsidePatch": 74065,
+  "changedOutsidePatch": 0,
+  "changedProtectedHeadPixels": 0,
+  "configuration": "remind-assembly.json",
+  "unaffectedActions": [
+    "idle",
+    "react",
+    "celebrate",
+    "all_done",
+    "drink_water",
+    "stretch"
+  ],
+  "unchangedImageFiles": 157
+}

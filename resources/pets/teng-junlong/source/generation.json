@@ -1,0 +1,63 @@
+{
+  "date": "2026-11-03",
+  "id": "teng-junlong",
+  "name": "滕俊龙 · 路桥工程师",
+  "generator": "Built-in image_gen",
+  "mode": "reference-guided generation",
+  "transparent_background": true,
+  "reference": "reference.png",
+  "continuityReference": "sheets/idle.png (second reference for six other actions)",
+  "prompts": "prompts.md",
+  "originalSheetSize": [
+    1536,
+    1024
+  ],
+  "originalGrid": [
+    6,
+    4
+  ],
+  "candidateDrawingsPerAction": 24,
+  "exportedFrameSize": [
+    320,
+    320
+  ],
+  "exportedSheetColumns": 8,
+  "playbackFps": 24,
+  "generatedOutputs": {
+    "idle": "/Users/tenghuan/.codex/generated_images/01a1a063-2ef8-7290-8a6c-d6b55cc3fd27/exec-12be0fb3-a065-4975-ba81-3d70e697c20c.png",
+    "react": "/Users/tenghuan/.codex/generated_images/01a1a063-2ef8-7290-8a6c-d6b55cc3fd27/exec-da571389-01a5-4f54-ba98-59e17b702a3a.png",
+    "celebrate": "/Users/tenghuan/.codex/generated_images/01a1a063-2ef8-7290-8a6c-d6b55cc3fd27/exec-c795635e-7c60-4564-8ac5-df7fe1595fb5.png",
+    "all_done": "/Users/tenghuan/.codex/generated_images/01a1a063-2ef8-7290-8a6c-d6b55cc3fd27/exec-6e33ea0b-6afa-410b-be18-a2f53becd3c3.png",
+    "remind": "/Users/tenghuan/.codex/generated_images/01a1a063-2ef8-7290-8a6c-d6b55cc3fd27/exec-a76975a0-5238-422c-8cc1-feac0a0f8ce2.png",
+    "drink_water": "/Users/tenghuan/.codex/generated_images/01a1a063-2ef8-7290-8a6c-d6b55cc3fd27/exec-27f0c2b3-a70b-4de4-ae72-00f1ce46a29b.png",
+    "stretch": "/Users/tenghuan/.codex/generated_images/01a1a063-2ef8-7290-8a6c-d6b55cc3fd27/exec-709e842c-1e17-4809-b225-897e40c2f563.png"
+  },
+  "processing": [
+    "Copy generated original sheets into this pack, leaving originals in place.",
+    "Slice 24 fixed cells, retain generated alpha and clear alpha <= 4/255.",
+    "Apply one scale per action from its first neutral drawing and register shoe anchors.",
+    "Preserve airborne displacement in jump drawings 10-15.",
+    "Encode eight-column playback sprite sheets and APNG with exact 1/24-second delays.",
+    "Build a standalone offline preview embedding every image and configuration."
+  ],
+  "scope": "Independent resource pack only; no application registration, commit, push or installer rebuild.",
+  "revisions": [
+    {
+      "date": "2026-11-03",
+      "version": "1.0.1",
+      "action": "idle",
+      "mode": "exposure timing adjustment; original image_gen drawings retained; no new image generation",
+      "changes": [
+        "Shorten half-closed drawing 18 from 13 ticks (541.7ms) to 1 tick (41.7ms).",
+        "Hold stable fully closed drawing 19 for 2 ticks (83.3ms), skip vertically inconsistent drawing 20.",
+        "Use short reopening exposures and move remaining pause to fully open eyes.",
+        "Preserve 96 playback frames at 24 FPS and all six other actions.",
+        "Start the offline preview with idle."
+      ],
+      "previous": "history/idle-v1.0.0.png",
+      "previousAnimation": "history/idle-animation-v1.0.0.png",
+      "previousTimelines": "history/timelines-v1.0.0.json",
+      "validation": "idle-timing-validation.json"
+    }
+  ]
+}
