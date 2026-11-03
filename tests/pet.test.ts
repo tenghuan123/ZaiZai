@@ -2,7 +2,8 @@ import { test } from 'node:test'
 import assert from 'node:assert/strict'
 import { readFileSync } from 'node:fs'
 import { resolve } from 'node:path'
-import { BUILT_IN_PET_ID, PET_ACTIONS, selectPetPlayback, spriteFrame } from '../src/shared/pet'
+import { BUILT_IN_PET_ID, BUILT_IN_PET_IDS, PET_ACTIONS, selectPetPlayback, spriteFrame } from '../src/shared/pet'
+import { AppError } from '../src/main/domain/errors'
 import { fixture } from './helpers'
 
 test('pending reminders own pet presentation, including explicit water and stretch scenes', () => {
@@ -30,11 +31,12 @@ test('sprite playback holds the final one-shot frame and wraps loops without ent
   assert.equal(spriteFrame(3990, 96, 24, true).index, 95)
 })
 
-test('all seven bundled sprite sheets match their manifest and built-in identity', () => {
-  const folder = resolve('resources/pets/strawberry-bunny-v3')
+for (const id of BUILT_IN_PET_IDS) test(`${id}: all seven bundled sheets match their manifest and registered identity`, () => {
+  const folder = resolve('resources/pets', id)
   const manifest = JSON.parse(readFileSync(resolve(folder, 'manifest.json'), 'utf8'))
-  assert.equal(manifest.id, BUILT_IN_PET_ID)
+  assert.equal(manifest.id, id)
   assert.deepEqual(Object.keys(manifest.states), [...PET_ACTIONS])
+  assert.ok(manifest.quotes.react.length > 0 && manifest.quotes.celebrate && manifest.quotes.allDone)
   for (const action of PET_ACTIONS) {
     const state = manifest.states[action]
     assert.equal(state.src, `${action}.png`)
@@ -44,6 +46,32 @@ test('all seven bundled sprite sheets match their manifest and built-in identity
     assert.equal(png.readUInt32BE(20), Math.ceil(state.frames / state.cols) * manifest.canvasSize[1])
     assert.ok(state.fps > 0 && state.frames > 0)
   }
+})
+
+test('UI pet selection accepts installed characters and rejects unknown IDs, stale changes and failed writes atomically', () => {
+  const f = fixture()
+  try {
+    f.once({ title: '切换角色保留的任务' })
+    const before = f.settings.getSettings()
+    const tasks = f.tasks.getDay('2026-11-02')
+    let next = before
+    for (const petId of BUILT_IN_PET_IDS) {
+      const previous = next
+      next = f.settings.updateFromUI({ expectedVersion: previous.version, patch: { petId } })
+      assert.deepEqual(next, { ...previous, version: previous.version + 1, petId })
+    }
+    assert.throws(() => f.settings.updateFromUI({ expectedVersion: before.version, patch: { petId: BUILT_IN_PET_ID } }),
+      (error: unknown) => error instanceof AppError && error.code === 'CONFLICT')
+    for (const petId of ['other-pack', '../hu-xianya', 'builtin-cat', '', null]) {
+      assert.throws(() => f.settings.updateFromUI({ expectedVersion: next.version, patch: { petId } }),
+        (error: unknown) => error instanceof AppError && error.code === 'VALIDATION' && error.field === 'petId')
+    }
+    assert.deepEqual(f.settings.getSettings(), next)
+    f.connection.db.pragma('query_only=ON')
+    assert.throws(() => f.settings.updateFromUI({ expectedVersion: next.version, patch: { petId: BUILT_IN_PET_ID } }), /readonly/)
+    assert.deepEqual(f.settings.getSettings(), next)
+    assert.deepEqual(f.tasks.getDay('2026-11-02'), tasks)
+  } finally { f.close() }
 })
 
 test('the old built-in placeholder resolves to V3 without resetting preferences or unrelated pack IDs', () => {

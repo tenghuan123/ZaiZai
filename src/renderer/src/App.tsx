@@ -11,6 +11,7 @@ import { selectPetPlayback } from '../../shared/pet'
 import type { PetAction, PetReaction } from '../../shared/pet'
 import { PetSprite } from './features/pet/PetSprite'
 import { PetActions } from './features/pet/PetActions'
+import { getPetPack } from './features/pet/pet-pack'
 import { useTaskCompletion } from './features/tasks/use-task-completion'
 import { CompletionEffects } from './features/tasks/CompletionEffects'
 import { MENU_TRANSITION_MS } from '../../shared/motion'
@@ -55,6 +56,7 @@ export function App(): React.JSX.Element {
   const clickTimer = useRef<ReturnType<typeof setTimeout> | undefined>(undefined)
   const gesture = useRef<{ x: number; y: number; moved: boolean } | null>(null)
   const snapshot = workspace?.snapshot
+  const petPack = getPetPack(snapshot?.settings.petId)
   const activeReminderId = snapshot?.activeReminderIds[0] ?? null
 
   useEffect(() => {
@@ -91,12 +93,22 @@ export function App(): React.JSX.Element {
   function respondToPet(): void {
     if (activeReminderId) return
     setPetReaction({ id: crypto.randomUUID(), action: 'react' })
-    say('今天也要好好照顾自己呀 🐾')
+    say(petPack.quotes.react[0])
   }
   async function withBusy(key: string, action: () => Promise<void>): Promise<void> {
     if (busyRef.current.has(key)) return
     busyRef.current.add(key); setBusy(new Set(busyRef.current))
     try { await action() } finally { busyRef.current.delete(key); setBusy(new Set(busyRef.current)) }
+  }
+  async function selectPetPack(id: string): Promise<void> {
+    if (!snapshot || id === petPack.id) return
+    await withBusy('pet-selection', async () => {
+      const result = await command(() => api.settings.update({ expectedVersion: snapshot.settings.version, patch: { petId: id } }))
+      if (result.ok) {
+        setPetReaction(null); setPetPreview('idle')
+        say(`已切换为${getPetPack(id).name}`)
+      }
+    })
   }
   function selectDate(date: string): void {
     setSelectedDate(date === snapshot?.today.date ? null : date); setShowSettings(false); setShowPet(false)
@@ -154,7 +166,7 @@ export function App(): React.JSX.Element {
       const result = await command(() => api.tasks.setCompleted(item.ref, completed))
       saved = result.ok
       if (result.ok && result.value.changed) {
-        say(result.value.allCompleted ? '🎉 今日任务全部达成！' : completed ? '完成一项！继续保持 ✨' : '已恢复到待办清单')
+        say(result.value.allCompleted ? petPack.quotes.allDone : completed ? petPack.quotes.celebrate : '已恢复到待办清单')
         if (completed) {
           setCompletionCount(count => count + 1)
           setPetReaction({ id: crypto.randomUUID(), action: result.value.allCompleted ? 'all_done' : 'celebrate' })
@@ -219,7 +231,7 @@ export function App(): React.JSX.Element {
         onPointerCancel={() => { gesture.current = null; void command(() => api.endDrag()) }}
         onDoubleClick={() => { if (clickTimer.current) clearTimeout(clickTimer.current); void command(() => api.setMode(compact ? 'expanded' : 'compact')) }}
         onKeyDown={event => { if (event.key === 'Enter' || event.key === ' ') { event.preventDefault(); respondToPet() } }}>
-        <PetSprite playback={petPlayback} paused={snapshot.window.animationsPaused} onFinished={key => {
+        <PetSprite pack={petPack} playback={petPlayback} paused={snapshot.window.animationsPaused} onFinished={key => {
           setPetReaction(reaction => reaction && `reaction:${reaction.id}` === key ? null : reaction)
         }} />
       </button>
@@ -248,7 +260,8 @@ export function App(): React.JSX.Element {
         <button className="settings-button" aria-label="设置与验证状态" onClick={() => { setShowSettings(value => !value); setShowPet(false) }}>⚙</button>
       </div><div className="clock"><strong>{new Date(now).toLocaleTimeString('zh-CN', { hour: '2-digit', minute: '2-digit', hour12: false })}</strong>
         <span>{new Date(now).toLocaleDateString('zh-CN', { month: '2-digit', day: '2-digit', weekday: 'long' })}</span></div></header>
-      {showPet ? <PetActions selected={petPreview} blocked={!!current} onSelect={action => { setPetReaction(null); setPetPreview(action) }} onClose={() => setShowPet(false)} /> : showSettings ? <section className="settings-panel">
+      {showPet ? <PetActions pack={petPack} selected={petPreview} blocked={!!current} switching={busy.has('pet-selection')}
+        onSelectPack={id => { void selectPetPack(id) }} onSelect={action => { setPetReaction(null); setPetPreview(action) }} onClose={() => setShowPet(false)} /> : showSettings ? <section className="settings-panel">
         <div className="panel-title"><h2>设置与验证状态</h2><button onClick={() => setShowSettings(false)}>返回</button></div>
         <label className="setting-row">固定下班时间<input aria-label="固定下班时间" type="time" value={snapshot.settings.offworkTime || ''}
           onChange={event => { void command(() => api.settings.update({ expectedVersion: snapshot.settings.version, patch: { offworkTime: event.target.value || null } })) }} /></label>

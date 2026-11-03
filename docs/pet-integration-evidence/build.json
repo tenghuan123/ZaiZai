@@ -1,0 +1,106 @@
+{
+  "date": "2026-11-03",
+  "mac": {
+    "archive": "release/mac-arm64/zaizai.app/Contents/Resources/app.asar",
+    "spriteSheets": [
+      {
+        "name": "all_done-DQihNao9.png",
+        "bytes": 2436148,
+        "sha256": "5d331ba3b649fea4535526f51278d16cfe2f0048f70f1515a7fd66d38c8a97d2"
+      },
+      {
+        "name": "all_done-fs2umBJx.png",
+        "bytes": 3153116,
+        "sha256": "95fa1c9f5ed28debc8a0fd88a5a1bb9c52a74afcd3f26e77ff4f0ed29c3e52b3"
+      },
+      {
+        "name": "celebrate-CImrtxw3.png",
+        "bytes": 3018555,
+        "sha256": "aa804e7654d55f570cdb97ad8cf3e25ed1731380060f7c2cc1a2a83b06458129"
+      },
+      {
+        "name": "celebrate-CcC-Q2WM.png",
+        "bytes": 2007251,
+        "sha256": "ee5defb2afcf70364442dc886129aae2db8fb83cbe7e2746e25077c34bdc3d2a"
+      },
+      {
+        "name": "drink_water-CME_kS4x.png",
+        "bytes": 2498731,
+        "sha256": "b0372995120aa677c888a9bdb634a397a4af67d799a9023c9f45a875a37e7b9f"
+      },
+      {
+        "name": "drink_water-DjdOWQT4.png",
+        "bytes": 3457190,
+        "sha256": "301f0a80a5a86b0eca5ff43683c114012c03440ded0faedac5ea5f2f27266327"
+      },
+      {
+        "name": "idle-Dzq1-cgZ.png",
+        "bytes": 2577918,
+        "sha256": "c46c36808b734998367509178518193894b3f79dd73ce54057b8219c3dcaa747"
+      },
+      {
+        "name": "idle-Lzw_8OKE.png",
+        "bytes": 5259109,
+        "sha256": "1b334676370748cd1aa974cd64fd2e99621cddee358177516c5edc404f82ecc2"
+      },
+      {
+        "name": "react-QbSKCdyV.png",
+        "bytes": 2468097,
+        "sha256": "76126b9014b553775540bfc5a25bd4fbb72563ccf699b2f6c787c3087e693252"
+      },
+      {
+        "name": "react-u1lvQIKv.png",
+        "bytes": 1845246,
+        "sha256": "27f4377b5905d0317cd7f4a617857f42fe426e60cbe5a7f0f5237ea33a2d4107"
+      },
+      {
+        "name": "remind-CKdXHIeV.png",
+        "bytes": 3287109,
+        "sha256": "eabb00e4470cf696292e6b1f2e3072fccd7dce33fd0a892df32bceb6c2909040"
+      },
+      {
+        "name": "remind-D61Ljdyg.png",
+        "bytes": 2264693,
+        "sha256": "e8d7bf15772e12ebd64024b2ff24ae69f6eff70acf018e4f64b2d9f0bdf8d3b0"
+      },
+      {
+        "name": "stretch-6zQqTjVk.png",
+        "bytes": 3195699,
+        "sha256": "62e28aa738fc3c26725182b607baecaa615a32ef11f0407f8e1bc05bfe524ce0"
+      },
+      {
+        "name": "stretch-BCSv51So.png",
+        "bytes": 2511375,
+        "sha256": "22083433e0d95c59ca10180cfb4701b7826192d67f6abe05538fbbfe96406f0a"
+      }
+    ],
+    "authoringResourcesIncluded": false,
+    "codesign": "codesign --verify --deep --strict passed",
+    "zipIntegrity": "unzip -tq passed",
+    "packagedChecks": 10
+  },
+  "status": "passed",
+  "windows": {
+    "archive": "release/win-unpacked/resources/app.asar",
+    "checkedFiles": 20,
+    "spriteSheets": 14,
+    "authoringResourcesIncluded": false,
+    "nsisIntegrity": "passed",
+    "runtime": "not tested on Windows",
+    "embeddedArchiveIntegrity": "7zz t app-64.7z passed",
+    "installerAsarMatchesUnpacked": true,
+    "installerAsarSha256": "f6aa2c95f9c6c5f1773f6af4eebbc86adba14219497287c1dbdf16c2415f2ecf"
+  },
+  "packages": [
+    {
+      "path": "release/zaizai-0.1.0-mac-arm64.zip",
+      "bytes": 172166306,
+      "sha256": "d9a9d8d42b7131c971957373061819018581ca3a2d269387109cb55d94d5598d"
+    },
+    {
+      "path": "release/zaizai Setup 0.1.0.exe",
+      "bytes": 169667105,
+      "sha256": "01361bc8745916a5cfaebf92187c1fe8e4587d6b08b48ed88c938397d0b9973e"
+    }
+  ]
+}

@@ -1,6 +1,10 @@
 import type { Scene } from './tasks'
 
 export const BUILT_IN_PET_ID = 'strawberry-bunny-v3'
+export const BUILT_IN_PET_IDS = [BUILT_IN_PET_ID, 'hu-xianya', 'teng-huan'] as const
+export function isBuiltInPetId(value: unknown): boolean {
+  return BUILT_IN_PET_IDS.some(id => id === value)
+}
 export const PET_ACTIONS = ['idle', 'react', 'celebrate', 'all_done', 'remind', 'drink_water', 'stretch'] as const
 export type PetAction = typeof PET_ACTIONS[number]
 export interface PetReaction { id: string; action: 'react' | 'celebrate' | 'all_done' }

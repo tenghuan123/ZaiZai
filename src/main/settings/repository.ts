@@ -1,6 +1,6 @@
 import type Database from 'better-sqlite3'
 import type { Settings } from '../../shared/contracts'
-import { BUILT_IN_PET_ID } from '../../shared/pet'
+import { BUILT_IN_PET_ID, isBuiltInPetId } from '../../shared/pet'
 import { AppError, checkVersion } from '../domain/errors'
 import { boolean, fields, object, version } from '../domain/validation'
 import { validTime } from '../domain/time'
@@ -61,7 +61,8 @@ export class SettingsRepository {
     const value = object(input)
     fields(value, ['expectedVersion', 'patch'])
     const patch = object(value.patch)
-    fields(patch, ['offworkTime', 'defaultReminderEnabled', 'alwaysOnTop'])
+    fields(patch, ['offworkTime', 'defaultReminderEnabled', 'alwaysOnTop', 'petId'])
+    if ('petId' in patch && !isBuiltInPetId(patch.petId)) throw new AppError('VALIDATION', '请选择已内置的桌宠角色。', 'petId')
     return this.updateSettings(patch, version(value.expectedVersion))
   }
 }

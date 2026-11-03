@@ -11,7 +11,7 @@ export interface Settings {
   defaultReminderEnabled: boolean; position: { x: number; y: number } | null
   petId: string; petDisplay: Record<string, { scale: number; anchorX: number; anchorY: number }>
 }
-export type SettingsPatch = Partial<Pick<Settings, 'offworkTime' | 'defaultReminderEnabled' | 'alwaysOnTop'>>
+export type SettingsPatch = Partial<Pick<Settings, 'offworkTime' | 'defaultReminderEnabled' | 'alwaysOnTop' | 'petId'>>
 export interface WindowState {
   mode: DisplayMode; visible: boolean; alwaysOnTop: boolean; animationsPaused: boolean
   bounds: { x: number; y: number; width: number; height: number }

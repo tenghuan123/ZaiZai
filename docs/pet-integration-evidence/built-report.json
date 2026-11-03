@@ -1,0 +1,17 @@
+{
+  "directory": "/Users/tenghuan/programming/vjshi/studyDemo/tia-windows-plugins/.cache/pet-runs/built-1793686394073",
+  "checks": [
+    "built-in V3 loads via production buddy-app protocol and does not cover window controls",
+    "both installed characters animate all seven actions, and a real storage failure preserves the current choice until a successful retry",
+    "all seven actual app previews animate, and returning to the task list restores idle",
+    "Hu Xianya keyboard interaction uses her own dialogue, waves once, then returns to idle",
+    "reduced-motion and hidden-window states stop the frame clock; showing the window resumes it",
+    "the actual compact and expanded native window sizes still fit the new character",
+    "successful task completion plays clap; finishing today plays the separate all-done animation",
+    "the task editor saves an explicit water scene through the real task service",
+    "due water/stretch scenes override clicks and previews, and acknowledgment releases reminder priority",
+    "a complete application restart restores Hu Xianya and preserves task progress"
+  ],
+  "errors": [],
+  "status": "passed"
+}

@@ -2,12 +2,13 @@ import { useEffect, useRef, useState } from 'react'
 import { spriteFrame } from '../../../../shared/pet'
 import type { PetPlayback } from '../../../../shared/pet'
 import fallbackImage from '../../assets/pet.svg'
-import { petActionLabels, petPack, petStates } from './pet-pack'
+import { petActionLabels } from './pet-pack'
+import type { PetPack } from './pet-pack'
 
 interface AnimationClock { elapsed: number; previous: number | null; frame: number; raf: number | null; finished: boolean; tick: (now: number) => void }
 
-export function PetSprite({ playback, paused, onFinished }: {
-  playback: PetPlayback; paused: boolean; onFinished: (key: string) => void
+export function PetSprite({ pack: petPack, playback, paused, onFinished }: {
+  pack: PetPack; playback: PetPlayback; paused: boolean; onFinished: (key: string) => void
 }): React.JSX.Element {
   const canvas = useRef<HTMLCanvasElement>(null)
   const clock = useRef<AnimationClock | null>(null)
@@ -48,7 +49,7 @@ export function PetSprite({ playback, paused, onFinished }: {
     const context = element?.getContext('2d')
     if (!element || !context) return
     let cancelled = false
-    const state = petStates[playback.action]
+    const state = petPack.states[playback.action]
     const image = new Image()
     const current: AnimationClock = { elapsed: 0, previous: null, frame: -1, raf: null, finished: false, tick: () => {} }
     clock.current = current
@@ -98,7 +99,7 @@ export function PetSprite({ playback, paused, onFinished }: {
       if (current.raf !== null) cancelAnimationFrame(current.raf)
       if (clock.current === current) clock.current = null
     }
-  }, [playback.key, playback.action, playback.loop])
+  }, [petPack, playback.key, playback.action, playback.loop])
 
   useEffect(() => {
     const current = clock.current

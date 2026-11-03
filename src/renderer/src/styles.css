@@ -13,8 +13,8 @@ input, select { user-select: auto; }
 .pet { background: none; padding: 0; position: absolute; left: 0; top: 0; width: 148px; height: 148px; touch-action: none; }
 .pet-sprite, .pet-fallback { display: block; width: 100%; height: 100%; pointer-events: none; }
 .pet-sprite[hidden] { display: none; }
-.bubble { position: absolute; top: 20px; left: 152px; width: 184px; padding: 12px; border-radius: 17px; background: #fff; box-shadow: 0 3px 9px #314f6422; border: 1px solid #e5edf2; line-height: 1.5; }
-.bubble::before { content: ''; position: absolute; left: -7px; top: 17px; width: 12px; height: 12px; transform: rotate(45deg); background: #fff; }
+.bubble { position: absolute; top: 20px; left: 152px; width: 184px; padding: 12px; border-radius: 17px; background: #fff; border: 1px solid transparent; filter: drop-shadow(0 0 1px #314f6426) drop-shadow(0 3px 6px #314f6414); line-height: 1.5; }
+.bubble::before { content: ''; position: absolute; left: -10px; top: 12px; width: 12px; height: 16px; background: #fff; clip-path: path('M12 0H9C9 5 6 8 2 9.5Q0 10.5 2 11.5C6 13 9 12 9 16H12Z'); pointer-events: none; }
 .bubble-label { text-align: left; background: none; padding: 0; font-size: 11px; width: 100%; line-height: 1.6; position: relative; }
 .bubble strong { font-size: 12px; font-weight: 600; display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden; padding-right: 8px; overflow-wrap: anywhere; }
 .bubble small { display: block; font-size: 10px; }
@@ -97,8 +97,9 @@ select { border: 0; color: #58778c; background: #e9eff4; border-radius: 5px; pad
 .status-dot { width: 5px; height: 5px; border-radius: 50%; background: #77a4ba; }
 .settings-panel { flex: 1; min-height: 0; overflow-y: auto; font-size: 11px; }
 .pet-actions-panel { flex: 1; min-height: 0; overflow-y: auto; }
-.pet-pack-name { margin: 4px 0 16px; font-size: 15px; font-weight: 500; color: #6d6575; }
-.pet-pack-name span { display: block; margin-top: 5px; font-size: 10px; font-weight: 400; color: #a18c9b; }
+.pet-pack-selector { display: flex; flex-direction: column; gap: 6px; margin: 4px 0 5px; font-size: 10px; color: #8d8091; }
+.pet-pack-selector select { width: 100%; padding: 8px; border: 1px solid #e2dbe6; border-radius: 9px; background: #fff; color: #6d6575; font-size: 12px; }
+.pet-pack-description { margin: 0 0 12px; font-size: 10px; color: #a18c9b; }
 .pet-action-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; }
 .pet-action-grid button { border: 1px solid #e2dbe6; border-radius: 10px; padding: 10px 5px; background: #fff; color: #937c8b; font-size: 11px; }
 .pet-action-grid button[aria-pressed=true] { border-color: #c99ca8; background: #f7eaf0; color: #9d6d81; }
@@ -157,6 +158,7 @@ details { color: #8b9eae; font-size: 10px; }
 .quick-add { display: flex; gap: 8px; margin-top: 3px; flex-shrink: 0; }
 .quick-add > div { flex: 1; min-width: 0; display: flex; align-items: center; border: 1px solid #e1e8ee; background: #fff; border-radius: 22px; padding: 8px 8px 8px 12px; }
 .quick-add input { min-width: 0; width: 100%; border: 0; background: transparent; color: #4a657a; font-size: 12px; outline: none; }
+.quick-add input::placeholder { color: #a6abb2; opacity: 1; }
 .quick-add > div button { background: #f0f4f7; border-radius: 12px; padding: 4px 5px; color: #849cad; white-space: nowrap; font-size: 9px; }
 .add-button { align-self: center; width: 34px; height: 34px; padding: 0; border-radius: 50%; background: #749fb8; color: #fff; font-size: 22px; }
 .plan-heading { display: flex; justify-content: space-between; align-items: center; margin: 2px 0 4px; font-size: 10px; color: #91a3b3; flex-shrink: 0; }
