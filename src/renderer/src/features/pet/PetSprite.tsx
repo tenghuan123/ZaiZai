@@ -1,5 +1,6 @@
 import { useEffect, useRef, useState } from 'react'
 import { spriteFrame } from '../../../../shared/pet'
+import { spriteSlices } from '../../../../shared/pet-proportions'
 import type { PetPlayback } from '../../../../shared/pet'
 import fallbackImage from '../../assets/pet.svg'
 import { petActionLabels } from './pet-pack'
@@ -55,8 +56,11 @@ export function PetSprite({ pack: petPack, playback, paused, onFinished }: {
     clock.current = current
     const draw = (index: number): void => {
       context.clearRect(0, 0, petPack.frameWidth, petPack.frameHeight)
-      context.drawImage(image, index % state.cols * petPack.frameWidth, Math.floor(index / state.cols) * petPack.frameHeight,
-        petPack.frameWidth, petPack.frameHeight, 0, 0, petPack.frameWidth, petPack.frameHeight)
+      for (const slice of spriteSlices(petPack.frameWidth, petPack.frameHeight, index, state.proportions)) {
+        context.drawImage(image, index % state.cols * petPack.frameWidth,
+          Math.floor(index / state.cols) * petPack.frameHeight + slice.sourceY,
+          petPack.frameWidth, slice.sourceHeight, slice.x, slice.y, slice.width, slice.height)
+      }
       current.frame = index
       element.dataset.frame = String(index)
       element.dataset.status = 'ready'

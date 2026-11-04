@@ -1,5 +1,6 @@
 import { BUILT_IN_PET_ID, PET_ACTIONS } from '../../../../shared/pet'
 import type { PetAction } from '../../../../shared/pet'
+import type { PetProportions } from '../../../../shared/pet-proportions'
 import bunnyManifest from '../../../../../resources/pets/strawberry-bunny-v3/manifest.json'
 import bunnyIdle from '../../../../../resources/pets/strawberry-bunny-v3/idle.png?url'
 import bunnyReact from '../../../../../resources/pets/strawberry-bunny-v3/react.png?url'
@@ -33,13 +34,20 @@ import tengJunlongRemind from '../../../../../resources/pets/teng-junlong/remind
 import tengJunlongDrinkWater from '../../../../../resources/pets/teng-junlong/drink_water.png?url'
 import tengJunlongStretch from '../../../../../resources/pets/teng-junlong/stretch.png?url'
 
-export interface PetSpriteState { src: string; frames: number; cols: number; fps: number; loop: boolean; url: string }
+export interface PetSpriteState {
+  src: string; frames: number; cols: number; fps: number; loop: boolean; url: string; proportions?: PetProportions
+}
 export interface PetPack {
   id: string; name: string; version: string; frameWidth: number; frameHeight: number
   states: Record<PetAction, PetSpriteState>; quotes: typeof bunnyManifest.quotes
 }
 
-function createPetPack(manifest: typeof bunnyManifest, sources: Record<PetAction, string>): PetPack {
+interface PetManifest {
+  id: string; name: string; version: string; canvasSize: number[]; quotes: typeof bunnyManifest.quotes
+  states: Record<PetAction, Omit<PetSpriteState, 'url'>>
+}
+
+function createPetPack(manifest: PetManifest, sources: Record<PetAction, string>): PetPack {
   return { id: manifest.id, name: manifest.name, version: manifest.version,
     frameWidth: manifest.canvasSize[0], frameHeight: manifest.canvasSize[1], quotes: manifest.quotes,
     states: Object.fromEntries(PET_ACTIONS.map(action => [action, { ...manifest.states[action], url: sources[action] }])) as Record<PetAction, PetSpriteState> }

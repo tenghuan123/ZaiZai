@@ -1,0 +1,60 @@
+{
+  "version": "3.1.0",
+  "preferredBaseline": "3.0.1",
+  "generator": "built-in image_gen",
+  "redrawn": [
+    "celebrate",
+    "all_done",
+    "drink_water"
+  ],
+  "unchanged": [
+    "idle",
+    "react",
+    "remind",
+    "stretch"
+  ],
+  "exactIdleKeys": [
+    0,
+    1,
+    2,
+    22,
+    23
+  ],
+  "apng": {
+    "celebrate": {
+      "frames": 56,
+      "delay": [
+        1,
+        24
+      ],
+      "plays": 1
+    },
+    "all_done": {
+      "frames": 64,
+      "delay": [
+        1,
+        24
+      ],
+      "plays": 1
+    },
+    "drink_water": {
+      "frames": 96,
+      "delay": [
+        1,
+        24
+      ],
+      "plays": 0
+    }
+  },
+  "masterSha256": "5f7b3a3642c195d30db916f39cc53989306d971cfa7c27dc3da8528f6af0da1d",
+  "build": "passed",
+  "ruleTests": {
+    "passed": 49,
+    "total": 49
+  },
+  "visualReview": [
+    "all three active poses compared against idle and 3.0.1 baseline",
+    "garment palette and tiers, bonnet/bunny/strawberry ornaments and painterly hair checked",
+    "24 candidates per action registered without independent head/body deformation"
+  ]
+}

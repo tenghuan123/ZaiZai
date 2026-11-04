@@ -1,0 +1,58 @@
+{
+  "date": "2026-11-04",
+  "timezone": "Asia/Shanghai",
+  "buildHost": "macOS arm64",
+  "target": "Windows x64 NSIS",
+  "appVersion": "0.1.0",
+  "petVersion": "3.1.0",
+  "checks": [
+    "all 34 production files match the fresh build",
+    "all 28 pet sheets match source; the three approved 3.1 redraws are included",
+    "application code and renderer match the approved Mac 3.1 build",
+    "application and bundled SQLite native module are Windows x64; SQLite matches the locked dependency",
+    "NSIS installer and embedded application archive pass 7-Zip integrity checks; embedded executable, app archive and SQLite match the unpacked app"
+  ],
+  "status": "passed",
+  "sprites": {
+    "count": 28,
+    "allSourcesMatch": true,
+    "redrawn": [
+      {
+        "action": "celebrate",
+        "sha256": "0586f5335d9c2a24d776ca96605d769f8dedd232c99e684e67027f249b386a91"
+      },
+      {
+        "action": "all_done",
+        "sha256": "da4deda2ae1126cf183b2cf67b3be42798b930a9ffba4beca7293d2b3d199f06"
+      },
+      {
+        "action": "drink_water",
+        "sha256": "8ec8e7898e848fb72b9b837c6aa7043779c87072fb558167d9b1efdc8408c734"
+      }
+    ]
+  },
+  "application": {
+    "architecture": "PE32+ AMD64",
+    "bytes": 249866240,
+    "sha256": "7fda9ed45a07b302b56a73791ecc91e3196fea32e6a78d24718c2e5bf5b1b9b0"
+  },
+  "sqlite": {
+    "architecture": "PE32+ AMD64",
+    "bytes": 1989632,
+    "sha256": "e21e5efd71fba66578e95b62554d9028064a80dafd7221bf8a8ef155de8d240a",
+    "matchesLockedDependency": true
+  },
+  "installer": {
+    "path": "release/bunny-idle-redraw-v3.1.0/windows-x64/zaizai Setup 0.1.0.exe",
+    "bytes": 195337812,
+    "sizeMiB": 186.3,
+    "sha256": "d2530f60b4187eb5d274bde830e9a33bfe238cfc2cc79f6dc0f02d5d5eb204ef",
+    "signature": "unsigned"
+  },
+  "blockmap": {
+    "path": "release/bunny-idle-redraw-v3.1.0/windows-x64/zaizai Setup 0.1.0.exe.blockmap",
+    "bytes": 203629,
+    "sha256": "78bd94948604d8c31c8a1c489e60b1d53af0b8a22f20a451ac3bfaf87100e275"
+  },
+  "windowsRuntimeValidation": "not run; built and statically verified on macOS arm64"
+}

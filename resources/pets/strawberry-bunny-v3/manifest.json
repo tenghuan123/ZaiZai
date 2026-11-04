@@ -1,7 +1,7 @@
 {
   "id": "strawberry-bunny-v3",
-  "name": "草莓兔女孩 · 表情与自然挥手版",
-  "version": "3.0.0",
+  "name": "草莓兔女孩 · 待机一致性重绘版",
+  "version": "3.1.0",
   "canvasSize": [
     320,
     320
@@ -28,7 +28,13 @@
       "frames": 56,
       "cols": 8,
       "fps": 24,
-      "loop": false
+      "loop": false,
+      "proportions": {
+        "headScale": 0.948276,
+        "bodyScale": 1.026144,
+        "neckY": 153,
+        "footY": 306
+      }
     },
     "celebrate": {
       "src": "celebrate.png",
@@ -49,7 +55,13 @@
       "frames": 72,
       "cols": 8,
       "fps": 24,
-      "loop": true
+      "loop": true,
+      "proportions": {
+        "headScale": 0.92437,
+        "bodyScale": 1.012903,
+        "neckY": 151,
+        "footY": 306
+      }
     },
     "drink_water": {
       "src": "drink_water.png",
@@ -63,7 +75,13 @@
       "frames": 96,
       "cols": 8,
       "fps": 24,
-      "loop": true
+      "loop": true,
+      "proportions": {
+        "headScale": 0.973451,
+        "bodyScale": 1.012903,
+        "neckY": 151,
+        "footY": 306
+      }
     }
   },
   "quotes": {

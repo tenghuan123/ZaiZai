@@ -1,0 +1,201 @@
+{
+  "referenceAction": "idle",
+  "reference": {
+    "crownY": 39,
+    "neckY": 149,
+    "footY": 306
+  },
+  "neutralLandmarks": {
+    "react": {
+      "crownY": 37,
+      "neckY": 153,
+      "footY": 306
+    },
+    "remind": {
+      "crownY": 32,
+      "neckY": 151,
+      "footY": 306
+    },
+    "stretch": {
+      "crownY": 38,
+      "neckY": 151,
+      "footY": 306
+    }
+  },
+  "notes": "Runtime calibration remains for react/remind/stretch. celebrate/all_done/drink_water were redrawn from the exact idle master in v3.1.0, registered with one uniform asset scale, and no longer use head/body deformation. Their sprite sheets, candidate frames and APNG all share the same baked geometry.",
+  "headSizeRefinement": {
+    "version": "3.0.2",
+    "date": "2026-11-03",
+    "basis": "Face contour and eye spacing compared visually against idle; the previous bonnet-to-neck height match still left these faces too large.",
+    "headScales": {
+      "celebrate": {
+        "previous": 0.887097,
+        "current": 0.79
+      },
+      "all_done": {
+        "previous": 0.894309,
+        "current": 0.82
+      },
+      "drink_water": {
+        "previous": 0.866142,
+        "current": 0.79
+      }
+    },
+    "preserved": [
+      "bodyScale",
+      "neckY",
+      "footY",
+      "poses"
+    ],
+    "note": "Keep the neck and soles aligned; allow differences in bonnet crown height instead of enlarging the face to match it."
+  },
+  "legacyNeutralLandmarks": {
+    "celebrate": {
+      "crownY": 37,
+      "neckY": 161,
+      "footY": 306
+    },
+    "all_done": {
+      "crownY": 37,
+      "neckY": 160,
+      "footY": 306
+    },
+    "drink_water": {
+      "crownY": 37,
+      "neckY": 164,
+      "footY": 306
+    }
+  },
+  "legacyJumpKeyframeLandmarks": [
+    {
+      "keyframe": 0,
+      "neckY": 160,
+      "footY": 306
+    },
+    {
+      "keyframe": 1,
+      "neckY": 161,
+      "footY": 306
+    },
+    {
+      "keyframe": 2,
+      "neckY": 161,
+      "footY": 306
+    },
+    {
+      "keyframe": 3,
+      "neckY": 177,
+      "footY": 306
+    },
+    {
+      "keyframe": 4,
+      "neckY": 191,
+      "footY": 306
+    },
+    {
+      "keyframe": 5,
+      "neckY": 203,
+      "footY": 306
+    },
+    {
+      "keyframe": 6,
+      "neckY": 205,
+      "footY": 306
+    },
+    {
+      "keyframe": 7,
+      "neckY": 195,
+      "footY": 306
+    },
+    {
+      "keyframe": 8,
+      "neckY": 179,
+      "footY": 306
+    },
+    {
+      "keyframe": 9,
+      "neckY": 162,
+      "footY": 306
+    },
+    {
+      "keyframe": 10,
+      "neckY": 159,
+      "footY": 306
+    },
+    {
+      "keyframe": 11,
+      "neckY": 155,
+      "footY": 304
+    },
+    {
+      "keyframe": 12,
+      "neckY": 147,
+      "footY": 291
+    },
+    {
+      "keyframe": 13,
+      "neckY": 138,
+      "footY": 282
+    },
+    {
+      "keyframe": 14,
+      "neckY": 133,
+      "footY": 276
+    },
+    {
+      "keyframe": 15,
+      "neckY": 141,
+      "footY": 284
+    },
+    {
+      "keyframe": 16,
+      "neckY": 151,
+      "footY": 293
+    },
+    {
+      "keyframe": 17,
+      "neckY": 163,
+      "footY": 301
+    },
+    {
+      "keyframe": 18,
+      "neckY": 172,
+      "footY": 306
+    },
+    {
+      "keyframe": 19,
+      "neckY": 174,
+      "footY": 306
+    },
+    {
+      "keyframe": 20,
+      "neckY": 170,
+      "footY": 306
+    },
+    {
+      "keyframe": 21,
+      "neckY": 165,
+      "footY": 306
+    },
+    {
+      "keyframe": 22,
+      "neckY": 161,
+      "footY": 306
+    },
+    {
+      "keyframe": 23,
+      "neckY": 160,
+      "footY": 306
+    }
+  ],
+  "redraw": {
+    "version": "3.1.0",
+    "preferredBaseline": "3.0.1",
+    "actions": [
+      "celebrate",
+      "all_done",
+      "drink_water"
+    ],
+    "processing": "redraw-v3.1/import.json"
+  }
+}

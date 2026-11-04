@@ -1,0 +1,131 @@
+{
+  "petId": "strawberry-bunny-v3",
+  "petVersion": "3.1.0",
+  "checks": [
+    "redrawn clap and jump start with the exact idle pixels; planted feet, crouch and airborne motion are preserved",
+    "all 536 playback frames match the renderer within 1/255 mean premultiplied pixel difference (GPU/software scaling rounding) and retain all opaque artwork inside the canvas",
+    "all seven actual Electron action previews match calibrated preview pixels within rounding tolerance, including unchanged idle",
+    "interaction waves once, animates normally and returns to idle"
+  ],
+  "frames": 536,
+  "errors": [],
+  "status": "passed",
+  "comparisons": {
+    "preview": {
+      "idle": {
+        "max": 0,
+        "mean": 0,
+        "footRange": [
+          305,
+          306
+        ],
+        "heightRange": [
+          262,
+          268
+        ]
+      },
+      "react": {
+        "max": 11,
+        "mean": 0.1932818818934323,
+        "footRange": [
+          305,
+          305
+        ],
+        "heightRange": [
+          265,
+          266
+        ]
+      },
+      "celebrate": {
+        "max": 0.9882352941176435,
+        "mean": 0.000407207414215687,
+        "footRange": [
+          306,
+          307
+        ],
+        "heightRange": [
+          265,
+          267
+        ]
+      },
+      "all_done": {
+        "max": 0.9882352941176435,
+        "mean": 0.000407207414215687,
+        "footRange": [
+          274,
+          308
+        ],
+        "heightRange": [
+          238,
+          267
+        ]
+      },
+      "remind": {
+        "max": 12,
+        "mean": 0.2312443608303475,
+        "footRange": [
+          304,
+          305
+        ],
+        "heightRange": [
+          263,
+          266
+        ]
+      },
+      "drink_water": {
+        "max": 0.9882352941176435,
+        "mean": 0.0003293887867647054,
+        "footRange": [
+          305,
+          307
+        ],
+        "heightRange": [
+          265,
+          267
+        ]
+      },
+      "stretch": {
+        "max": 11.17647058823529,
+        "mean": 0.2261082835478578,
+        "footRange": [
+          304,
+          305
+        ],
+        "heightRange": [
+          264,
+          274
+        ]
+      }
+    },
+    "electron": {
+      "idle": {
+        "max": 0,
+        "mean": 0
+      },
+      "react": {
+        "max": 11,
+        "mean": 0.19179256663607805
+      },
+      "celebrate": {
+        "max": 0.9882352941176435,
+        "mean": 0.000407207414215687
+      },
+      "all_done": {
+        "max": 0.9882352941176435,
+        "mean": 0.000407207414215687
+      },
+      "remind": {
+        "max": 0.9882352941176435,
+        "mean": 0.000600700827205883
+      },
+      "drink_water": {
+        "max": 0.9882352941176435,
+        "mean": 0.0003293887867647054
+      },
+      "stretch": {
+        "max": 0.9882352941176435,
+        "mean": 0.0004278875612745111
+      }
+    }
+  }
+}

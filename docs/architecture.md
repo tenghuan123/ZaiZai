@@ -309,6 +309,8 @@ sequenceDiagram
 
 资源描述区分 `sprite-sheet` 和 `animated-image`。精灵图声明每帧宽高、行列、帧数、帧率、循环与锚点；GIF 或动态 WebP 按文件自身的帧率和循环显示，不能把精灵图的 FPS 滑块承诺为通用动图调速。需要精确动作次数和节能控制时优先使用精灵图。
 
+草莓兔 V3.1.0 的鼓掌、欢呼、喝水已按待机原图重绘，并以单一等比尺度烘焙到 PNG/APNG，不再声明 `proportions`；鼓掌与欢呼的首尾复用待机原帧。其余动作仍可声明 `proportions` 显示校准：头部区域等比缩放，颈部以下补偿纵向长度。`pet-proportions.ts` 计算连续的上下两段绘制区域，未声明校准的动作整帧原样绘制。播放器沿用原有帧时钟，资源预览使用相同规则。
+
 状态沿用 `idle`、`react`、`celebrate`、`all_done`、`remind`；可选喝水、运动等场景动作。未指定场景的任务使用通用提醒，不仅凭标题包含某个字就决定动作。缺失可选动作回退为通用动作，`idle` 不可用时回退内置角色。
 
 当前内置包为 `resources/pets/strawberry-bunny-v3`、`resources/pets/hu-xianya`、`resources/pets/teng-huan` 和 `resources/pets/teng-junlong`。`pet-pack.ts` 静态登记四套包，仅引用各自七张精灵图与 manifest，由现有 `buddy-app://ui` 协议提供；预览页面、APNG、旧版本和生成资料不随应用打包。`settings.petId` 是所选角色的唯一来源，设置更新入口只接受已登记的内置 ID，并沿用版本校验和 SQLite 事务；保存失败不改变选择。保留历史未知资源 ID，显示时回退到默认内置包，不重置其他设置。Canvas 依据所选 manifest 的 320 × 320 帧尺寸、列数、帧数与帧率播放；切换角色会取消旧图像加载和时钟，父界面的时钟刷新不重置动作。隐藏与系统暂停只停止动画时钟，恢复时不累计隐藏期间的时间；系统减少动态效果偏好显示静态帧。

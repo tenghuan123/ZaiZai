@@ -1,0 +1,74 @@
+{
+  "petId": "strawberry-bunny-v3",
+  "petVersion": "3.0.2",
+  "checks": [
+    "all 536 playback frames match the renderer within 1/255 mean premultiplied pixel difference (GPU/software scaling rounding) and retain all opaque artwork inside the canvas",
+    "all seven actual Electron action previews match calibrated preview pixels within rounding tolerance, including unchanged idle",
+    "interaction waves once, animates normally and returns to idle"
+  ],
+  "frames": 536,
+  "errors": [],
+  "status": "passed",
+  "comparisons": {
+    "preview": {
+      "idle": {
+        "max": 0,
+        "mean": 0
+      },
+      "react": {
+        "max": 11,
+        "mean": 0.1932818818934323
+      },
+      "celebrate": {
+        "max": 11,
+        "mean": 0.17815286075370487
+      },
+      "all_done": {
+        "max": 16,
+        "mean": 0.18753334673716182
+      },
+      "remind": {
+        "max": 12,
+        "mean": 0.2312443608303475
+      },
+      "drink_water": {
+        "max": 11,
+        "mean": 0.18814353553924293
+      },
+      "stretch": {
+        "max": 11.17647058823529,
+        "mean": 0.2261082835478578
+      }
+    },
+    "electron": {
+      "idle": {
+        "max": 0,
+        "mean": 0
+      },
+      "react": {
+        "max": 11,
+        "mean": 0.19179256663607805
+      },
+      "celebrate": {
+        "max": 0.9882352941176435,
+        "mean": 0.0005160462622549035
+      },
+      "all_done": {
+        "max": 0.9882352941176435,
+        "mean": 0.0003238932291666677
+      },
+      "remind": {
+        "max": 0.9882352941176435,
+        "mean": 0.000600700827205883
+      },
+      "drink_water": {
+        "max": 0.9882352941176435,
+        "mean": 0.0003972503063725497
+      },
+      "stretch": {
+        "max": 0.9882352941176435,
+        "mean": 0.0004278875612745111
+      }
+    }
+  }
+}
