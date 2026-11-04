@@ -10,6 +10,7 @@ import type { ReminderRepository } from './reminders/repository'
 import type { NativeNotifications } from './desktop/notifications'
 import { AppError } from './domain/errors'
 import { fields, identifier, object } from './domain/validation'
+import type { UpdateService } from './updates/service'
 
 interface Context {
   desktop: DesktopWindow; tasks: TaskService; settings: SettingsService; reminders: ReminderService
@@ -17,6 +18,7 @@ interface Context {
   metadata: () => { sessionId: string; revision: number }; changed: () => void; quit: () => void
   reportError: (error: unknown) => void
   showContextMenu: () => void
+  updates: UpdateService
 }
 export function registerIPC(context: Context): void {
   const { desktop, tasks, settings, reminders, records, notifications, changed } = context
@@ -48,6 +50,9 @@ export function registerIPC(context: Context): void {
     })
   }
   handle(channels.bootstrap, context.snapshot)
+  handle(channels.updateState, () => context.updates.getState())
+  handle(channels.updateCheck, () => context.updates.check())
+  handle(channels.updateInstall, () => context.updates.install())
   handle(channels.day, input => tasks.getDay(input))
   handle(channels.history, input => tasks.getHistoryDates(input))
   handle(channels.createOnce, input => afterWrite(() => tasks.createOnce(input)))

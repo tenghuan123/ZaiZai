@@ -1,4 +1,5 @@
 import type { CompletionResult, CreateOnceInput, CreatePlanInput, DayView, Occurrence, OccurrenceRef, Priority, RepeatPlan, UpdateOnceInput, UpdatePlanInput } from './tasks'
+import type { UpdateState } from './updates'
 export type DisplayMode = 'expanded' | 'compact'
 export type DispatchState = 'pending' | 'claimed' | 'submitted' | 'failed' | 'unavailable' | 'uncertain'
 // Read-only presentation of a timed occurrence and its current dispatch. Never a second task record.
@@ -33,6 +34,12 @@ export interface AppEvent {
 }
 export interface DesktopAPI {
   bootstrap(): Promise<AppResult<Snapshot>>
+  updates: {
+    getState(): Promise<AppResult<UpdateState>>
+    check(): Promise<AppResult<void>>
+    install(): Promise<AppResult<void>>
+    subscribe(listener: (state: UpdateState) => void): () => void
+  }
   tasks: {
     getDay(date: string): Promise<AppResult<DayView>>
     getHistoryDates(range: { from: string; to: string }): Promise<AppResult<string[]>>
@@ -66,6 +73,7 @@ export interface DesktopAPI {
   subscribe(listener: (event: AppEvent) => void): () => void
 }
 export const channels = {
+  updateState: 'updates:state', updateCheck: 'updates:check', updateInstall: 'updates:install', updateChanged: 'updates:changed',
   bootstrap: 'app:bootstrap', day: 'tasks:get-day', history: 'tasks:history-dates', createOnce: 'tasks:create-once',
   updateOnce: 'tasks:update-once', complete: 'tasks:set-completed', remove: 'tasks:remove', move: 'tasks:move-today',
   priority: 'tasks:set-priority',

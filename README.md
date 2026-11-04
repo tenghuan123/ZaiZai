@@ -36,10 +36,10 @@ node scripts/animation-smoke.mjs # 完成/撤销、保存失败、菜单过渡�
 node scripts/calendar-smoke.mjs # 日期浮层、布局、未来新增与历史迁移
 node scripts/scheduling-smoke.mjs # 优先级、周/月计划、缩放、层级、声音与自启失败恢复
 npm run pack:mac   # 本机测试包，使用 ad-hoc 本地签名
-npm run pack:win   # Windows x64 NSIS 安装包
+npm run pack:win   # Windows x64 NSIS 安装包，包含 OSS 自动更新
 ```
 
-macOS 本机应用包位于 `release/mac-arm64/zaizai.app`，压缩包为 `release/zaizai-0.1.0-mac-arm64.zip`。Windows x64 安装包为 `release/zaizai Setup 0.1.0.exe`，支持选择安装目录并创建桌面与开始菜单快捷方式。本轮两端测试包已更新，包含四角色、v0.3 周/月计划、优先级、声音和桌面偏好；新增扩展和 macOS 打包版验证见 [v0.3 记录](docs/v0.3-verification.md)。此前角色专项验收见 [角色接入记录](docs/m2-verification.md#2026-11-03-胡娴雅接入与角色切换)。应用显示名和图标使用用户确认的 zaizai 品牌，原应用标识与数据目录继续保留，承接已有任务与通知身份。图标源文件、各平台格式与提示词见 [图标资源](resources/branding/README.md)。Windows 包由 macOS 交叉构建，未签名；安装器、内嵌应用归档完整性及包内资源检查通过，尚无 Windows 真机结果，详见 [Windows 打包记录](docs/m2-verification.md#windows-x64-安装包2026-11-03)。系统通知优先使用独立应用包验证，开发运行时可能受 Electron 自身应用身份与系统授权影响。
+macOS 本机应用包位于 `release/mac-arm64/zaizai.app`，压缩包为 `release/zaizai-0.1.0-mac-arm64.zip`。Windows 自动更新安装包位于 `release/updates/windows-x64/zaizai-0.1.0-win-x64.exe`，支持选择安装目录并创建桌面与开始菜单快捷方式；此前的无自动更新本机测试包保留在 `release/zaizai Setup 0.1.0.exe`。更新地址、打包与发布流程见 [OSS 自动更新](docs/auto-update.md)。本轮两端测试包已更新，包含四角色、v0.3 周/月计划、优先级、声音和桌面偏好；新增扩展和 macOS 打包版验证见 [v0.3 记录](docs/v0.3-verification.md)。此前角色专项验收见 [角色接入记录](docs/m2-verification.md#2026-11-03-胡娴雅接入与角色切换)。应用显示名和图标使用用户确认的 zaizai 品牌，原应用标识与数据目录继续保留，承接已有任务与通知身份。图标源文件、各平台格式与提示词见 [图标资源](resources/branding/README.md)。Windows 包由 macOS 交叉构建，未签名；安装器、内嵌应用归档完整性及包内资源检查通过，尚无 Windows 真机结果，详见 [Windows 打包记录](docs/m2-verification.md#windows-x64-安装包2026-11-03)。系统通知优先使用独立应用包验证，开发运行时可能受 Electron 自身应用身份与系统授权影响。
 
 「滕环 · 前端工程师」v1.0.2 与「滕俊龙 · 路桥工程师」v1.0.1 已进入当前源码和生产构建；滕俊龙包含修订后的待机眨眼及其余六组动作。`release/` 中的两端测试包已包含全部四角色和本轮六项功能。
 
@@ -67,6 +67,7 @@ python3 -m http.server 8000 --bind 127.0.0.1
 
 ## 文档导航
 
+- [OSS 自动更新](docs/auto-update.md)：已配置的更新地址、自动检查与下载、发布命令、签名条件和验收边界。
 - [需求文档](docs/requirements.md)：已确认范围、业务规则、功能拆分与验收场景。
 - [M0 验证记录](docs/m0-verification.md)：运行命令、本机实测、测试范围与未完成项。
 - [M1 验证记录](docs/m1-verification.md)：正式数据基础、旧数据迁移、任务服务、验证证据与后续边界。
@@ -94,6 +95,8 @@ python3 -m http.server 8000 --bind 127.0.0.1
 | 应用包 | macOS arm64 本机测试包与 Windows x64 NSIS 安装包已更新，包含四角色切换、v0.3 六项扩展、日期浮层、动效和品牌图标；Windows 真机验收及正式分发仍待完成 |
 
 下一步推进 M3 提醒与后台生命周期验收；Windows、系统通知人工点击、真实休眠和多屏等原生验证缺口仍保留，不将单平台结果抵作双平台验收。四套内置角色选择和动作预览已接入，用户素材导入仍按 X1 实现。
+
+Windows 新打包入口 `npm run pack:win` 已转为带更新配置的流程，产物位于 `release/updates/windows-x64/`；安装包与版本清单的发布仍需单独执行，见 [OSS 自动更新](docs/auto-update.md)。
 
 v0.3 六项扩展已接入正式源码：周/月计划、任务优先级、摇铃声音、开机自启、桌面层级快捷切换和窗口自由缩放。界面沿用原型的任务分行、周期标签与分组偏好设置；验证证据、系统验收边界见 [v0.3 验证记录](docs/v0.3-verification.md)。
 

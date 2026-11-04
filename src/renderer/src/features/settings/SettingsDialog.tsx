@@ -1,9 +1,12 @@
 import { useEffect, useRef, useState } from 'react'
 import type { AppResult, SettingsPatch, Snapshot } from '../../../../shared/contracts'
 import { LARGE_SIZE, STANDARD_SIZE } from '../../../../shared/window'
+import { UpdatePanel } from '../updates/UpdatePanel'
+import type { Updates } from '../updates/use-updates'
 
-export function SettingsDialog({ snapshot, command, onClose }: {
+export function SettingsDialog({ snapshot, command, onClose, updates }: {
   snapshot: Snapshot; command: <T>(action: () => Promise<AppResult<T>>) => Promise<AppResult<T>>; onClose: () => void
+  updates: Updates
 }): React.JSX.Element {
   const dialog = useRef<HTMLDialogElement>(null)
   const saving = useRef(false)
@@ -28,6 +31,11 @@ export function SettingsDialog({ snapshot, command, onClose }: {
     if (offwork !== (snapshot.settings.offworkTime ?? '')) {
       void update({ offworkTime: offwork || null }).then(saved => { if (saved) onClose() })
     } else onClose()
+  }
+  async function installUpdate(): Promise<void> {
+    if (saving.current) return
+    if (offwork !== (snapshot.settings.offworkTime ?? '') && !await update({ offworkTime: offwork || null })) return
+    await updates.install()
   }
   return <dialog ref={dialog} className="settings-dialog task-editor" aria-labelledby="settings-heading" onCancel={event => { event.preventDefault(); close() }}>
     <header className="editor-heading"><div><h2 id="settings-heading">⚙ 组件偏好设置</h2><p>管理自启动、铃声、桌面层级与窗口尺寸</p></div>
@@ -56,6 +64,7 @@ export function SettingsDialog({ snapshot, command, onClose }: {
       </section>
       <label className="preference-row default-reminder"><span>新任务默认开启提醒</span><input aria-label="新任务默认提醒" type="checkbox" checked={settings.defaultReminderEnabled} onChange={event => { void update({ defaultReminderEnabled: event.target.checked }) }} /></label>
     </fieldset>
+    <UpdatePanel updates={updates} onInstall={installUpdate} busy={busy} />
     {error && <p className="editor-error" role="alert">{error}</p>}
     <details className="settings-details"><summary>运行状态与本地数据</summary><p>菜单栏 / 托盘：{snapshot.diagnostics.trayReady ? '已创建' : '不可用'} · 系统通知：{snapshot.diagnostics.notificationSupported ? '系统支持' : '不可用'}</p>
       <p className="data-path">{snapshot.diagnostics.databasePath}</p></details>

@@ -1,5 +1,5 @@
-import { app, dialog, Notification, powerMonitor, protocol, screen } from 'electron'
-import { appendFileSync, mkdirSync } from 'node:fs'
+import { app, autoUpdater as nativeUpdater, dialog, Notification, powerMonitor, protocol, screen } from 'electron'
+import { appendFileSync, existsSync, mkdirSync } from 'node:fs'
 import { join } from 'node:path'
 import { randomUUID } from 'node:crypto'
 import { channels } from '../shared/contracts'
@@ -18,6 +18,8 @@ import { NativeNotifications } from './desktop/notifications'
 import { APP_URL, registerRendererProtocol } from './desktop/protocol'
 import { ReminderService } from './reminders/service'
 import { registerIPC } from './ipc'
+import electronUpdater from 'electron-updater'
+import { UpdateService } from './updates/service'
 
 app.setName('zaizai')
 app.setAppUserModelId(app.isPackaged ? 'com.desktopbuddy.m0' : 'com.desktopbuddy.m0.dev')
@@ -34,6 +36,8 @@ let tasks: TaskService | undefined
 let records: ReminderRepository | undefined
 let reminders: ReminderService | undefined
 let notifications: NativeNotifications | undefined
+let updates: UpdateService | undefined
+let updateNotification: Notification | undefined
 let shuttingDown = false
 let revision = 0
 let focusedReminderId: string | null = null
@@ -79,6 +83,8 @@ if (!app.requestSingleInstanceLock()) {
     if (shuttingDown) return
     shuttingDown = true
     reminders?.dispose()
+    updates?.dispose()
+    updateNotification?.close()
     desktop?.prepareToQuit()
     notifications?.dispose()
     tray?.dispose()
@@ -131,9 +137,25 @@ if (!app.requestSingleInstanceLock()) {
       window, taskService, preferences, preferenceService, changed, quit, reportError)
     log('tray-ready')
     installApplicationMenu()
+    const updatesEnabled = app.isPackaged && ['win32', 'darwin'].includes(process.platform)
+      && existsSync(join(process.resourcesPath, 'app-update.yml'))
+    if (updatesEnabled) nativeUpdater.on('before-quit-for-update', () => window.prepareToQuit())
+    updates = new UpdateService(updatesEnabled ? electronUpdater.autoUpdater : null, app.getVersion(),
+      app.isPackaged ? '此安装包未配置自动更新，请安装支持更新的正式版本。' : '开发模式不检查更新。', state => {
+        try {
+          if (!window.window.webContents.isDestroyed()) window.window.webContents.send(channels.updateChanged, state)
+          if (state.status.phase === 'ready' && !window.state.visible && Notification.isSupported()) {
+            updateNotification?.close()
+            updateNotification = new Notification({ title: 'zaizai 更新已就绪', body: `版本 ${state.status.version} 已下载，点击查看并重启更新。`, silent: true })
+            updateNotification.on('click', () => window.show())
+            updateNotification.on('failed', (_event, message) => log('update-notification-failed', { message }))
+            updateNotification.show()
+          }
+        } catch (error) { reportError(error) }
+      }, log)
     registerIPC({ desktop: window, tasks: taskService, settings: preferenceService, records: reminderRecords,
       reminders: scheduler, notifications: native, snapshot, metadata: () => ({ sessionId, revision }), changed, quit, reportError,
-      showContextMenu: () => tray?.showContextMenu() })
+      showContextMenu: () => tray?.showContextMenu(), updates })
     powerMonitor.on('suspend', () => { log('system-suspend'); window.setSystemIdle(true) })
     powerMonitor.on('resume', () => { log('system-resume'); window.setSystemIdle(false); void scheduler.checkNow('resume') })
     powerMonitor.on('lock-screen', () => window.setSystemIdle(true))
@@ -143,6 +165,7 @@ if (!app.requestSingleInstanceLock()) {
     await window.load()
     log('app-ready', { platform: process.platform, arch: process.arch, electron: process.versions.electron, database: database.path })
     void scheduler.checkNow('startup')
+    updates.start()
   }).catch(async error => {
     reportError(error)
     const result = await dialog.showMessageBox({ type: 'error', title: '桌面伙伴启动失败',

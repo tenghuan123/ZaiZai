@@ -1,0 +1,64 @@
+{
+  "date": "2026-11-04",
+  "automatedTests": {
+    "command": "npm test",
+    "passed": 57,
+    "failed": 0
+  },
+  "typecheck": "passed",
+  "build": "passed",
+  "updateSmoke": {
+    "status": "passed",
+    "checks": [
+      "configured build reads a local update manifest through electron-updater and the actual check-update IPC/UI",
+      "a corrupted download is rejected by the real SHA-512 verifier, remains uninstalled, and exposes retry in settings",
+      "verified background download, release notes, dismissible prompt and task preservation work without automatic installation",
+      "restart-update dispatches exactly once through the real IPC/service; OS installation is stubbed and not claimed as verified"
+    ],
+    "errors": [],
+    "osInstaller": "stubbed"
+  },
+  "settingsRegression": {
+    "status": "passed",
+    "checks": [
+      "quick urgent creation, urgent-first order, inline toggle and progress tags work through UI and SQLite",
+      "weekly/monthly UI creates, edits, pauses and resumes actual plans; custom 31st and last-day choice persist",
+      "settings presets change actual native bounds; settings/header layer toggles agree with BrowserWindow",
+      "resize pointer path updates native bounds with injected cursor positions; saved size restores after compact; double-click presets work",
+      "preview creates the eight-oscillator bell; mute suppresses automatic sound; a two-task batch signals once while window hidden (controlled clock)",
+      "development login setting fails visibly without saving; injected native acceptance/rejection verifies real IPC rollback and UI recovery",
+      "restart restores native size, priority and both recurrence rules from SQLite"
+    ],
+    "errors": []
+  },
+  "ossProbe": {
+    "status": "passed",
+    "object": "oss://xuanxintest/zaizai/updates/_verification/12c05653-02c2-4855-a7fd-3dfe4ca1e8dd/probe.bin",
+    "checks": [
+      "anonymous HTTPS HEAD returns expected size, SHA-512 metadata and cache policy",
+      "anonymous byte-range download works for differential updates",
+      "anonymous full download matches the uploaded bytes"
+    ],
+    "cleanedUp": true
+  },
+  "windowsPackage": {
+    "version": "0.1.0",
+    "files": [
+      {
+        "url": "zaizai-0.1.0-win-x64.exe",
+        "sha512": "uLRYHXccf+U+3qs1iVV8ShofMj9B+oBW4peLaFGYNJyhcv9nU5aAGb5hXxeEsZsm+4q82iUDGDeEvxRU84aMLw==",
+        "size": 195691143
+      }
+    ],
+    "feed": "https://xuanxintest.oss-cn-beijing.aliyuncs.com/zaizai/updates/windows-x64/",
+    "updaterIncluded": true,
+    "windowsSqliteIncluded": true,
+    "signature": "unsigned test build"
+  },
+  "publishPlan": "dry-run passed; no release artifacts or latest manifests uploaded",
+  "pending": [
+    "Windows real-device install and cross-version update",
+    "macOS Developer ID signing, notarization and actual OS installation",
+    "first real release and user-network acceptance"
+  ]
+}

@@ -1,12 +1,21 @@
 import { contextBridge, ipcRenderer } from 'electron'
 import { channels } from '../shared/contracts'
 import type { AppEvent, AppResult, DesktopAPI } from '../shared/contracts'
+import type { UpdateState } from '../shared/updates'
 
 function invoke<T>(channel: string, input?: unknown): Promise<AppResult<T>> {
   return ipcRenderer.invoke(channel, input) as Promise<AppResult<T>>
 }
 const desktop: DesktopAPI = {
   bootstrap: () => invoke(channels.bootstrap),
+  updates: {
+    getState: () => invoke(channels.updateState), check: () => invoke(channels.updateCheck), install: () => invoke(channels.updateInstall),
+    subscribe: listener => {
+      const handler = (_event: Electron.IpcRendererEvent, state: UpdateState): void => listener(state)
+      ipcRenderer.on(channels.updateChanged, handler)
+      return () => { ipcRenderer.removeListener(channels.updateChanged, handler) }
+    }
+  },
   tasks: {
     getDay: date => invoke(channels.day, date), getHistoryDates: range => invoke(channels.history, range),
     createOnce: input => invoke(channels.createOnce, input), updateOnce: input => invoke(channels.updateOnce, input),

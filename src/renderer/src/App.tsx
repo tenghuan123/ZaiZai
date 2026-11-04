@@ -18,6 +18,8 @@ import { MENU_TRANSITION_MS } from '../../shared/motion'
 import { SettingsDialog } from './features/settings/SettingsDialog'
 import { playReminderBell } from './features/pet/reminder-sound'
 import { LARGE_SIZE, STANDARD_SIZE } from '../../shared/window'
+import { useUpdates } from './features/updates/use-updates'
+import { UpdateNotice } from './features/updates/UpdatePanel'
 
 const api = window.desktop
 function countdown(time: string | null, now: number): string {
@@ -35,6 +37,7 @@ function editorKey(target: EditorTarget): string {
 }
 
 export function App(): React.JSX.Element {
+  const updates = useUpdates()
   const [selectedDate, setSelectedDate] = useState<string | null>(null)
   const { workspace, day, loading, error, setError, refresh, command } = useWorkspace(selectedDate)
   const [now, setNow] = useState(Date.now)
@@ -330,7 +333,8 @@ export function App(): React.JSX.Element {
       </button>
     </section>
     <CompletionEffects pending={completion.pending} />
-    {showSettings && <SettingsDialog snapshot={snapshot} command={command} onClose={() => { setShowSettings(false); setError('') }} />}
+    <UpdateNotice updates={updates} onDetails={() => { setShowSettings(true); setShowPet(false); void command(() => api.setMode('expanded')) }} />
+    {showSettings && <SettingsDialog snapshot={snapshot} command={command} updates={updates} onClose={() => { setShowSettings(false); setError('') }} />}
     {showCalendar && <DateNavigator today={snapshot.today.date} selected={date} historyDates={workspace.historyDates} onSelect={selectDate} onClose={() => setShowCalendar(false)} />}
     {editor && <TaskEditor key={editorKey(editor)} target={editor} now={now} command={command} onClose={() => { setEditor(null); setError('') }} onReload={reloadEditor}
       onSaved={result => {

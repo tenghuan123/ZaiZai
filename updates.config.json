@@ -1,0 +1,8 @@
+{
+  "baseUrl": "https://xuanxintest.oss-cn-beijing.aliyuncs.com/zaizai/updates/",
+  "upload": {
+    "bucket": "xuanxintest",
+    "endpoint": "https://oss-cn-beijing.aliyuncs.com",
+    "prefix": "zaizai/updates/"
+  }
+}
