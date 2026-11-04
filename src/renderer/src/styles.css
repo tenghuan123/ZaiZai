@@ -176,6 +176,7 @@ details { color: #8b9eae; font-size: 10px; }
 .task-editor { width: calc(100% - 32px); max-height: calc(100% - 32px); margin: auto; padding: 17px; border: 1px solid #e7edf3; border-radius: 22px; color: #425c70; background: #fff; box-shadow: 0 12px 40px #31465e38; overflow: auto; font-size: 11px; }
 .task-editor::backdrop { background: #30445b50; border-radius: 24px; }
 .task-editor input, .task-editor select { min-width: 0; width: 100%; border: 1px solid #dce6ed; border-radius: 8px; background: #fff; padding: 7px 8px; color: #4e6b80; font-size: 12px; }
+.task-editor select, .pet-pack-selector select { appearance: none; padding-right: 34px; background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 16 16' fill='none'%3E%3Cpath d='m4 6 4 4 4-4' stroke='%23758b9d' stroke-width='1.5' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E"); background-repeat: no-repeat; background-position: right 12px center; background-size: 14px 14px; }
 .task-editor input:disabled { background: #f4f6f8; color: #9aabb6; }
 .task-editor input[type=checkbox] { width: 15px; height: 15px; }
 .editor-heading { display: flex; justify-content: space-between; align-items: center; gap: 6px; margin-bottom: 12px; }
@@ -233,7 +234,8 @@ details { color: #8b9eae; font-size: 10px; }
 .plan-meta-actions .task-tags .cycle-tag { max-width: 100%; flex-shrink: 1; overflow: hidden; text-overflow: ellipsis; }
 .plan-meta-actions .task-tags .plan-slot-summary { flex-shrink: 1; min-width: 0; background: none; padding: 0; overflow: hidden; text-overflow: ellipsis; }
 .paused-plan header strong { color: #a2afb8; text-decoration: line-through; }
-.resize-handle { position: absolute; right: 3px; bottom: 1px; width: 20px; height: 18px; padding: 0; background: none; color: #a5b3bd; font-size: 16px; cursor: nwse-resize; touch-action: none; }
+.resize-handle { position: absolute; right: 6px; bottom: 4px; width: 20px; height: 20px; display: flex; align-items: flex-end; justify-content: flex-end; padding: 2px; background: none; color: #94a3b899; cursor: nwse-resize; touch-action: none; transition: color .15s; }
+.resize-handle svg { width: 12px; height: 12px; pointer-events: none; }
 .resize-handle:hover { color: #6f9bb6; }
 .editor-types button { white-space: nowrap; }
 .priority-options { display: grid; grid-template-columns: 1fr 1fr; gap: 6px; }

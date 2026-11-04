@@ -322,7 +322,12 @@ export function App(): React.JSX.Element {
           <button type="submit" className="add-button" aria-label="快捷新增任务" disabled={busy.has('quick')}>＋</button>
         </form>}
       </>}
-      <button className="resize-handle" aria-label="调整窗口尺寸" title="拖拽调整尺寸，双击切换标准与大尺寸" onPointerDown={resizeStart} onPointerMove={resizeMove} onPointerUp={resizeEnd} onPointerCancel={resizeEnd} onDoubleClick={toggleSize}>↘</button>
+      <button className="resize-handle" aria-label="调整窗口尺寸" title="拖拽调整尺寸，双击切换标准与大尺寸" onPointerDown={resizeStart} onPointerMove={resizeMove} onPointerUp={resizeEnd} onPointerCancel={resizeEnd} onDoubleClick={toggleSize}>
+        <svg viewBox="0 0 12 12" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" aria-hidden="true" focusable="false">
+          <line x1="10" y1="4" x2="4" y2="10" />
+          <line x1="10" y1="8" x2="8" y2="10" />
+        </svg>
+      </button>
     </section>
     <CompletionEffects pending={completion.pending} />
     {showSettings && <SettingsDialog snapshot={snapshot} command={command} onClose={() => { setShowSettings(false); setError('') }} />}

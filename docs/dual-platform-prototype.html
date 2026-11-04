@@ -627,30 +627,29 @@
 
           <!-- Top Bar: Window Controls (Left) + Clock & Date (Right) - Blank area supports dragging! -->
           <div onpointerdown="startWidgetDrag(event, 'header')" class="flex items-start justify-between gap-2 mb-2 cursor-grab active:cursor-grabbing touch-none">
-            <!-- Left Control Circles (Matching reference screenshot) + Compact Icon-Only Entry -->
+            <!-- Left Control Circles (Matching reference screenshot) + Unified Soft Action Pills -->
             <div class="flex items-center gap-1.5 pt-2.5 shrink-0">
               <!-- Minimize / Collapse Menu Button (Blue circle with minus: collapses task card into Pet-Only Mode!) -->
-              <button onclick="toggleTaskMenuCard()" class="w-5 h-5 rounded-full flex items-center justify-center text-white shadow-xs hover:opacity-85 transition shrink-0" style="background-color: #7ea7c0;" title="收起任务面板（仅在桌面保留宠物与气泡）">
+              <button onclick="toggleTaskMenuCard()" class="w-5 h-5 rounded-full flex items-center justify-center text-white shadow-xs hover:opacity-85 transition shrink-0 cursor-pointer focus:outline-none" style="background-color: #7ea7c0;" title="收起任务面板（仅在桌面保留宠物与气泡）">
                 <span class="text-xs font-bold leading-none">−</span>
               </button>
               <!-- Close Button (Coral red circle with x, matching reference screenshot) -->
-              <button onclick="openModal('close')" class="w-5 h-5 rounded-full flex items-center justify-center text-white shadow-xs hover:opacity-85 transition shrink-0" style="background-color: #d67a73;" title="关闭（选择隐藏到托盘或退出软件）">
+              <button onclick="openModal('close')" class="w-5 h-5 rounded-full flex items-center justify-center text-white shadow-xs hover:opacity-85 transition shrink-0 cursor-pointer focus:outline-none" style="background-color: #d67a73;" title="关闭（选择隐藏到托盘或退出软件）">
                 <span class="text-xs font-bold leading-none">×</span>
               </button>
 
-              <!-- Clean Icon-Only Buttons + Desktop Layer Pin Toggle -->
-              <div class="ml-0.5 flex items-center gap-1">
-                <button onclick="toggleHistoryDate()" id="btn-header-date" class="w-6 h-6 rounded-full bg-slate-200/70 hover:bg-slate-300/80 flex items-center justify-center text-xs text-slate-600 transition" title="查看历史记录与未来安排 (F05)">
+              <!-- Harmonious Soft Circular & Capsule Utility Buttons -->
+              <div class="ml-1 pl-1.5 border-l border-slate-200/80 flex items-center gap-1">
+                <button onclick="toggleHistoryDate()" id="btn-header-date" class="w-6 h-6 rounded-full bg-slate-200/70 hover:bg-slate-300/75 flex items-center justify-center text-xs text-slate-600 transition cursor-pointer focus:outline-none" title="查看历史记录与未来安排">
                   📅
                 </button>
-                <button onclick="toggleAlwaysOnTop()" id="btn-header-pin" class="h-6 px-2 rounded-full bg-sky-100/90 hover:bg-sky-200/80 border border-sky-300/70 flex items-center gap-0.5 text-[11px] font-medium text-sky-800 transition" title="点击切换「始终置顶」或「仅留在桌面（打开其他软件时看不到它）」(A18)">
-                  <span id="btn-header-pin-icon">📌</span>
-                  <span id="btn-header-pin-text">置顶</span>
+                <button onclick="toggleAlwaysOnTop()" id="btn-header-pin" class="h-6 px-2 rounded-full bg-slate-200/70 hover:bg-slate-300/75 text-slate-600 flex items-center gap-1 text-[11px] font-medium transition cursor-pointer whitespace-nowrap focus:outline-none" title="当前：始终置顶（点击切换为「仅留在桌面，打开其他软件时自动被遮挡」）">
+                  <span>📌</span><span>置顶</span>
                 </button>
-                <button onclick="openModal('pets')" class="w-6 h-6 rounded-full bg-slate-200/70 hover:bg-slate-300/80 flex items-center justify-center text-xs text-slate-600 transition" title="宠物资源库与配置 (切换角色/导入素材包)">
+                <button onclick="openModal('pets')" class="w-6 h-6 rounded-full bg-slate-200/70 hover:bg-slate-300/75 flex items-center justify-center text-xs text-slate-600 transition cursor-pointer focus:outline-none" title="宠物资源库与配置">
                   🐾
                 </button>
-                <button onclick="openModal('settings')" class="w-6 h-6 rounded-full bg-slate-200/70 hover:bg-slate-300/80 flex items-center justify-center text-xs text-slate-600 transition" title="偏好设置 (开机自启动/铃声/下班时间/尺寸)">
+                <button onclick="openModal('settings')" class="w-6 h-6 rounded-full bg-slate-200/70 hover:bg-slate-300/75 flex items-center justify-center text-xs text-slate-600 transition cursor-pointer focus:outline-none" title="组件偏好设置">
                   ⚙
                 </button>
               </div>
@@ -677,7 +676,7 @@
           <!-- Progress Row (Matching reference screenshot: 待办进度 1/6 ... 17%) -->
           <div class="mt-2 mb-3">
             <div class="flex items-center justify-between text-xs font-medium mb-1.5">
-              <span id="progress-label" class="text-slate-500">待办进度 1/8</span>
+              <span id="progress-label" class="text-slate-500 flex items-center gap-1.5">待办进度 1/8</span>
               <span id="progress-percent" style="color: #6c98b4;" class="font-semibold">13%</span>
             </div>
             <div class="w-full h-2 rounded-full overflow-hidden" style="background-color: #dce2e8;">
@@ -685,71 +684,71 @@
             </div>
           </div>
 
-          <!-- Segmented 3-Tab Pill Bar (待办 | 已完成 | 重复计划) -->
+          <!-- Segmented 3-Tab Pill Bar (待办 | 已完成 | 周期计划) -->
           <div class="p-1 rounded-full grid grid-cols-3 text-xs font-medium mb-3.5" style="background-color: #e6eaef;">
-            <button id="tab-todo" onclick="switchTab('todo')" class="py-1.5 rounded-full transition-all text-white shadow-xs" style="background-color: #6f9bb6;">
+            <button id="tab-todo" onclick="switchTab('todo')" class="py-1.5 rounded-full transition-all text-white shadow-xs whitespace-nowrap focus:outline-none cursor-pointer" style="background-color: #6f9bb6;">
               待办 <span id="badge-todo" class="ml-0.5 opacity-90">(7)</span>
             </button>
-            <button id="tab-done" onclick="switchTab('done')" class="py-1.5 rounded-full transition-all text-slate-500 hover:text-slate-700">
+            <button id="tab-done" onclick="switchTab('done')" class="py-1.5 rounded-full transition-all text-slate-500 hover:text-slate-700 whitespace-nowrap focus:outline-none cursor-pointer">
               已完成 <span id="badge-done" class="ml-0.5 opacity-80">(1)</span>
             </button>
-            <button id="tab-plans" onclick="switchTab('plans')" class="py-1.5 rounded-full transition-all text-slate-500 hover:text-slate-700">
-              周/月/日计划 <span id="badge-plans" class="ml-0.5 opacity-80">(4)</span>
+            <button id="tab-plans" onclick="switchTab('plans')" class="py-1.5 rounded-full transition-all text-slate-500 hover:text-slate-700 whitespace-nowrap focus:outline-none cursor-pointer">
+              周期计划 <span id="badge-plans" class="ml-0.5 opacity-80">(4)</span>
             </button>
           </div>
 
           <!-- Task List Container (with custom right scrollbar & dynamic height when resized) -->
-          <div id="task-list-container" class="widget-scroll overflow-y-auto overflow-x-hidden pr-1.5 space-y-2.5 transition-[height] duration-75" style="height: 230px;">
+          <div id="task-list-container" class="widget-scroll overflow-y-auto overflow-x-hidden pr-1.5 space-y-2 transition-[height] duration-75" style="height: 230px;">
             <!-- Populated dynamically via JS -->
           </div>
 
           <!-- Bottom Quick Input Row (With 🔥 Urgent Quick Toggle + 🕒 Timed/Repeat Trigger + '+' Button) -->
-          <div class="mt-3.5 flex items-center gap-2">
-            <div class="flex-1 relative flex items-center bg-white rounded-full shadow-xs border border-slate-200/70 pl-3.5 pr-1.5 py-1.5">
+          <div class="mt-3.5 flex items-center gap-2 pr-1">
+            <div class="flex-1 min-w-0 relative flex items-center bg-white rounded-full shadow-xs border border-slate-200/70 pl-3.5 pr-1.5 py-1.5">
               <input
                 id="quick-task-input"
                 type="text"
-                placeholder="新增待办（支持一键标为紧急）"
+                placeholder="添加新待办..."
                 maxlength="60"
                 onkeydown="if(event.key==='Enter') handleQuickAdd()"
-                class="w-full bg-transparent text-xs text-slate-700 placeholder-slate-400 focus:outline-none text-left pr-2"
+                class="flex-1 min-w-0 bg-transparent text-xs text-slate-700 placeholder-slate-400 focus:outline-none text-left pr-1.5"
               />
               <div class="flex items-center gap-1 shrink-0">
                 <button
                   type="button"
                   id="quick-urgent-btn"
                   onclick="toggleQuickUrgent()"
-                  class="text-[11px] text-slate-500 hover:text-rose-600 px-2 py-0.5 rounded-full bg-slate-100 hover:bg-rose-50 transition font-medium whitespace-nowrap"
-                  title="标记为「紧急任务」，添加后自动排到待办最前面 (A15)"
+                  class="text-[11px] text-slate-500 hover:text-rose-600 px-2 py-0.5 rounded-full bg-slate-100/90 hover:bg-rose-50 transition font-medium whitespace-nowrap cursor-pointer focus:outline-none"
+                  title="标记为「紧急任务」，添加后自动排到待办最前面"
                 >
                   🔥 紧急
                 </button>
                 <button
                   type="button"
                   onclick="openNewTaskModal()"
-                  class="text-[11px] text-slate-500 hover:text-sky-600 px-2 py-0.5 rounded-full bg-slate-100 hover:bg-sky-50 transition whitespace-nowrap"
-                  title="设置执行日期、提醒时间或每日/每周/每月重复计划 (A16)"
+                  class="text-[11px] text-slate-500 hover:text-sky-600 px-2 py-0.5 rounded-full bg-slate-100/90 hover:bg-sky-50 transition font-medium whitespace-nowrap cursor-pointer focus:outline-none"
+                  title="设置执行日期、提醒时间或每日/每周/每月重复计划"
                 >
                   🕒 周期
                 </button>
               </div>
             </div>
-            <button onclick="handleQuickAddOrModal()" class="w-9 h-9 rounded-full flex items-center justify-center text-white shadow-md hover:opacity-90 active:scale-95 transition shrink-0" style="background-color: #6f9bb6;" title="快捷新增今日待办（输入框为空时打开详细面板）">
+            <button onclick="handleQuickAddOrModal()" class="w-9 h-9 rounded-full flex items-center justify-center text-white shadow-md hover:opacity-90 active:scale-95 transition shrink-0 cursor-pointer focus:outline-none" style="background-color: #6f9bb6;" title="快捷新增今日待办（输入框为空时打开详细面板）">
               <span class="text-lg font-medium leading-none">＋</span>
             </button>
           </div>
 
-          <!-- Bottom-Right Custom Resize Handle (A17: "这个框框能拉大吗 / 自定义大小") -->
+          <!-- Bottom-Right Custom Resize Handle (Subtle corner grip, never overlapping the + button) -->
           <div
             id="widget-resize-handle"
             onpointerdown="startWidgetResize(event)"
             ondblclick="event.stopPropagation(); toggleWidgetPresetSize()"
-            class="absolute bottom-1.5 right-2 w-6 h-6 flex items-end justify-end p-1 cursor-nwse-resize text-slate-400 hover:text-sky-600 transition select-none touch-none"
-            title="按住右下角拖拽可自由拉大框框 · 双击切换大号/标准尺寸 (A17)"
+            class="absolute bottom-1 right-1.5 w-5 h-5 flex items-end justify-end p-0.5 cursor-nwse-resize text-slate-400/60 hover:text-[#6f9bb6] transition select-none touch-none"
+            title="按住右下角拖拽可自由拉大框框 · 双击切换大尺寸/标准尺寸"
           >
-            <svg viewBox="0 0 12 12" class="w-3.5 h-3.5 stroke-current" stroke-width="1.8" stroke-linecap="round">
-              <line x1="10" y1="3" x2="3" y2="10"></line>
-              <line x1="10" y1="7" x2="7" y2="10"></line>
+            <svg viewBox="0 0 12 12" class="w-3 h-3 stroke-current" stroke-width="1.8" stroke-linecap="round">
+              <line x1="10" y1="4" x2="4" y2="10"></line>
+              <line x1="10" y1="8" x2="8" y2="10"></line>
             </svg>
           </div>
 
@@ -780,21 +779,21 @@
           </div>
         </div>
 
-        <!-- 2. Task / Repeating Plan Editor Modal (F01 / F02 / F03 / A15 / A16) -->
+        <!-- 2. Task / Repeating Plan Editor Modal -->
         <div id="modal-plan" class="hidden bg-white rounded-2xl p-5 w-[348px] shadow-2xl border border-slate-100 text-slate-800 max-h-[640px] overflow-y-auto widget-scroll">
           <div class="flex items-center justify-between mb-3">
             <h3 id="plan-modal-title" class="text-sm font-semibold text-slate-900">新增任务与周期计划</h3>
-            <button onclick="closeModal()" class="text-slate-400 hover:text-slate-600 text-xs">✕</button>
+            <button onclick="closeModal()" class="w-6 h-6 rounded-full bg-slate-100 hover:bg-slate-200 flex items-center justify-center text-slate-500 text-xs transition cursor-pointer">✕</button>
           </div>
 
           <div class="space-y-3 text-xs">
             <!-- Task Type Switch -->
             <div class="grid grid-cols-2 gap-1 bg-slate-100 p-1 rounded-xl">
-              <button id="type-btn-once" onclick="setEditorTaskType('once')" class="py-1.5 rounded-lg font-medium bg-white text-slate-800 shadow-xs">
-                一次性任务 (F01)
+              <button id="type-btn-once" onclick="setEditorTaskType('once')" class="py-1.5 rounded-lg font-medium bg-white text-slate-800 shadow-xs whitespace-nowrap cursor-pointer">
+                一次性任务
               </button>
-              <button id="type-btn-repeat" onclick="setEditorTaskType('repeat')" class="py-1.5 rounded-lg font-medium text-slate-500">
-                周/月/日重复计划 (F02)
+              <button id="type-btn-repeat" onclick="setEditorTaskType('repeat')" class="py-1.5 rounded-lg font-medium text-slate-500 whitespace-nowrap cursor-pointer">
+                周期重复计划
               </button>
             </div>
 
@@ -803,15 +802,15 @@
               <input id="editor-title" type="text" placeholder="例如：提交周报 / 信用卡还款 / 起身运动" class="w-full px-3 py-1.5 rounded-lg border border-slate-200 focus:outline-none focus:border-sky-500"/>
             </div>
 
-            <!-- Priority Selector (A15: 紧急任务自动排到最前) -->
+            <!-- Priority Selector -->
             <div>
               <label class="block text-slate-600 mb-1 font-medium">任务优先级（紧急任务自动排在待办最前面）</label>
               <div class="grid grid-cols-2 gap-1.5">
-                <button type="button" id="prio-btn-normal" onclick="setEditorPriority('normal')" class="py-1.5 px-2.5 rounded-xl border border-slate-300 bg-slate-100 text-slate-800 font-medium flex items-center justify-center gap-1 transition">
+                <button type="button" id="prio-btn-normal" onclick="setEditorPriority('normal')" class="py-1.5 px-2.5 rounded-xl border border-slate-300 bg-slate-100 text-slate-800 font-medium flex items-center justify-center gap-1 transition whitespace-nowrap cursor-pointer">
                   <span>📋 普通日常任务</span>
                 </button>
-                <button type="button" id="prio-btn-urgent" onclick="setEditorPriority('urgent')" class="py-1.5 px-2.5 rounded-xl border border-slate-200 bg-white text-slate-500 font-medium flex items-center justify-center gap-1 transition">
-                  <span>🔥 紧急任务 (排最前)</span>
+                <button type="button" id="prio-btn-urgent" onclick="setEditorPriority('urgent')" class="py-1.5 px-2.5 rounded-xl border border-slate-200 bg-white text-slate-500 font-medium flex items-center justify-center gap-1 transition whitespace-nowrap cursor-pointer">
+                  <span>🔥 紧急任务 (置顶)</span>
                 </button>
               </div>
             </div>
@@ -828,19 +827,19 @@
               </div>
             </div>
 
-            <!-- Repeating Plan Fields (Daily / Weekly / Monthly + Multi-time slots, A16) -->
+            <!-- Repeating Plan Fields (Daily / Weekly / Monthly + Multi-time slots) -->
             <div id="editor-repeat-fields" class="hidden space-y-2.5">
               <!-- Repeat Frequency Selector: Daily | Weekly | Monthly -->
               <div>
-                <label class="block text-slate-600 mb-1 font-medium">重复周期类型（支持日计划 / 周计划 / 月计划）</label>
+                <label class="block text-slate-600 mb-1 font-medium">重复周期类型</label>
                 <div class="grid grid-cols-3 gap-1 bg-slate-100 p-1 rounded-xl">
-                  <button type="button" id="freq-btn-daily" onclick="setEditorRepeatCycle('daily')" class="py-1 rounded-lg font-medium bg-white text-slate-800 shadow-xs">
+                  <button type="button" id="freq-btn-daily" onclick="setEditorRepeatCycle('daily')" class="py-1 rounded-lg font-medium bg-white text-slate-800 shadow-xs whitespace-nowrap cursor-pointer">
                     ↻ 每天
                   </button>
-                  <button type="button" id="freq-btn-weekly" onclick="setEditorRepeatCycle('weekly')" class="py-1 rounded-lg font-medium text-slate-500">
+                  <button type="button" id="freq-btn-weekly" onclick="setEditorRepeatCycle('weekly')" class="py-1 rounded-lg font-medium text-slate-500 whitespace-nowrap cursor-pointer">
                     📆 每周计划
                   </button>
-                  <button type="button" id="freq-btn-monthly" onclick="setEditorRepeatCycle('monthly')" class="py-1 rounded-lg font-medium text-slate-500">
+                  <button type="button" id="freq-btn-monthly" onclick="setEditorRepeatCycle('monthly')" class="py-1 rounded-lg font-medium text-slate-500 whitespace-nowrap cursor-pointer">
                     🗓 每月计划
                   </button>
                 </div>
@@ -850,7 +849,7 @@
               <div id="editor-weekly-box" class="hidden p-2.5 rounded-xl bg-violet-50/70 border border-violet-200/80">
                 <div class="flex items-center justify-between mb-1.5">
                   <span class="font-medium text-violet-900">选择每周几执行（可多选）</span>
-                  <span class="text-[11px] text-violet-600">一周完成一次或多次</span>
+                  <span class="text-[11px] text-violet-600">一周一次或多次</span>
                 </div>
                 <div id="editor-weekday-pills" class="grid grid-cols-7 gap-1">
                   <!-- Populated dynamically by renderEditorCycleSelectors() -->
@@ -861,14 +860,14 @@
               <div id="editor-monthly-box" class="hidden p-2.5 rounded-xl bg-amber-50/70 border border-amber-200/80 space-y-2">
                 <div class="flex items-center justify-between">
                   <span class="font-medium text-amber-900">选择每月几号执行（可多选）</span>
-                  <span class="text-[11px] text-amber-700">一个月完成一次或多次</span>
+                  <span class="text-[11px] text-amber-700">一月一次或多次</span>
                 </div>
                 <div id="editor-monthday-pills" class="flex flex-wrap gap-1">
                   <!-- Populated dynamically by renderEditorCycleSelectors() -->
                 </div>
                 <div class="flex items-center gap-1.5 pt-0.5">
                   <input id="editor-custom-monthday" type="number" min="1" max="31" placeholder="输入 1~31 号" class="w-28 px-2 py-1 rounded-lg border border-amber-200 bg-white text-xs"/>
-                  <button type="button" onclick="addCustomMonthDay()" class="px-2.5 py-1 rounded-lg bg-amber-100 hover:bg-amber-200 text-amber-900 font-medium">+ 添加日期</button>
+                  <button type="button" onclick="addCustomMonthDay()" class="px-2.5 py-1 rounded-lg bg-amber-100 hover:bg-amber-200 text-amber-900 font-medium whitespace-nowrap cursor-pointer">+ 添加日期</button>
                 </div>
               </div>
 
@@ -882,7 +881,7 @@
                 </div>
                 <div class="flex gap-1.5">
                   <input id="editor-new-slot" type="time" value="18:00" class="flex-1 px-2.5 py-1 rounded-lg border border-slate-200"/>
-                  <button type="button" onclick="addEditorTimeSlot()" class="px-2.5 py-1 rounded-lg bg-slate-100 hover:bg-slate-200 text-slate-700 font-medium whitespace-nowrap">+ 添加时间</button>
+                  <button type="button" onclick="addEditorTimeSlot()" class="px-2.5 py-1 rounded-lg bg-slate-100 hover:bg-slate-200 text-slate-700 font-medium whitespace-nowrap cursor-pointer">+ 添加时间</button>
                 </div>
               </div>
               <div class="grid grid-cols-2 gap-2">
@@ -899,84 +898,112 @@
 
             <label class="flex items-center justify-between pt-1 cursor-pointer">
               <span class="text-slate-700 font-medium">到点发送通知、气泡与摇铃提醒 🔔</span>
-              <input id="editor-remind" type="checkbox" checked class="rounded text-sky-600"/>
+              <input id="editor-remind" type="checkbox" checked class="rounded text-sky-600 w-4 h-4"/>
             </label>
           </div>
 
           <div class="mt-4 flex gap-2">
-            <button onclick="closeModal()" class="flex-1 py-2 rounded-xl text-xs font-medium bg-slate-100 text-slate-600 hover:bg-slate-200">取消</button>
-            <button onclick="saveTaskFromModal()" class="flex-1 py-2 rounded-xl text-xs font-medium text-white hover:opacity-95" style="background-color: #6f9bb6;">保存安排</button>
+            <button onclick="closeModal()" class="flex-1 py-2 rounded-xl text-xs font-medium bg-slate-100 text-slate-600 hover:bg-slate-200 cursor-pointer">取消</button>
+            <button onclick="saveTaskFromModal()" class="flex-1 py-2 rounded-xl text-xs font-medium text-white hover:opacity-95 cursor-pointer" style="background-color: #6f9bb6;">保存安排</button>
           </div>
         </div>
 
-        <!-- 3. Settings Modal (F09 / F13 / A17 / A18 / A19 / A20) -->
-        <div id="modal-settings" class="hidden bg-white rounded-2xl p-5 w-[348px] shadow-2xl border border-slate-100 text-slate-800">
-          <div class="flex items-center justify-between mb-3">
-            <h3 class="text-sm font-semibold text-slate-900">组件偏好设置 (F13)</h3>
-            <button onclick="closeModal()" class="text-slate-400 hover:text-slate-600 text-xs">✕</button>
-          </div>
-          <div class="space-y-2.5 text-xs">
-            <div class="p-2.5 rounded-xl bg-slate-50 border border-slate-200/80 space-y-2">
-              <label class="flex items-center justify-between cursor-pointer">
-                <div>
-                  <div class="text-slate-800 font-semibold">🚀 开机自动启动 (A20)</div>
-                  <div class="text-[11px] text-slate-400">随电脑开机自动在桌面唤醒桌宠与提醒</div>
-                </div>
-                <input id="setting-autostart" type="checkbox" checked onchange="toggleOpenAtLogin(this.checked)" class="rounded text-sky-600 w-4 h-4"/>
-              </label>
-              <div class="border-t border-slate-200/70 pt-2 flex items-center justify-between">
-                <div>
-                  <div class="text-slate-800 font-semibold">🔔 提醒摇铃声音 (A19)</div>
-                  <div class="text-[11px] text-slate-400">到点提醒时播放清脆手摇铃声</div>
-                </div>
-                <div class="flex items-center gap-2">
-                  <button type="button" onclick="playReminderBellSound(true)" class="px-2 py-1 rounded-lg bg-amber-100 hover:bg-amber-200 text-amber-800 font-medium text-[11px]">🔊 试听</button>
-                  <input id="setting-bell-sound" type="checkbox" checked onchange="toggleReminderBellSound(this.checked)" class="rounded text-sky-600 w-4 h-4"/>
-                </div>
-              </div>
-            </div>
-
-            <div class="p-2.5 rounded-xl bg-slate-50 border border-slate-200/80 space-y-2">
-              <div class="flex items-center justify-between">
-                <div>
-                  <div class="text-slate-800 font-semibold">🖥 窗口显示层级 (A18)</div>
-                  <div id="setting-layer-desc" class="text-[11px] text-slate-400">当前：始终置顶显示</div>
-                </div>
-                <button type="button" id="setting-layer-btn" onclick="toggleAlwaysOnTop()" class="px-2.5 py-1 rounded-lg bg-sky-100 text-sky-800 hover:bg-sky-200 font-medium">
-                  切换为「仅在桌面」
-                </button>
-              </div>
-              <div class="border-t border-slate-200/70 pt-2 flex items-center justify-between">
-                <div>
-                  <div class="text-slate-800 font-semibold">📐 框框尺寸自定义 (A17)</div>
-                  <div id="setting-size-label" class="text-[11px] text-slate-400">当前：356 × 560 px (可拖拽右下角)</div>
-                </div>
-                <div class="flex items-center gap-1">
-                  <button type="button" onclick="applyWidgetDimensions(356, 230, true)" class="px-2 py-1 rounded-lg bg-slate-200/80 hover:bg-slate-300 text-slate-700">标准</button>
-                  <button type="button" onclick="applyWidgetDimensions(436, 360, true)" class="px-2 py-1 rounded-lg bg-emerald-100 hover:bg-emerald-200 text-emerald-800 font-medium">拉大框框</button>
-                </div>
-              </div>
-            </div>
-
+        <!-- 3. Settings Modal (Refined single-line layout & clean segmented controls) -->
+        <div id="modal-settings" class="hidden bg-white rounded-3xl p-5 w-[356px] shadow-2xl border border-slate-100 text-slate-800">
+          <div class="flex items-center justify-between mb-3.5">
             <div>
-              <div class="flex items-center justify-between mb-1">
-                <label class="block text-slate-600 font-medium">固定下班时间 (F09 倒计时基准)</label>
-                <div class="flex items-center gap-1">
-                  <button type="button" onclick="updateOffworkTime('18:00')" class="px-1.5 py-0.5 rounded bg-slate-100 hover:bg-slate-200 text-slate-600">18:00</button>
-                  <button type="button" onclick="updateOffworkTime('11:00')" class="px-1.5 py-0.5 rounded bg-emerald-50 hover:bg-emerald-100 text-emerald-700" title="测试已到下班时间">测已下班</button>
-                  <button type="button" onclick="updateOffworkTime('')" class="px-1.5 py-0.5 rounded bg-amber-50 hover:bg-amber-100 text-amber-700" title="测试未设置下班时间">清空</button>
+              <h3 class="text-sm font-semibold text-slate-900">⚙ 组件偏好设置</h3>
+              <p class="text-[11px] text-slate-400 mt-0.5">管理自启动、铃声、桌面层级与窗口尺寸</p>
+            </div>
+            <button onclick="closeModal()" class="w-6 h-6 rounded-full bg-slate-100 hover:bg-slate-200 flex items-center justify-center text-slate-500 text-xs transition cursor-pointer">✕</button>
+          </div>
+
+          <div class="space-y-2.5 text-xs">
+            <!-- Group 1: Startup & Bell Sound -->
+            <div class="p-3 rounded-2xl bg-slate-50/90 border border-slate-200/70 space-y-2.5">
+              <label class="flex items-center justify-between gap-3 cursor-pointer">
+                <div class="min-w-0">
+                  <div class="text-slate-800 font-semibold">🚀 开机自动启动</div>
+                  <div class="text-[11px] text-slate-400 truncate">登录系统后自动在桌面唤醒桌宠与提醒</div>
+                </div>
+                <input id="setting-autostart" type="checkbox" checked onchange="toggleOpenAtLogin(this.checked)" class="rounded text-sky-600 w-4 h-4 shrink-0 cursor-pointer"/>
+              </label>
+
+              <div class="border-t border-slate-200/60 pt-2.5 flex items-center justify-between gap-2">
+                <div class="min-w-0">
+                  <div class="text-slate-800 font-semibold">🔔 提醒摇铃声音</div>
+                  <div class="text-[11px] text-slate-400 truncate">到点提醒时播放清脆手摇铃音效</div>
+                </div>
+                <div class="flex items-center gap-2 shrink-0">
+                  <button type="button" onclick="playReminderBellSound(true)" class="px-2.5 py-1 rounded-lg bg-amber-50 hover:bg-amber-100 border border-amber-200/80 text-amber-800 font-medium text-[11px] whitespace-nowrap shrink-0 transition cursor-pointer">
+                    🔊 试听
+                  </button>
+                  <input id="setting-bell-sound" type="checkbox" checked onchange="toggleReminderBellSound(this.checked)" class="rounded text-sky-600 w-4 h-4 shrink-0 cursor-pointer"/>
                 </div>
               </div>
-              <input id="setting-offwork" type="time" value="18:00" oninput="updateOffworkTime(this.value)" onchange="updateOffworkTime(this.value)" class="w-full px-3 py-1.5 rounded-lg border border-slate-200"/>
-              <p class="text-[11px] text-slate-400 mt-0.5">基于组件当前时间 (<span id="setting-cur-clock">11:43</span>) 实时计算差值</p>
             </div>
-            <label class="flex items-center justify-between py-0.5 cursor-pointer">
-              <span class="text-slate-700 font-medium">显示透明窗口边界辅助线 (开发视图)</span>
-              <input type="checkbox" onchange="document.getElementById('wireframe-box').classList.toggle('hidden', !this.checked)" class="rounded text-sky-600"/>
+
+            <!-- Group 2: Window Layer & Widget Size (Clean Segmented Controls, zero wrapping!) -->
+            <div class="p-3 rounded-2xl bg-slate-50/90 border border-slate-200/70 space-y-2.5">
+              <div>
+                <div class="flex items-center justify-between gap-2">
+                  <span class="text-slate-800 font-semibold whitespace-nowrap">🖥 窗口显示层级</span>
+                  <div class="inline-flex p-0.5 rounded-xl bg-slate-200/75 shrink-0">
+                    <button type="button" id="setting-layer-opt-top" onclick="toggleAlwaysOnTop(true)" class="px-2.5 py-1 rounded-lg text-[11px] font-semibold bg-white text-slate-800 shadow-2xs whitespace-nowrap transition cursor-pointer">
+                      📌 始终置顶
+                    </button>
+                    <button type="button" id="setting-layer-opt-desktop" onclick="toggleAlwaysOnTop(false)" class="px-2.5 py-1 rounded-lg text-[11px] font-medium text-slate-500 hover:text-slate-700 whitespace-nowrap transition cursor-pointer">
+                      🖥 仅在桌面
+                    </button>
+                  </div>
+                </div>
+                <div id="setting-layer-desc" class="text-[11px] text-slate-400 mt-1">
+                  始终浮在最前；切换为「仅在桌面」后打开其他软件会自动遮挡它
+                </div>
+              </div>
+
+              <div class="border-t border-slate-200/60 pt-2.5">
+                <div class="flex items-center justify-between gap-2">
+                  <span class="text-slate-800 font-semibold whitespace-nowrap">📐 框框尺寸预设</span>
+                  <div class="inline-flex p-0.5 rounded-xl bg-slate-200/75 shrink-0">
+                    <button type="button" id="btn-size-preset-standard" onclick="applyWidgetDimensions(356, 230, true)" class="px-2.5 py-1 rounded-lg text-[11px] font-semibold bg-white text-slate-800 shadow-2xs whitespace-nowrap transition cursor-pointer">
+                      标准尺寸
+                    </button>
+                    <button type="button" id="btn-size-preset-large" onclick="applyWidgetDimensions(440, 360, true)" class="px-2.5 py-1 rounded-lg text-[11px] font-medium text-slate-500 hover:text-slate-700 whitespace-nowrap transition cursor-pointer">
+                      拉大框框
+                    </button>
+                  </div>
+                </div>
+                <div id="setting-size-label" class="text-[11px] text-slate-400 mt-1">
+                  当前：356 × 480 px（也可直接按住主面板右下角 ↘ 自由拖拽缩放）
+                </div>
+              </div>
+            </div>
+
+            <!-- Group 3: Off-work Countdown Time -->
+            <div class="p-3 rounded-2xl bg-slate-50/90 border border-slate-200/70 space-y-2">
+              <div class="flex items-center justify-between gap-2">
+                <label class="text-slate-800 font-semibold whitespace-nowrap">🕒 固定下班时间</label>
+                <div class="flex items-center gap-1 shrink-0">
+                  <button type="button" onclick="updateOffworkTime('18:00')" class="px-2 py-0.5 rounded-md bg-white border border-slate-200/80 hover:bg-slate-100 text-slate-600 text-[11px] whitespace-nowrap shrink-0 cursor-pointer">18:00</button>
+                  <button type="button" onclick="updateOffworkTime('11:00')" class="px-2 py-0.5 rounded-md bg-emerald-50 border border-emerald-200/70 hover:bg-emerald-100 text-emerald-700 text-[11px] whitespace-nowrap shrink-0 cursor-pointer" title="测试已到下班时间">测已下班</button>
+                  <button type="button" onclick="updateOffworkTime('')" class="px-2 py-0.5 rounded-md bg-amber-50 border border-amber-200/70 hover:bg-amber-100 text-amber-700 text-[11px] whitespace-nowrap shrink-0 cursor-pointer" title="测试未设置下班时间">清空</button>
+                </div>
+              </div>
+              <div class="flex items-center gap-2">
+                <input id="setting-offwork" type="time" value="18:00" oninput="updateOffworkTime(this.value)" onchange="updateOffworkTime(this.value)" class="flex-1 px-3 py-1.5 rounded-xl bg-white border border-slate-200/90 text-slate-700 font-medium"/>
+                <span class="text-[11px] text-slate-400 whitespace-nowrap shrink-0">当前 <span id="setting-cur-clock" class="font-medium text-slate-600">11:43</span></span>
+              </div>
+            </div>
+
+            <label class="flex items-center justify-between px-1 py-0.5 cursor-pointer">
+              <span class="text-slate-600 font-medium">显示透明窗口边界辅助线（开发视图）</span>
+              <input type="checkbox" onchange="document.getElementById('wireframe-box').classList.toggle('hidden', !this.checked)" class="rounded text-sky-600 w-4 h-4 shrink-0 cursor-pointer"/>
             </label>
           </div>
-          <div class="mt-3.5">
-            <button onclick="closeModal()" class="w-full py-2 rounded-xl text-xs font-medium text-white" style="background-color: #6f9bb6;">完成</button>
+
+          <div class="mt-4">
+            <button onclick="closeModal()" class="w-full py-2.5 rounded-xl text-xs font-semibold text-white hover:opacity-95 transition cursor-pointer" style="background-color: #6f9bb6;">完成</button>
           </div>
         </div>
 
@@ -1204,7 +1231,7 @@
 
     // Resizable widget state (A17)
     let widgetWidth = 356;
-    let widgetListHeight = 230;
+    let taskListHeight = 230;
     let isMenuCardHidden = false;
     let activeSceneProp = null; // null | 'water' | 'stretch' | 'bell'
 
@@ -1402,7 +1429,7 @@
         pctEl.textContent = '0%';
         fillEl.style.width = '0%';
       } else {
-        labelEl.innerHTML = `${prefixLabel} ${doneCount}/${totalCount}${urgentCount > 0 ? ` <span class="ml-1.5 text-[11px] px-1.5 py-0.2 rounded-full bg-rose-100 text-rose-700 font-semibold">🔥 ${urgentCount}项紧急置顶</span>` : ''}`;
+        labelEl.innerHTML = `<span>${prefixLabel} ${doneCount}/${totalCount}</span>${urgentCount > 0 ? `<span class="text-[10.5px] leading-none px-2 py-0.5 rounded-full bg-rose-50 text-rose-500 border border-rose-200/70 font-medium whitespace-nowrap">🔥 ${urgentCount}项紧急</span>` : ''}`;
         pctEl.textContent = `${pct}%`;
         fillEl.style.width = `${pct}%`;
       }
@@ -1417,15 +1444,15 @@
       document.getElementById('badge-done').textContent = `(${doneItems.length})`;
       document.getElementById('badge-plans').textContent = `(${repeatPlans.length})`;
 
-      // Update Tab button styles
+      // Update Tab button styles (keep focus:outline-none & whitespace-nowrap so no ugly browser focus ring appears)
       ['todo', 'done', 'plans'].forEach(tab => {
         const btn = document.getElementById('tab-' + tab);
         if (tab === currentTab) {
           btn.style.backgroundColor = '#6f9bb6';
-          btn.className = 'py-1.5 rounded-full transition-all text-white shadow-xs';
+          btn.className = 'py-1.5 rounded-full transition-all text-white shadow-xs whitespace-nowrap focus:outline-none cursor-pointer';
         } else {
           btn.style.backgroundColor = 'transparent';
-          btn.className = 'py-1.5 rounded-full transition-all text-slate-500 hover:text-slate-700';
+          btn.className = 'py-1.5 rounded-full transition-all text-slate-500 hover:text-slate-700 whitespace-nowrap focus:outline-none cursor-pointer';
         }
       });
 
@@ -1446,17 +1473,18 @@
           const planObj = item.planId ? repeatPlans.find(p => p.id === item.planId) : null;
           const repeatBadgeText = item.isRepeat ? formatPlanCycleBadge(planObj) : '';
           const repeatBadgeColor = planObj?.repeatType === 'weekly'
-            ? 'bg-violet-50 text-violet-700 border border-violet-200/60'
+            ? 'bg-violet-50 text-violet-600 border border-violet-200/60'
             : planObj?.repeatType === 'monthly'
-            ? 'bg-amber-50 text-amber-800 border border-amber-200/60'
-            : 'bg-sky-50 text-sky-700';
+            ? 'bg-amber-50 text-amber-700 border border-amber-200/60'
+            : 'bg-sky-50 text-sky-600 border border-sky-200/60';
 
+          const hasMetaRow = isUrgent || item.time || item.isRepeat || item.originDate;
           const row = document.createElement('div');
           row.id = 'task-row-' + item.id;
-          row.className = `task-row-item rounded-2xl px-3.5 py-2.5 flex items-center justify-between shadow-xs border transition group ${
+          row.className = `task-row-item rounded-2xl px-3.5 py-2.5 flex items-center justify-between shadow-2xs border transition group ${
             isUrgent
-              ? 'bg-[#fff9f8] border-rose-200/90 hover:border-rose-300'
-              : 'bg-white border-slate-100/80 hover:border-slate-200'
+              ? 'bg-white border-rose-200/80 hover:border-rose-300'
+              : 'bg-white border-slate-100 hover:border-slate-200'
           }`;
           const isHistorical = selectedDate < TODAY_DATE;
           row.innerHTML = `
@@ -1464,30 +1492,36 @@
               <button
                 id="check-btn-${item.id}"
                 onclick="toggleTaskDone('${item.id}', event)"
-                class="relative w-5 h-5 rounded-full border-2 ${isUrgent ? 'border-rose-400 hover:border-rose-500' : 'border-slate-300 hover:border-[#6f9bb6]'} hover:scale-110 flex items-center justify-center shrink-0 transition-all cursor-pointer"
+                class="relative w-[18px] h-[18px] rounded-full border-[1.8px] ${isUrgent ? 'border-rose-300 hover:border-rose-500' : 'border-slate-300 hover:border-[#6f9bb6]'} hover:scale-110 flex items-center justify-center shrink-0 transition-all cursor-pointer focus:outline-none"
                 title="点击完成任务（动画期间再次点击可取消）"
               ></button>
               <div class="min-w-0 flex-1">
-                <div class="flex items-center gap-1.5 flex-wrap">
-                  ${isUrgent ? `<span class="text-[11px] px-1.5 py-0.2 rounded-md bg-rose-500 text-white font-semibold shrink-0">🔥 紧急</span>` : ''}
-                  <span id="title-span-${item.id}" class="strike-line text-xs ${isUrgent ? 'font-semibold text-slate-800' : 'font-medium text-slate-700'} truncate transition-colors duration-200">${escapeHtml(item.title)}</span>
-                  ${item.time ? `<span class="text-xs px-1.5 py-0.2 rounded bg-slate-100 text-slate-500">${item.time}</span>` : ''}
-                  ${item.isRepeat ? `<span class="text-[11px] px-1.5 py-0.2 rounded ${repeatBadgeColor}" title="周期重复计划生成的实例">${repeatBadgeText}</span>` : ''}
-                  ${item.originDate ? `<span class="text-xs px-1.5 py-0.2 rounded bg-amber-50 text-amber-700" title="从历史未完成迁移至今天">原 ${item.originDate}</span>` : ''}
+                <div class="flex items-center min-w-0">
+                  <span id="title-span-${item.id}" class="strike-line text-[12.5px] ${isUrgent ? 'font-semibold text-slate-800' : 'font-medium text-slate-700'} truncate leading-snug transition-colors duration-200">${escapeHtml(item.title)}</span>
                 </div>
+                ${hasMetaRow ? `
+                  <div class="flex items-center gap-1.5 mt-1 flex-nowrap overflow-hidden">
+                    ${isUrgent ? `<span class="inline-flex items-center gap-0.5 text-[10px] leading-none px-1.5 py-0.5 rounded-md bg-rose-50 text-rose-500 border border-rose-200/70 font-medium shrink-0 whitespace-nowrap">🔥 紧急</span>` : ''}
+                    ${item.time ? `<span class="inline-flex items-center text-[10.5px] leading-none px-1.5 py-0.5 rounded-md bg-slate-100/90 text-slate-500 shrink-0 whitespace-nowrap">${item.time}</span>` : ''}
+                    ${item.isRepeat ? `<span class="inline-flex items-center text-[10px] leading-none px-1.5 py-0.5 rounded-md ${repeatBadgeColor} shrink-0 whitespace-nowrap" title="周期重复计划生成的实例">${repeatBadgeText}</span>` : ''}
+                    ${item.originDate ? `<span class="inline-flex items-center text-[10px] leading-none px-1.5 py-0.5 rounded-md bg-amber-50 text-amber-700 shrink-0 whitespace-nowrap" title="从历史未完成迁移至今天">原 ${item.originDate}</span>` : ''}
+                  </div>
+                ` : ''}
               </div>
             </div>
-            <div class="flex items-center gap-1 shrink-0 ml-2">
-              <span id="stamp-slot-${item.id}" class="hidden text-xs font-semibold px-2 py-0.5 rounded-full bg-sky-100/90 text-[#5282a1]">🐾 完成!</span>
+            <div class="flex items-center gap-0.5 shrink-0 ml-2">
+              <span id="stamp-slot-${item.id}" class="hidden text-xs font-semibold px-2 py-0.5 rounded-full bg-sky-100/90 text-[#5282a1] whitespace-nowrap">🐾 完成!</span>
               ${isHistorical ? `
-                <button onclick="moveYesterdayTaskToToday('${item.id}')" class="px-2 py-0.5 rounded-lg bg-indigo-50 text-indigo-700 hover:bg-indigo-100 text-xs font-medium transition">
+                <button onclick="moveYesterdayTaskToToday('${item.id}')" class="px-2 py-0.5 rounded-lg bg-indigo-50 text-indigo-700 hover:bg-indigo-100 text-xs font-medium transition whitespace-nowrap cursor-pointer">
                   移到今天
                 </button>
               ` : `
-                <button onclick="toggleTaskPriority('${item.id}')" class="text-xs px-1 leading-none transition ${isUrgent ? 'text-rose-500 opacity-100' : 'text-slate-300 hover:text-rose-500 opacity-70 group-hover:opacity-100'}" title="${isUrgent ? '当前为紧急任务（排最前），点击改为普通日常任务' : '点击标为「🔥 紧急任务」并自动排到最前面 (A15)'}">🔥</button>
+                <button onclick="toggleTaskPriority('${item.id}')" class="w-6 h-6 rounded-lg flex items-center justify-center transition cursor-pointer focus:outline-none ${isUrgent ? 'text-rose-500 bg-rose-50/70 hover:bg-rose-100/80' : 'text-slate-300 hover:text-rose-500 hover:bg-slate-100 opacity-0 group-hover:opacity-100'}" title="${isUrgent ? '当前为紧急置顶，点击改为普通日常任务' : '标为「紧急任务」并自动排到最前'}">
+                  <svg viewBox="0 0 16 16" class="w-3.5 h-3.5 fill-current"><path d="M8 1.5l1.85 3.75 4.15.6-3 2.92.71 4.13L8 10.95l-3.71 1.95.71-4.13-3-2.92 4.15-.6L8 1.5z"/></svg>
+                </button>
               `}
-              <button id="edit-btn-${item.id}" onclick="openEditTaskModal('${item.id}')" class="text-slate-400 hover:text-sky-600 text-xs px-1 leading-none transition" title="${item.isRepeat ? '编辑所属周期重复计划 (F03)' : '编辑任务名称/优先级/日期/时间 (F01)'}">✎</button>
-              <button id="del-btn-${item.id}" onclick="deleteTaskInstance('${item.id}')" class="text-slate-400 hover:text-rose-500 text-sm px-1 leading-none transition" title="${item.isRepeat ? '仅删除今天本次安排，不影响后续重复计划' : '删除任务'}">×</button>
+              <button id="edit-btn-${item.id}" onclick="openEditTaskModal('${item.id}')" class="w-6 h-6 rounded-lg flex items-center justify-center text-slate-400 hover:text-sky-600 hover:bg-slate-100 text-xs leading-none transition opacity-75 group-hover:opacity-100 cursor-pointer focus:outline-none" title="${item.isRepeat ? '编辑所属周期重复计划' : '编辑任务名称/优先级/日期/时间'}">✎</button>
+              <button id="del-btn-${item.id}" onclick="deleteTaskInstance('${item.id}')" class="w-6 h-6 rounded-lg flex items-center justify-center text-slate-400 hover:text-rose-500 hover:bg-rose-50 text-sm leading-none transition opacity-75 group-hover:opacity-100 cursor-pointer focus:outline-none" title="${item.isRepeat ? '仅删除今天本次安排，不影响后续重复计划' : '删除任务'}">×</button>
             </div>
           `;
           container.appendChild(row);
@@ -1506,60 +1540,57 @@
           row.className = 'task-row-item bg-white/75 rounded-2xl px-3.5 py-2.5 flex items-center justify-between border border-slate-100';
           row.innerHTML = `
             <div class="flex items-center gap-2.5 min-w-0 flex-1">
-              <button onclick="toggleTaskDone('${item.id}', event)" class="w-5 h-5 rounded-full flex items-center justify-center text-white text-xs shrink-0 hover:opacity-85 transition" style="background-color: #6f9bb6;" title="点击撤销完成">✓</button>
-              <div class="min-w-0 flex-1">
-                ${item.priority === 'urgent' ? `<span class="text-[10px] px-1 py-0.2 rounded bg-rose-100 text-rose-600 mr-1">🔥紧急</span>` : ''}
+              <button onclick="toggleTaskDone('${item.id}', event)" class="w-[18px] h-[18px] rounded-full flex items-center justify-center text-white text-xs shrink-0 hover:opacity-85 transition cursor-pointer" style="background-color: #6f9bb6;" title="点击撤销完成">✓</button>
+              <div class="min-w-0 flex-1 flex items-center gap-1.5">
+                ${item.priority === 'urgent' ? `<span class="text-[10px] leading-none px-1.5 py-0.5 rounded bg-rose-50 text-rose-500 shrink-0 whitespace-nowrap">🔥紧急</span>` : ''}
                 <span class="text-xs text-slate-400 line-through truncate">${escapeHtml(item.title)}</span>
-                ${item.doneAt ? `<span class="ml-1.5 text-xs text-slate-400">(${item.doneAt} 完成)</span>` : ''}
+                ${item.doneAt ? `<span class="text-[11px] text-slate-400 shrink-0 whitespace-nowrap">${item.doneAt}</span>` : ''}
               </div>
             </div>
-            <button onclick="toggleTaskDone('${item.id}', event)" class="text-xs text-slate-400 hover:text-sky-700">撤销</button>
+            <button onclick="toggleTaskDone('${item.id}', event)" class="text-xs text-slate-400 hover:text-sky-700 ml-2 shrink-0 whitespace-nowrap cursor-pointer">撤销</button>
           `;
           container.appendChild(row);
         });
       } else if (currentTab === 'plans') {
-        // Add quick button at top of Plans list to create Weekly / Monthly / Daily plan
+        // Subheader bar: clean single-line text + sleek '+ 新建计划' button (zero wrapping!)
         const topBar = document.createElement('div');
-        topBar.className = 'flex items-center justify-between px-1 pb-1 text-xs';
+        topBar.className = 'flex items-center justify-between gap-2 px-1 pb-1 text-xs';
         topBar.innerHTML = `
-          <span class="text-slate-500">支持<strong>每日 / 每周 / 每月</strong>自动生成待办</span>
-          <button onclick="demoWeeklyMonthlyPlanModal()" class="px-2.5 py-1 rounded-full bg-sky-600 text-white hover:bg-sky-700 font-medium text-[11px] shadow-2xs">+ 新建周/月/日计划</button>
+          <span class="text-slate-500 whitespace-nowrap truncate">支持 <strong class="text-slate-600 font-medium">每日 / 每周 / 每月</strong> 自动生成</span>
+          <button onclick="demoWeeklyMonthlyPlanModal()" class="px-3 py-1 rounded-full text-white hover:opacity-90 font-medium text-[11px] shadow-2xs whitespace-nowrap shrink-0 transition cursor-pointer focus:outline-none" style="background-color: #6f9bb6;">+ 新建计划</button>
         `;
         container.appendChild(topBar);
 
         repeatPlans.forEach(plan => {
           const row = document.createElement('div');
-          row.className = 'bg-white rounded-2xl px-3.5 py-2.5 border border-slate-100 shadow-xs space-y-1.5';
+          row.className = 'bg-white rounded-2xl px-3.5 py-2.5 border border-slate-100 shadow-2xs space-y-1.5 hover:border-slate-200 transition';
           const isPaused = plan.status === 'paused';
           const cycleBadge = formatPlanCycleBadge(plan);
           const cycleClass = plan.repeatType === 'weekly'
-            ? 'bg-violet-100 text-violet-800'
+            ? 'bg-violet-50 text-violet-700 border border-violet-200/70'
             : plan.repeatType === 'monthly'
-            ? 'bg-amber-100 text-amber-800'
-            : 'bg-sky-100 text-sky-800';
-          const dateRangeLabel = plan.endDate
-            ? `${plan.startDate.slice(5)} ~ ${plan.endDate.slice(5)}`
-            : `${plan.startDate.slice(5)} 起`;
+            ? 'bg-amber-50 text-amber-700 border border-amber-200/70'
+            : 'bg-sky-50 text-sky-700 border border-sky-200/70';
+
           row.innerHTML = `
+            <!-- Line 1: Full-width Title (Left) + Status Badge (Right) so title is never squished! -->
             <div class="flex items-center justify-between gap-2">
-              <div class="flex items-center gap-1.5 min-w-0">
-                <span class="text-[11px] px-1.5 py-0.2 rounded-md font-medium shrink-0 ${cycleClass}">${cycleBadge}</span>
-                ${plan.priority === 'urgent' ? `<span class="text-[11px] px-1.5 py-0.2 rounded-md bg-rose-500 text-white font-semibold shrink-0">🔥紧急</span>` : ''}
-                <span class="text-xs font-semibold text-slate-700 truncate ${isPaused ? 'line-through text-slate-400' : ''}">${escapeHtml(plan.title)}</span>
-              </div>
-              <div class="flex items-center gap-1 shrink-0">
-                <span class="text-[11px] px-1.5 py-0.2 rounded bg-slate-100 text-slate-500">${dateRangeLabel}</span>
-                <span class="text-[11px] px-2 py-0.5 rounded-full ${isPaused ? 'bg-amber-50 text-amber-700' : 'bg-emerald-50 text-emerald-700'}">
-                  ${isPaused ? '已暂停' : '生效中'}
-                </span>
-              </div>
+              <span class="text-[12.5px] font-semibold text-slate-700 truncate flex-1 min-w-0 ${isPaused ? 'line-through text-slate-400' : ''}">${escapeHtml(plan.title)}</span>
+              <span class="text-[10.5px] leading-none px-2 py-1 rounded-full font-medium shrink-0 whitespace-nowrap ${isPaused ? 'bg-amber-50 text-amber-700' : 'bg-emerald-50 text-emerald-700'}">
+                ${isPaused ? '已暂停' : '生效中'}
+              </span>
             </div>
-            <div class="flex items-center justify-between text-xs text-slate-500">
-              <span class="truncate pr-2">时间槽：${plan.slots.join('、')}</span>
-              <div class="flex items-center gap-2 shrink-0">
-                <button onclick="openEditPlanModal('${plan.id}')" class="text-sky-700 hover:underline font-medium">编辑</button>
-                <button onclick="togglePlanPause('${plan.id}')" class="text-slate-600 hover:text-sky-700 hover:underline">${isPaused ? '恢复' : '暂停'}</button>
-                <button onclick="endRepeatPlan('${plan.id}')" class="text-rose-600 hover:underline" title="停止后续生成，保留历史记录">结束</button>
+            <!-- Line 2: Compact Cycle/Priority/Slots Tags (Left) + Action Links (Right) -->
+            <div class="flex items-center justify-between gap-2 text-xs">
+              <div class="flex items-center gap-1.5 min-w-0 overflow-hidden">
+                <span class="text-[10px] leading-none px-1.5 py-0.5 rounded-md font-medium shrink-0 whitespace-nowrap ${cycleClass}">${cycleBadge}</span>
+                ${plan.priority === 'urgent' ? `<span class="text-[10px] leading-none px-1.5 py-0.5 rounded-md bg-rose-50 text-rose-500 border border-rose-200/70 font-medium shrink-0 whitespace-nowrap">🔥 紧急</span>` : ''}
+                <span class="text-[11px] text-slate-400 truncate whitespace-nowrap">🕒 ${plan.slots.join(' / ')}</span>
+              </div>
+              <div class="flex items-center gap-2 shrink-0 whitespace-nowrap text-[11px]">
+                <button onclick="openEditPlanModal('${plan.id}')" class="text-[#5282a1] hover:underline font-medium cursor-pointer">编辑</button>
+                <button onclick="togglePlanPause('${plan.id}')" class="text-slate-500 hover:text-slate-800 hover:underline cursor-pointer">${isPaused ? '恢复' : '暂停'}</button>
+                <button onclick="endRepeatPlan('${plan.id}')" class="text-rose-500 hover:underline cursor-pointer" title="停止后续生成，保留历史记录">结束</button>
               </div>
             </div>
           `;
@@ -2698,31 +2729,35 @@
       const widget = document.getElementById('desktop-widget');
       const taskList = document.getElementById('task-list-container');
       const badge = document.getElementById('resize-dimensions-badge');
+      const settingSizeLabel = document.getElementById('setting-size-label');
       const totalApproxH = Math.round(taskListHeight + 250);
 
       if (widget) widget.style.width = `${widgetWidth}px`;
       if (taskList) taskList.style.height = `${taskListHeight}px`;
       if (badge) badge.textContent = `${widgetWidth} × ${totalApproxH}`;
+      if (settingSizeLabel) {
+        settingSizeLabel.textContent = `当前：${widgetWidth} × ${totalApproxH} px（也可按住主面板右下角 ↘ 自由拖拽缩放）`;
+      }
 
-      const isLarge = widgetWidth >= 420 || taskListHeight >= 340;
+      const isLarge = widgetWidth >= 410 || taskListHeight >= 320;
       const ctxSizeLabel = document.getElementById('ctx-menu-size-label');
       const menuSizeStatus = document.getElementById('menu-size-status');
       const btnPresetStandard = document.getElementById('btn-size-preset-standard');
       const btnPresetLarge = document.getElementById('btn-size-preset-large');
 
       if (ctxSizeLabel) {
-        ctxSizeLabel.textContent = isLarge ? '📐 恢复标准尺寸 (356×490)' : '↘️ 拉大框框尺寸 (450×630)';
+        ctxSizeLabel.textContent = isLarge ? '📐 恢复标准尺寸 (356×480)' : '↘️ 拉大框框尺寸 (440×610)';
       }
       if (menuSizeStatus) {
         menuSizeStatus.textContent = `${widgetWidth}×${totalApproxH}`;
       }
       if (btnPresetStandard && btnPresetLarge) {
         if (isLarge) {
-          btnPresetLarge.className = 'px-2.5 py-1 rounded-lg bg-sky-50 border border-sky-300 text-sky-700 font-medium text-xs transition cursor-pointer';
-          btnPresetStandard.className = 'px-2.5 py-1 rounded-lg bg-white border border-slate-200 text-slate-600 hover:border-sky-400 font-medium text-xs transition cursor-pointer';
+          btnPresetLarge.className = 'px-2.5 py-1 rounded-lg text-[11px] font-semibold bg-white text-slate-800 shadow-2xs whitespace-nowrap transition cursor-pointer';
+          btnPresetStandard.className = 'px-2.5 py-1 rounded-lg text-[11px] font-medium text-slate-500 hover:text-slate-700 whitespace-nowrap transition cursor-pointer';
         } else {
-          btnPresetStandard.className = 'px-2.5 py-1 rounded-lg bg-sky-50 border border-sky-300 text-sky-700 font-medium text-xs transition cursor-pointer';
-          btnPresetLarge.className = 'px-2.5 py-1 rounded-lg bg-white border border-slate-200 text-slate-600 hover:border-sky-400 font-medium text-xs transition cursor-pointer';
+          btnPresetStandard.className = 'px-2.5 py-1 rounded-lg text-[11px] font-semibold bg-white text-slate-800 shadow-2xs whitespace-nowrap transition cursor-pointer';
+          btnPresetLarge.className = 'px-2.5 py-1 rounded-lg text-[11px] font-medium text-slate-500 hover:text-slate-700 whitespace-nowrap transition cursor-pointer';
         }
       }
 
@@ -2733,12 +2768,12 @@
 
     function toggleWidgetPresetSize() {
       if (isMenuCardHidden) toggleTaskMenuCard(true);
-      const isLarge = widgetWidth >= 420 || taskListHeight >= 340;
+      const isLarge = widgetWidth >= 410 || taskListHeight >= 320;
       if (isLarge) {
-        applyWidgetDimensions(356, 240, true);
+        applyWidgetDimensions(356, 230, true);
         setPetState('happy', '框框已恢复为标准精巧尺寸 ✨');
       } else {
-        applyWidgetDimensions(450, 380, true);
+        applyWidgetDimensions(440, 360, true);
         setPetState('happy', '框框已拉大！计划再多也能一眼看清啦 ↘️✨');
       }
     }
@@ -3417,7 +3452,8 @@
       const ctxLabel = document.getElementById('ctx-menu-pin-label');
       const settingCheck = document.getElementById('setting-ontop');
       const settingLayerDesc = document.getElementById('setting-layer-desc');
-      const settingLayerBtn = document.getElementById('setting-layer-btn');
+      const optTop = document.getElementById('setting-layer-opt-top');
+      const optDesktop = document.getElementById('setting-layer-opt-desktop');
       const otherAppBadge = document.getElementById('other-app-layer-badge');
       const otherAppDesc = document.getElementById('other-app-layer-desc');
       const simDesktopBtn = document.getElementById('btn-sim-desktop-only');
@@ -3434,27 +3470,34 @@
 
       if (headerBtn) {
         if (alwaysOnTop) {
-          headerBtn.textContent = '📌 置顶';
-          headerBtn.className = 'px-1.5 h-6 rounded-md bg-sky-50 border border-sky-200/80 text-sky-700 hover:bg-sky-100 flex items-center justify-center text-[11px] font-medium transition cursor-pointer';
+          headerBtn.innerHTML = '<span>📌</span><span>置顶</span>';
+          headerBtn.className = 'h-6 px-2 rounded-full bg-slate-200/70 hover:bg-slate-300/75 text-slate-600 flex items-center gap-1 text-[11px] font-medium transition cursor-pointer whitespace-nowrap focus:outline-none';
           headerBtn.title = '当前：始终置顶（点击切换为「仅留在桌面，打开其他软件时自动被遮挡」）';
         } else {
-          headerBtn.textContent = '🖥 贴桌面';
-          headerBtn.className = 'px-1.5 h-6 rounded-md bg-amber-50 border border-amber-300/90 text-amber-800 hover:bg-amber-100 flex items-center justify-center text-[11px] font-medium transition cursor-pointer';
+          headerBtn.innerHTML = '<span>🖥</span><span>桌面</span>';
+          headerBtn.className = 'h-6 px-2 rounded-full bg-[#dceaf4] hover:bg-[#cfe2f0] text-[#457291] flex items-center gap-1 text-[11px] font-semibold transition cursor-pointer whitespace-nowrap focus:outline-none';
           headerBtn.title = '当前：仅留在桌面（打开其他软件时看不到桌宠；点击恢复「始终置顶」）';
         }
       }
 
-      if (menuStatus) menuStatus.textContent = alwaysOnTop ? '📌 置顶' : '🖥 贴桌面';
+      if (menuStatus) menuStatus.textContent = alwaysOnTop ? '📌 置顶' : '🖥 仅桌面';
       if (ctxLabel) ctxLabel.textContent = alwaysOnTop ? '🖥 切换为「仅留在桌面」' : '📌 切换为「始终置顶」';
       if (settingCheck) settingCheck.checked = alwaysOnTop;
 
+      if (optTop && optDesktop) {
+        if (alwaysOnTop) {
+          optTop.className = 'px-2.5 py-1 rounded-lg text-[11px] font-semibold bg-white text-slate-800 shadow-2xs whitespace-nowrap transition cursor-pointer';
+          optDesktop.className = 'px-2.5 py-1 rounded-lg text-[11px] font-medium text-slate-500 hover:text-slate-700 whitespace-nowrap transition cursor-pointer';
+        } else {
+          optDesktop.className = 'px-2.5 py-1 rounded-lg text-[11px] font-semibold bg-white text-slate-800 shadow-2xs whitespace-nowrap transition cursor-pointer';
+          optTop.className = 'px-2.5 py-1 rounded-lg text-[11px] font-medium text-slate-500 hover:text-slate-700 whitespace-nowrap transition cursor-pointer';
+        }
+      }
+
       if (settingLayerDesc) {
         settingLayerDesc.textContent = alwaysOnTop
-          ? '当前：📌 始终置顶（关闭后仅留在桌面，打开其他软件时看不到它）'
-          : '当前：🖥 仅留在桌面（打开其他软件时自动被遮挡，回到桌面可见）';
-      }
-      if (settingLayerBtn) {
-        settingLayerBtn.textContent = alwaysOnTop ? '切换为「仅留在桌面」' : '恢复「始终置顶」';
+          ? '始终浮在最前；切换为「仅在桌面」后打开其他软件会自动遮挡它'
+          : '当前仅留在桌面：打开其他软件时自动隐藏在软件下方，回到桌面可见';
       }
 
       if (otherAppBadge) {
