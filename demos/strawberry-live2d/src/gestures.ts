@@ -9,29 +9,32 @@ export interface Gesture {
   frames: Keyframe[]
 }
 
-// These are small gestures supported by the current shoulder/head rig. Each clip
+// Shoulder, elbow and wrist have independent keys in the articulated rig. Each clip
 // includes its return, so composition never leaves an arm or closed eye behind.
 export const gestures: Record<GestureId, Gesture> = {
   explain: {
     title: '轻抬手', description: '手先起，头轻轻跟上，停一下再放回。', durationMs: 3200,
     frames: [
       { at: 0, pose: {} },
-      { at: .1, pose: { ParamArmL: .45, ParamAngleX: -1 } },
-      { at: .24, pose: { ParamArmL: .6, ParamAngleX: -4, ParamAngleZ: -6 } },
-      { at: .65, pose: { ParamArmL: .55, ParamAngleX: -3, ParamAngleZ: -6 } },
-      { at: .8, pose: { ParamArmL: .3, ParamAngleX: -1, ParamAngleZ: -3 } },
+      { at: .1, pose: { ParamArmL: .15, ParamElbowL: .04, ParamAngleX: -1 } },
+      { at: .24, pose: { ParamArmL: .2, ParamElbowL: .12, ParamAngleX: -4, ParamAngleZ: -6 } },
+      { at: .65, pose: { ParamArmL: .18, ParamElbowL: .1, ParamAngleX: -3, ParamAngleZ: -6 } },
+      { at: .8, pose: { ParamArmL: .1, ParamElbowL: .04, ParamAngleX: -1, ParamAngleZ: -3 } },
       { at: 1, pose: {} }
     ]
   },
   greet: {
-    title: '轻招呼', description: '小幅抬手，两次轻轻示意，再收手。', durationMs: 3800,
+    title: '挥手招呼', description: '抬臂、弯肘，手在脸旁轻摆两次，再慢慢放下。', durationMs: 4600,
     frames: [
       { at: 0, pose: {} },
-      { at: .15, pose: { ParamArmL: .6, ParamAngleZ: -8, ParamMouthForm: .35 } },
-      { at: .32, pose: { ParamArmL: .25, ParamAngleZ: -4, ParamMouthForm: .35 } },
-      { at: .5, pose: { ParamArmL: .6, ParamAngleZ: -8, ParamMouthForm: .35 } },
-      { at: .66, pose: { ParamArmL: .25, ParamAngleZ: -4, ParamMouthForm: .35 } },
-      { at: .82, pose: { ParamArmL: .12, ParamAngleZ: -2, ParamMouthForm: .2 } },
+      { at: .1, pose: { ParamArmL: .4, ParamElbowL: .25, ParamAngleZ: -2, ParamMouthForm: .2 } },
+      { at: .24, pose: { ParamArmL: .95, ParamElbowL: 1, ParamAngleZ: -6, ParamMouthForm: .35 } },
+      { at: .34, pose: { ParamArmL: .95, ParamElbowL: 1, ParamWristL: -.65, ParamAngleZ: -6, ParamMouthForm: .35 } },
+      { at: .44, pose: { ParamArmL: .95, ParamElbowL: 1, ParamWristL: .65, ParamAngleZ: -5, ParamMouthForm: .35 } },
+      { at: .54, pose: { ParamArmL: .95, ParamElbowL: 1, ParamWristL: -.65, ParamAngleZ: -6, ParamMouthForm: .35 } },
+      { at: .64, pose: { ParamArmL: .95, ParamElbowL: 1, ParamWristL: .65, ParamAngleZ: -5, ParamMouthForm: .35 } },
+      { at: .72, pose: { ParamArmL: .9, ParamElbowL: .95, ParamAngleZ: -4, ParamMouthForm: .3 } },
+      { at: .86, pose: { ParamArmL: .35, ParamElbowL: .45, ParamAngleZ: -2, ParamMouthForm: .2 } },
       { at: 1, pose: {} }
     ]
   },
@@ -51,8 +54,8 @@ export const gestures: Record<GestureId, Gesture> = {
     frames: [
       { at: 0, pose: {} },
       { at: .08, pose: { ParamAngleZ: -4, ParamMouthForm: .6 } },
-      { at: .2, pose: { ParamAngleZ: -12, ParamMouthForm: 1, ParamEyeLOpen: 0, ParamEyeROpen: 0, ParamArmL: .18 } },
-      { at: .74, pose: { ParamAngleZ: -12, ParamMouthForm: 1, ParamEyeLOpen: 0, ParamEyeROpen: 0, ParamArmL: .18 } },
+      { at: .2, pose: { ParamAngleZ: -12, ParamMouthForm: 1, ParamEyeLOpen: 0, ParamEyeROpen: 0, ParamArmL: .06 } },
+      { at: .74, pose: { ParamAngleZ: -12, ParamMouthForm: 1, ParamEyeLOpen: 0, ParamEyeROpen: 0, ParamArmL: .06 } },
       { at: .86, pose: { ParamAngleZ: -6, ParamMouthForm: .7, ParamEyeLOpen: 0, ParamEyeROpen: 0 } },
       { at: 1, pose: {} }
     ]

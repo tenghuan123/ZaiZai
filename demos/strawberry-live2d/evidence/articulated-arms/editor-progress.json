@@ -1,0 +1,128 @@
+{
+  "status": "saved, exported and verified in real Cubism Core and browser",
+  "model": "assets/articulated-arms/strawberry-bunny-articulated.cmo3",
+  "editorHasUnsavedChanges": false,
+  "sourceCheckpoint": "5a346c8",
+  "observedInEditor": {
+    "duplicateFullPsdPartRemoved": true,
+    "oldArmMeshesRemoved": [
+      "ArmL",
+      "ArmR"
+    ],
+    "newArmArtMeshes": 10,
+    "meshSettings": {
+      "outerSpacing": 16,
+      "innerSpacing": 20,
+      "outerMargin": 4,
+      "innerMargin": 4,
+      "minimumMargin": 2,
+      "minimumBoundaryPoints": 12,
+      "alphaThreshold": 20
+    },
+    "leftShoulder": {
+      "name": "ArmLRotation",
+      "parameter": "ParamArmL",
+      "range": [
+        0,
+        1
+      ],
+      "angles": [
+        0,
+        -45
+      ]
+    },
+    "leftElbow": {
+      "name": "ElbowL",
+      "id": "Rotation7",
+      "parent": "ArmLRotation",
+      "parameter": "ParamElbowL",
+      "range": [
+        0,
+        1
+      ],
+      "angles": [
+        0,
+        -95
+      ]
+    },
+    "leftWrist": {
+      "name": "WristL",
+      "id": "Rotation8",
+      "parent": "ElbowL",
+      "parameter": "ParamWristL",
+      "keys": [
+        -1,
+        0,
+        1
+      ],
+      "angles": [
+        -20,
+        0,
+        20
+      ]
+    },
+    "rightArmPartsParent": "ArmRRotation",
+    "combinedLeftRaisedPose": "editor-wave-first.png",
+    "rightShoulder": {
+      "name": "ArmRRotation",
+      "parameter": "ParamArmR",
+      "range": [
+        0,
+        1
+      ],
+      "angles": [
+        0,
+        45
+      ]
+    },
+    "rightElbow": {
+      "name": "ElbowR",
+      "id": "Rotation9",
+      "parent": "ArmRRotation",
+      "parameter": "ParamElbowR",
+      "range": [
+        0,
+        1
+      ],
+      "angles": [
+        0,
+        95
+      ]
+    },
+    "rightWrist": {
+      "name": "WristR",
+      "id": "Rotation10",
+      "parent": "ElbowR",
+      "parameter": "ParamWristR",
+      "keys": [
+        -1,
+        0,
+        1
+      ],
+      "angles": [
+        -20,
+        0,
+        20
+      ]
+    },
+    "jointUnderlapDrawOrder": 500
+  },
+  "remaining": [],
+  "runtimeModelReplaced": false,
+  "runtimeVerified": true,
+  "demoNowUsesIndependentArticulatedModel": true,
+  "runtime": {
+    "directory": "public/model-articulated",
+    "mocSha256": "68c0677f5b305eeb83740b92deb9c1c7b26f19cc8a14c393256c6003784213bf",
+    "drawables": 24,
+    "parameters": 33,
+    "unitTests": 14,
+    "browserReport": "result.json",
+    "coreReport": "core-final-export.json"
+  },
+  "limitations": [
+    "Original hand shape with planar wrist rotation; no finger articulation or palm perspective",
+    "Finite validated motion clips, not all possible joint combinations",
+    "320px source artwork; close-up rendering still has filtering and cut-edge differences from the original"
+  ]
+}

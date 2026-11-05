@@ -3,7 +3,8 @@ import type { ActingPose } from './scenes'
 const response: Record<keyof ActingPose, number> = {
   ParamAngleX: 10, ParamAngleZ: 10, ParamBodyAngleZ: 7,
   ParamEyeLOpen: 24, ParamEyeROpen: 24, ParamMouthForm: 14,
-  ParamArmL: 8, ParamArmR: 8
+  ParamArmL: 8, ParamArmR: 8,
+  ParamElbowL: 12, ParamElbowR: 12, ParamWristL: 16, ParamWristR: 16
 }
 
 /** Critical damping gives gestures a soft start and stop; the body follows the head. */

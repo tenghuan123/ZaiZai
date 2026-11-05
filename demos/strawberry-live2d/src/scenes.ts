@@ -9,12 +9,17 @@ export interface ActingPose {
   ParamMouthForm: number
   ParamArmL: number
   ParamArmR: number
+  ParamElbowL: number
+  ParamElbowR: number
+  ParamWristL: number
+  ParamWristR: number
 }
 
 export const neutralPose: ActingPose = {
   ParamAngleX: 0, ParamAngleZ: 0, ParamBodyAngleZ: 0,
   ParamEyeLOpen: 1, ParamEyeROpen: 1, ParamMouthForm: 0,
-  ParamArmL: 0, ParamArmR: 0
+  ParamArmL: 0, ParamArmR: 0,
+  ParamElbowL: 0, ParamElbowR: 0, ParamWristL: 0, ParamWristR: 0
 }
 
 export interface Beat {
@@ -52,7 +57,7 @@ export const scenes: Scene[] = [
     id: 'rest', title: '休息也是正经事', description: '关心提醒 → 停顿 → 困困地接梗',
     beats: [
       { id: 'rest-1', text: '久坐成疾。', emotion: '有点担心', direction: '抬手提醒，眉眼认真', pauseAfterMs: 550,
-        gesture: 'greet' },
+        gesture: 'explain' },
       { id: 'rest-2', text: '还是要多躺。', emotion: '困困的', direction: '放下手，闭眼歪头', pauseAfterMs: 1700,
         gesture: 'sleepy', accent: 'sleep' }
     ]

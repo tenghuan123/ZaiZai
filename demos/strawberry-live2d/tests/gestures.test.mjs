@@ -8,7 +8,8 @@ import { resolveEyeFrame } from '../src/eye-motion.ts'
 test('every reusable gesture stays in the visually checked model range and returns to the original pose', () => {
   const bounds = {
     ParamAngleX: [-4, 4], ParamAngleZ: [-12, 12], ParamBodyAngleZ: [-1.5, 1.5],
-    ParamArmL: [0, .6], ParamArmR: [0, .6], ParamMouthForm: [0, 1],
+    ParamArmL: [0, .95], ParamArmR: [0, .95], ParamMouthForm: [0, 1],
+    ParamElbowL: [0, 1], ParamElbowR: [0, 1], ParamWristL: [-.65, .65], ParamWristR: [-.65, .65],
     ParamEyeLOpen: [0, 1], ParamEyeROpen: [0, 1]
   }
   for (const [id, gesture] of Object.entries(gestures)) {
@@ -35,6 +36,8 @@ test('complete gesture playback settles at neutral at 30 and 120 FPS, including 
       closed += Number(eye === 0)
       half = eye === .5 ? half + 1 : 0; longestHalf = Math.max(longestHalf, half)
       assert.equal(motion.pose.ParamArmR, 0)
+      assert.equal(motion.pose.ParamElbowR, 0)
+      assert.equal(motion.pose.ParamWristR, 0)
     }
     for (const key of Object.keys(neutralPose)) assert.ok(Math.abs(motion.pose[key] - neutralPose[key]) < .003, `${id} failed to restore ${key}`)
     if (id === 'smile' || id === 'sleepy') {
@@ -42,4 +45,19 @@ test('complete gesture playback settles at neutral at 30 and 120 FPS, including 
       assert.ok(longestHalf / fps < .4, `${id} lingers half closed`)
     }
   }
+})
+
+test('greeting bends the elbow before waving the wrist and has time to return', () => {
+  const fps = 60, gesture = gestures.greet, motion = new ActingMotion(neutralPose)
+  const duration = gesture.durationMs / 1000, samples = []
+  for (let frame = 0; frame <= (duration + 1) * fps; frame++) {
+    motion.advance(sampleGesture('greet', frame / fps / duration), 1 / fps)
+    samples.push({ ...motion.pose })
+  }
+  const raised = samples.filter(pose => pose.ParamArmL > .85 && pose.ParamElbowL > .9)
+  assert.ok(raised.length / fps > 1.5, 'hand should visibly stay beside the cheek')
+  assert.ok(Math.min(...raised.map(p => p.ParamWristL)) < -.25)
+  assert.ok(Math.max(...raised.map(p => p.ParamWristL)) > .25)
+  assert.ok(samples.findIndex(p => p.ParamElbowL > .5) < samples.findIndex(p => Math.abs(p.ParamWristL) > .2))
+  assert.ok(scenes.every(scene => scene.beats.every(beat => beat.gesture !== 'greet')), 'short spoken beats must not compress the full greeting')
 })

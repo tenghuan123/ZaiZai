@@ -37,7 +37,7 @@ export class StrawberryViewer implements CharacterPlayback {
     const app = new Application({ view: canvas, backgroundAlpha: 0, antialias: true, resolution: Math.min(devicePixelRatio, 2), autoDensity: true })
     try {
       class StrawberryModel extends Live2DModel<Cubism4InternalModel> {}
-      const model = await StrawberryModel.from('/model/strawberry-bunny.model3.json', { autoInteract: false })
+      const model = await StrawberryModel.from('/model-articulated/strawberry-bunny.model3.json', { autoInteract: false })
       const actual = model.internalModel.coreModel.getModel()
       // Core 6 moved render orders from Drawables onto Model. This demo exports MOC 4.2,
       // so there are no offscreen passes; keep the old Pixi renderer's contract explicit.
@@ -54,12 +54,13 @@ export class StrawberryViewer implements CharacterPlayback {
       const required = [...Object.keys(neutralPose), 'ParamMouthOpenY']
       const missing = required.filter(id => !actual.parameters.ids.includes(id))
       if (missing.length) { model.destroy(); throw new Error(`模型缺少表演参数：${missing.join('、')}`) }
-      if (actual.drawables.count < 8) { model.destroy(); throw new Error('模型的分层数量不足，无法验证草莓兔的表情与动作。') }
+      if (actual.drawables.count < 24) { model.destroy(); throw new Error('模型尚未包含完整的手臂关节分层。') }
       // An ID alone does not prove a binding. Compare the compiled model's drawable output at both ends.
       const savedValues = actual.parameters.values.slice()
       const bindings: { id: string; minimum: number; maximum: number; drawables: string[] }[] = []
       let eyeCombinations = 0
       let eyeError = ''
+      let jointError = ''
       try {
         for (const id of required) {
           const index = actual.parameters.ids.indexOf(id)
@@ -75,6 +76,25 @@ export class StrawberryViewer implements CharacterPlayback {
             Math.abs(actual.drawables.opacities[drawable] - opacities[drawable]) > 0.000001 ||
             actual.drawables.vertexPositions[drawable].some((value, vertex) => Math.abs(value - vertices[drawable][vertex]) > 0.000001))
           bindings.push({ id, minimum, maximum, drawables: changed })
+        }
+        for (const side of ['L', 'R']) {
+          const expected = {
+            [`ParamArm${side}`]: ['Hand', 'Forearm', 'UpperArm', 'WristUnderlap', 'ElbowUnderlap'].map(name => name + side),
+            [`ParamElbow${side}`]: ['Hand', 'Forearm', 'WristUnderlap', 'ElbowUnderlap'].map(name => name + side),
+            // The wrist backing has the same opacity at both extremes; check it against neutral below.
+            [`ParamWrist${side}`]: ['Hand' + side]
+          }
+          for (const [id, names] of Object.entries(expected)) {
+            const changed = bindings.find(binding => binding.id === id)!.drawables
+            if (changed.length !== names.length || names.some(name => !changed.includes(name))) jointError = `模型关节绑定异常：${id}。`
+          }
+          for (const joint of ['Elbow', 'Wrist']) for (const value of joint === 'Wrist' ? [-1, 0, 1] : [0, 1]) {
+            actual.parameters.values.set(actual.parameters.defaultValues)
+            actual.parameters.values[actual.parameters.ids.indexOf(`Param${joint}${side}`)] = value
+            actual.update()
+            const mesh = actual.drawables.ids.indexOf(`${joint}Underlap${side}`)
+            if (mesh < 0 || Math.abs(actual.drawables.opacities[mesh] - Number(value !== 0)) > .0001) jointError = `模型关节补片异常：${joint}${side}。`
+          }
         }
         // Both eyes must work together: isolated endpoint checks miss accidental cross-bindings.
         for (const left of [0, 0.5, 1]) for (const right of [0, 0.5, 1]) {
@@ -97,6 +117,7 @@ export class StrawberryViewer implements CharacterPlayback {
         actual.update()
       }
       if (eyeError) { model.destroy(); throw new Error(eyeError) }
+      if (jointError) { model.destroy(); throw new Error(jointError) }
       const unbound = bindings.filter(binding => !binding.drawables.length)
       if (unbound.length) { model.destroy(); throw new Error(`这些参数还没有实际改变模型：${unbound.map(binding => binding.id).join('、')}`) }
       app.stage.addChild(model)
@@ -168,7 +189,7 @@ export class StrawberryViewer implements CharacterPlayback {
     this.mouthOpen += (mouth - this.mouthOpen) * (1 - Math.exp(-dt * (mouth > this.mouthOpen ? 38 : 24)))
     if (mouth === 0 && this.mouthOpen < 0.005) this.mouthOpen = 0
     core.setParameterValueById('ParamMouthOpenY', this.mouthOpen)
-    // Breathing is optional; the nine required acting parameters are checked against real MOC3 IDs.
+    // Breathing is optional; all required acting parameters are checked against real MOC3 output.
     if (core.getModel().parameters.ids.includes('ParamBreath')) core.setParameterValueById('ParamBreath', (Math.sin(seconds * 1.9) + 1) / 2)
     this.canvas.dataset.eye = current.ParamEyeLOpen.toFixed(3)
     this.canvas.dataset.blink = blink.toFixed(3)
@@ -178,6 +199,10 @@ export class StrawberryViewer implements CharacterPlayback {
     this.canvas.dataset.tilt = current.ParamAngleZ.toFixed(3)
     this.canvas.dataset.armLeft = current.ParamArmL.toFixed(4)
     this.canvas.dataset.armRight = current.ParamArmR.toFixed(4)
+    this.canvas.dataset.elbowLeft = current.ParamElbowL.toFixed(4)
+    this.canvas.dataset.elbowRight = current.ParamElbowR.toFixed(4)
+    this.canvas.dataset.wristLeft = current.ParamWristL.toFixed(4)
+    this.canvas.dataset.wristRight = current.ParamWristR.toFixed(4)
     this.canvas.dataset.body = current.ParamBodyAngleZ.toFixed(4)
   }
 }

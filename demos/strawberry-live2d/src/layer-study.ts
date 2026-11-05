@@ -5,7 +5,10 @@ import { ActingMotion } from './acting-motion'
 import { sampleGesture, type GestureId } from './gestures'
 
 interface Layer { name:string; left:number; top:number; width:number; height:number; file:string; hidden:boolean }
-interface Manifest { width:number; height:number; reference:string; layers:Layer[] }
+interface Manifest {
+  width:number; height:number; reference:string; layers:Layer[]
+  joints:Record<'L'|'R',{shoulder:[number,number];elbow:[number,number];wrist:[number,number]}>
+}
 interface DrawingLayer extends Layer { image:HTMLImageElement }
 
 /** An explicitly labelled art/rig study. It does not load or claim to be a Cubism model. */
@@ -36,11 +39,11 @@ export class LayerStudy implements CharacterPlayback {
   }
 
   static async load(canvas:HTMLCanvasElement,container:HTMLElement):Promise<LayerStudy> {
-    const response=await fetch('/study/manifest.json')
+    const response=await fetch('/study-articulated/manifest.json')
     if(!response.ok)throw new Error('尚未准备分层预演素材。')
     const manifest:Manifest=await response.json()
-    const layers=await Promise.all(manifest.layers.map(async layer=>({...layer,image:await loadImage('/study/'+layer.file)})))
-    const reference=await loadImage('/study/'+manifest.reference)
+    const layers=await Promise.all(manifest.layers.map(async layer=>({...layer,image:await loadImage('/study-articulated/'+layer.file)})))
+    const reference=await loadImage('/study-articulated/'+manifest.reference)
     canvas.dataset.renderer='layer-study'
     return new LayerStudy(canvas,container,manifest,layers,reference)
   }
@@ -87,10 +90,17 @@ export class LayerStudy implements CharacterPlayback {
     context.save();context.translate(160+pose.ParamAngleX*.07,150)
     context.rotate(clamp(pose.ParamAngleZ*.35,-5,5)*Math.PI/180);context.translate(-160,-150);draw();context.restore()
   }
-  private arm(side:'L'|'R',value:number):void {
-    const context=this.poseContext,x=side==='L'?183:137
-    context.save();context.translate(x,171);context.rotate(clamp(value,0,1)*15*(side==='L'?-1:1)*Math.PI/180)
-    context.translate(-x,-171);this.layer('Arm'+side);context.restore()
+  private arm(side:'L'|'R',pose:ActingPose):void {
+    const context=this.poseContext,joints=this.manifest.joints[side],direction=side==='L'?-1:1
+    const elbow=clamp(pose[`ParamElbow${side}`],0,1),wrist=clamp(pose[`ParamWrist${side}`],-1,1)
+    const rotate=(point:[number,number],degrees:number):void=>{
+      context.translate(...point);context.rotate(degrees*Math.PI/180);context.translate(-point[0],-point[1])
+    }
+    context.save();rotate(joints.shoulder,clamp(pose[`ParamArm${side}`],0,1)*45*direction)
+    this.layer('ElbowUnderlap'+side,Math.min(1,elbow*2));this.layer('UpperArm'+side)
+    rotate(joints.elbow,elbow*95*direction)
+    this.layer('WristUnderlap'+side,Math.abs(wrist));this.layer('Forearm'+side)
+    rotate(joints.wrist,wrist*20);this.layer('Hand'+side);context.restore()
   }
   private compose(pose:ActingPose,mouth:number,blink=1):void {
     const context=this.poseContext
@@ -99,7 +109,7 @@ export class LayerStudy implements CharacterPlayback {
     this.layer('LegR');this.layer('LegL')
     const reveal=clamp(Math.max(Math.abs(pose.ParamAngleZ),Math.abs(pose.ParamAngleX)*.3,pose.ParamArmL*20,pose.ParamArmR*20)/2,0,1)
     this.head(pose,()=>{this.layer('HairUnderpaint',reveal);this.layer('HairBack')})
-    this.layer('Body');this.arm('R',pose.ParamArmR);this.arm('L',pose.ParamArmL)
+    this.layer('Body');this.arm('R',pose);this.arm('L',pose)
     this.head(pose,()=>{
       this.layer('Head');this.layer('EyeROpen');this.layer('EyeLOpen');this.layer('MouthSmile')
       for(const side of ['R','L'] as const){
@@ -127,6 +137,10 @@ export class LayerStudy implements CharacterPlayback {
     this.canvas.dataset.tilt=this.motion.pose.ParamAngleZ.toFixed(3)
     this.canvas.dataset.armLeft=this.motion.pose.ParamArmL.toFixed(4)
     this.canvas.dataset.armRight=this.motion.pose.ParamArmR.toFixed(4)
+    this.canvas.dataset.elbowLeft=this.motion.pose.ParamElbowL.toFixed(4)
+    this.canvas.dataset.elbowRight=this.motion.pose.ParamElbowR.toFixed(4)
+    this.canvas.dataset.wristLeft=this.motion.pose.ParamWristL.toFixed(4)
+    this.canvas.dataset.wristRight=this.motion.pose.ParamWristR.toFixed(4)
     this.canvas.dataset.body=this.motion.pose.ParamBodyAngleZ.toFixed(4)
   }
   private verifyNeutral():void {

@@ -1,0 +1,344 @@
+{
+  "status": "layered candidate; NOT a bound or exported Live2D model",
+  "width": 320,
+  "height": 320,
+  "sourceSha256": "5f7b3a3642c195d30db916f39cc53989306d971cfa7c27dc3da8528f6af0da1d",
+  "neutral": {
+    "mismatchedVisiblePixels": 0,
+    "alphaMismatches": 0,
+    "uniquePixelOwnership": true
+  },
+  "joints": {
+    "R": {
+      "shoulder": [
+        137,
+        171
+      ],
+      "elbow": [
+        129,
+        190
+      ],
+      "wrist": [
+        117,
+        205
+      ]
+    },
+    "L": {
+      "shoulder": [
+        183,
+        171
+      ],
+      "elbow": [
+        191,
+        190
+      ],
+      "wrist": [
+        203,
+        205
+      ]
+    }
+  },
+  "layers": [
+    {
+      "name": "HairUnderpaint",
+      "left": 96,
+      "top": 148,
+      "width": 128,
+      "height": 107,
+      "hidden": true,
+      "file": "layers/HairUnderpaint.png",
+      "pixels": 10070,
+      "provenance": "unchanged motion-ready/layers/HairUnderpaint.png",
+      "sha256": "73b11f82a4f5f442c6167f1c33e6918c87daa470f78b9bc4f398067cf1509245"
+    },
+    {
+      "name": "HairBack",
+      "left": 69,
+      "top": 151,
+      "width": 177,
+      "height": 118,
+      "hidden": false,
+      "file": "layers/HairBack.png",
+      "pixels": 8387,
+      "provenance": "unchanged motion-ready/layers/HairBack.png",
+      "sha256": "79861a12d8ce509d927b67ffb2cc13aef4ae84bb3467d9196dae497348915849"
+    },
+    {
+      "name": "LegR",
+      "left": 131,
+      "top": 237,
+      "width": 29,
+      "height": 75,
+      "hidden": false,
+      "file": "layers/LegR.png",
+      "pixels": 1811,
+      "provenance": "unchanged motion-ready/layers/LegR.png",
+      "sha256": "e9be8f6be50b128fea4fc277ae15bbe9295ecdecf5b432eb16cfde59bf1b2bd8"
+    },
+    {
+      "name": "LegL",
+      "left": 160,
+      "top": 237,
+      "width": 31,
+      "height": 75,
+      "hidden": false,
+      "file": "layers/LegL.png",
+      "pixels": 1840,
+      "provenance": "unchanged motion-ready/layers/LegL.png",
+      "sha256": "928a8714d7219f3a4a362b4fbb650f163035bda26c86be2f0a75be852d7d0de7"
+    },
+    {
+      "name": "Body",
+      "left": 105,
+      "top": 151,
+      "width": 110,
+      "height": 93,
+      "hidden": false,
+      "file": "layers/Body.png",
+      "pixels": 5990,
+      "provenance": "unchanged motion-ready/layers/Body.png",
+      "sha256": "7f26404e236ab3dc12e46cbe0037d2798a0ae83fa455c7efe543cb12fe603443"
+    },
+    {
+      "name": "ElbowUnderlapR",
+      "left": 126,
+      "top": 187,
+      "width": 7,
+      "height": 7,
+      "hidden": true,
+      "file": "layers/ElbowUnderlapR.png",
+      "pixels": 29,
+      "provenance": "hidden local-color extension; joint coverage candidate, not approved final art",
+      "sha256": "b9435f41470b456825781066faa13dd1fb4b92137fe109e2a9047ec661d448e8"
+    },
+    {
+      "name": "WristUnderlapR",
+      "left": 115,
+      "top": 203,
+      "width": 5,
+      "height": 5,
+      "hidden": true,
+      "file": "layers/WristUnderlapR.png",
+      "pixels": 13,
+      "provenance": "hidden local-color extension; joint coverage candidate, not approved final art",
+      "sha256": "a0e1a940712479e55c47de957422456db5389fcef5aadc5b2cd446fb73b952f0"
+    },
+    {
+      "name": "UpperArmR",
+      "left": 128,
+      "top": 168,
+      "width": 19,
+      "height": 27,
+      "hidden": false,
+      "file": "layers/UpperArmR.png",
+      "pixels": 283,
+      "provenance": "exact partition of original ArmR; no rescaling",
+      "sha256": "4e23af2c1e9e8c5e1d1372f509cc8e6c62635ec74966a0e6bdd7d4d699d05369"
+    },
+    {
+      "name": "ForearmR",
+      "left": 114,
+      "top": 189,
+      "width": 21,
+      "height": 22,
+      "hidden": false,
+      "file": "layers/ForearmR.png",
+      "pixels": 211,
+      "provenance": "exact partition of original ArmR; no rescaling",
+      "sha256": "135b1d5184b2e07f824541a01d8e46ecc9663b63e8a8a56f170c396f47260814"
+    },
+    {
+      "name": "HandR",
+      "left": 104,
+      "top": 201,
+      "width": 17,
+      "height": 13,
+      "hidden": false,
+      "file": "layers/HandR.png",
+      "pixels": 139,
+      "provenance": "exact partition of original ArmR; no rescaling",
+      "sha256": "3492d3d7578a54af87de8d469c4a17c5b3c64ada453cbf1e89ffaf61ef5a5164"
+    },
+    {
+      "name": "ElbowUnderlapL",
+      "left": 188,
+      "top": 187,
+      "width": 7,
+      "height": 7,
+      "hidden": true,
+      "file": "layers/ElbowUnderlapL.png",
+      "pixels": 29,
+      "provenance": "hidden local-color extension; joint coverage candidate, not approved final art",
+      "sha256": "b0e018bde0051b84976d4aa5b2c4995c12ff3b3a93ae3ac0350edacf384c8d82"
+    },
+    {
+      "name": "WristUnderlapL",
+      "left": 201,
+      "top": 203,
+      "width": 5,
+      "height": 5,
+      "hidden": true,
+      "file": "layers/WristUnderlapL.png",
+      "pixels": 13,
+      "provenance": "hidden local-color extension; joint coverage candidate, not approved final art",
+      "sha256": "f9724e80a1690b94dde8fc08433c001d12e9c75d621f7db50b98f2c5e842cebb"
+    },
+    {
+      "name": "UpperArmL",
+      "left": 173,
+      "top": 168,
+      "width": 19,
+      "height": 27,
+      "hidden": false,
+      "file": "layers/UpperArmL.png",
+      "pixels": 282,
+      "provenance": "exact partition of original ArmL; no rescaling",
+      "sha256": "10a4de2540169eab2c7ca3b5ffe0ca7e1a1521dffbb91dc4eaf94b90a3b011d7"
+    },
+    {
+      "name": "ForearmL",
+      "left": 184,
+      "top": 189,
+      "width": 22,
+      "height": 22,
+      "hidden": false,
+      "file": "layers/ForearmL.png",
+      "pixels": 214,
+      "provenance": "exact partition of original ArmL; no rescaling",
+      "sha256": "b3eb807dacb57beedd70495a3cfa4fcd5e82bd9d6557cdf68b1bcbc6161e3386"
+    },
+    {
+      "name": "HandL",
+      "left": 199,
+      "top": 201,
+      "width": 17,
+      "height": 13,
+      "hidden": false,
+      "file": "layers/HandL.png",
+      "pixels": 140,
+      "provenance": "exact partition of original ArmL; no rescaling",
+      "sha256": "a7722cdb48b958db435576dc2ab607b6b726ae21d44867d20718f51c861f613a"
+    },
+    {
+      "name": "Head",
+      "left": 89,
+      "top": 38,
+      "width": 144,
+      "height": 113,
+      "hidden": false,
+      "file": "layers/Head.png",
+      "pixels": 11349,
+      "provenance": "unchanged motion-ready/layers/Head.png",
+      "sha256": "7c74b5ba8a03952d59acae1cc9c6687eaba0a465aacba3954b1c022b79da5e09"
+    },
+    {
+      "name": "EyeROpen",
+      "left": 128,
+      "top": 110,
+      "width": 26,
+      "height": 22,
+      "hidden": false,
+      "file": "layers/EyeROpen.png",
+      "pixels": 572,
+      "provenance": "unchanged motion-ready/layers/EyeROpen.png",
+      "sha256": "be17748bdfcd7deaac5344d796c094d153b1fa31df604f52b6cc8635e5f39909"
+    },
+    {
+      "name": "EyeLOpen",
+      "left": 165,
+      "top": 109,
+      "width": 27,
+      "height": 23,
+      "hidden": false,
+      "file": "layers/EyeLOpen.png",
+      "pixels": 621,
+      "provenance": "unchanged motion-ready/layers/EyeLOpen.png",
+      "sha256": "c33795295c682f5d052ae38863abf9d93fabf54ef1becf1112db67e7e3a18ed2"
+    },
+    {
+      "name": "MouthSmile",
+      "left": 149,
+      "top": 132,
+      "width": 22,
+      "height": 12,
+      "hidden": false,
+      "file": "layers/MouthSmile.png",
+      "pixels": 264,
+      "provenance": "unchanged motion-ready/layers/MouthSmile.png",
+      "sha256": "aa5b59b6f3edb99057dc7e3c3c07b77ed577457785ec1d46d500cf7e1d821d57"
+    },
+    {
+      "name": "EyeRHalf",
+      "left": 128,
+      "top": 110,
+      "width": 26,
+      "height": 22,
+      "hidden": true,
+      "file": "layers/EyeRHalf.png",
+      "pixels": 572,
+      "provenance": "unchanged motion-ready/layers/EyeRHalf.png",
+      "sha256": "298ee85f713c8e7152a50ed3920f2af157547beefe17eb270eab4565460e8a40"
+    },
+    {
+      "name": "EyeRClosed",
+      "left": 128,
+      "top": 110,
+      "width": 26,
+      "height": 22,
+      "hidden": true,
+      "file": "layers/EyeRClosed.png",
+      "pixels": 572,
+      "provenance": "unchanged motion-ready/layers/EyeRClosed.png",
+      "sha256": "c3a3f5573e9db1bb8d090a99b3c890a538ad62a64b90df01c4b0233c1224b507"
+    },
+    {
+      "name": "EyeLHalf",
+      "left": 165,
+      "top": 109,
+      "width": 27,
+      "height": 23,
+      "hidden": true,
+      "file": "layers/EyeLHalf.png",
+      "pixels": 621,
+      "provenance": "unchanged motion-ready/layers/EyeLHalf.png",
+      "sha256": "0055b3c405f11663779e1e61c57578e31542db3f3c4802c71bed2bcfd966fc01"
+    },
+    {
+      "name": "EyeLClosed",
+      "left": 165,
+      "top": 109,
+      "width": 27,
+      "height": 23,
+      "hidden": true,
+      "file": "layers/EyeLClosed.png",
+      "pixels": 621,
+      "provenance": "unchanged motion-ready/layers/EyeLClosed.png",
+      "sha256": "ee6c1adc48f18a21c0a24291d6170a3b630e9daf922ec3eb4e78b8fac3130f80"
+    },
+    {
+      "name": "MouthTalk",
+      "left": 151,
+      "top": 128,
+      "width": 22,
+      "height": 15,
+      "hidden": true,
+      "file": "layers/MouthTalk.png",
+      "pixels": 330,
+      "provenance": "unchanged motion-ready/layers/MouthTalk.png",
+      "sha256": "47f47c8ef8e833b4f47751b950c79ab6ad16d201bd5c0d946b941b3c25fdd548"
+    }
+  ],
+  "hierarchy": [
+    "BodyZ → ShoulderR → UpperArmR + ElbowR → ForearmR + WristR → HandR",
+    "BodyZ → ShoulderL → UpperArmL + ElbowL → ForearmL + WristL → HandL"
+  ],
+  "bindingRequired": [
+    "shoulder/elbow/wrist rotation deformers on each arm",
+    "local deformation at the puff sleeve and elbow",
+    "underlap visibility only when the relevant joint bends",
+    "test hand beside the cheek, shoulder cut, and return to neutral",
+    "export a separate MOC3 and verify in the real Core before replacing the demo"
+  ],
+  "existingModelChanged": false,
+  "existingRuntimeChanged": false
+}

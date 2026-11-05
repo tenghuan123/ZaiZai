@@ -1,0 +1,15 @@
+{
+  "visible": {
+    "width": 600,
+    "height": 800,
+    "top": 240.390625,
+    "bottom": 560.390625,
+    "fullyVisible": true
+  },
+  "manual": {
+    "arm": "0.8323",
+    "elbow": "0.9125",
+    "wrist": "-0.5502"
+  },
+  "reset": true
+}

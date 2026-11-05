@@ -4,14 +4,18 @@ import { fileURLToPath } from 'node:url'
 import sharp from 'sharp'
 
 process.chdir(fileURLToPath(new URL('../', import.meta.url)))
-const geometry = JSON.parse(await readFile('assets/motion-ready/runtime-geometry.json', 'utf8'))
-const moc = await readFile('public/model/strawberry-bunny.moc3')
+const articulated = process.argv.includes('--articulated')
+const assets = articulated ? 'assets/articulated-arms' : 'assets/motion-ready'
+const model = articulated ? 'public/model-articulated' : 'public/model'
+const report = articulated ? 'evidence/articulated-arms/texture-padding.json' : 'evidence/texture-padding.json'
+const geometry = JSON.parse(await readFile(`${assets}/runtime-geometry.json`, 'utf8'))
+const moc = await readFile(`${model}/strawberry-bunny.moc3`)
 if (createHash('sha256').update(moc).digest('hex') !== geometry.mocSha256) throw new Error('MOC3 changed: refresh neutral Core geometry before padding this export')
-const manifest = JSON.parse(await readFile('assets/motion-ready/manifest.json', 'utf8'))
-const original = await readFile('assets/motion-ready/reference.png').catch(() => readFile('assets/reference-preserved/source.png'))
-if (createHash('sha256').update(original).digest('hex') !== manifest.provenance.sourceSha256) throw new Error('Original artwork does not match the model source')
+const manifest = JSON.parse(await readFile(`${assets}/${articulated ? 'rig' : 'manifest'}.json`, 'utf8'))
+const original = await readFile('assets/reference-preserved/source.png')
+if (createHash('sha256').update(original).digest('hex') !== (articulated ? manifest.sourceSha256 : manifest.provenance.sourceSha256)) throw new Error('Original artwork does not match the model source')
 const source = await sharp(original).ensureAlpha().raw().toBuffer()
-const base = await readFile('assets/motion-ready/texture_00.export.png')
+const base = await readFile(`${assets}/texture_00.export.png`)
 const { data: atlas, info } = await sharp(base).ensureAlpha().raw().toBuffer({ resolveWithObject: true })
 const padded = Buffer.from(atlas), changes = []
 
@@ -65,6 +69,6 @@ for (const mesh of geometry.drawables) {
   changes.push({ mesh: mesh.id, pixels: count })
 }
 const output = await sharp(padded, { raw: info }).png().toBuffer()
-await writeFile('public/model/strawberry-bunny.1024/texture_00.png', output)
-await writeFile('evidence/texture-padding.json', JSON.stringify({ generatedAt: new Date().toISOString(), method: 'Two-pixel overlap using each original part edge color, restricted to the original character silhouette; no visible source texels replaced', sourceAtlasSha256: createHash('sha256').update(base).digest('hex'), outputSha256: createHash('sha256').update(output).digest('hex'), changes }, null, 2) + '\n')
+await writeFile(`${model}/strawberry-bunny.1024/texture_00.png`, output)
+await writeFile(report, JSON.stringify({ generatedAt: new Date().toISOString(), method: 'Two-pixel overlap using each original part edge color, restricted to the original character silhouette; no visible source texels replaced', sourceAtlasSha256: createHash('sha256').update(base).digest('hex'), outputSha256: createHash('sha256').update(output).digest('hex'), changes }, null, 2) + '\n')
 console.log(changes)

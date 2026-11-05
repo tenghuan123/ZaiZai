@@ -3,7 +3,7 @@ import { resolve, relative } from 'node:path'
 import { fileURLToPath } from 'node:url'
 
 const directory = fileURLToPath(new URL('../', import.meta.url))
-const modelDirectory = resolve(directory, 'public/model')
+const modelDirectory = resolve(directory, 'public/model-articulated')
 const report = { status: 'incomplete', checkedAt: new Date().toISOString(), checks: [], errors: [], runtimeVerified: false }
 try {
   const file = resolve(modelDirectory, 'strawberry-bunny.model3.json')

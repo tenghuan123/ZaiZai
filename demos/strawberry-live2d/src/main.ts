@@ -95,7 +95,7 @@ function onPlayback(event: PlaybackEvent): void {
     selectedGesture = event.id; setPlaying(true)
     viewer?.setGesture(event.id, event.progress)
     delete stage.dataset.beat
-    dialogue.textContent = '先看看这个小动作。'; emotion.textContent = gestures[event.id].title
+    dialogue.textContent = '先看看这个动作。'; emotion.textContent = gestures[event.id].title
     direction.textContent = gestures[event.id].description; accent.textContent = ''
     element('progress').style.width = '0%'
     Array.from(element('beat-list').children).forEach(item => item.classList.remove('active'))
@@ -126,13 +126,16 @@ element<HTMLInputElement>('voice').addEventListener('change', event => player?.s
 document.addEventListener('visibilitychange', () => {
   syncPause()
 })
-const manual = ['eye', 'mouth', 'tilt', 'arm'] as const
+const manual = ['eye', 'mouth', 'tilt', 'arm', 'elbow', 'wrist'] as const
 for (const id of manual) element<HTMLInputElement>(id).disabled = true
 element<HTMLButtonElement>('reset-pose').disabled = true
 for (const id of manual) element<HTMLInputElement>(id).addEventListener('input', () => {
   player?.stop(); selectedGesture = null; setReference(false); viewer?.setPaused(false)
   const value = (key: typeof manual[number]): number => Number(element<HTMLInputElement>(key).value)
-  viewer?.setPose({ ParamEyeLOpen: value('eye'), ParamEyeROpen: value('eye'), ParamAngleZ: value('tilt'), ParamArmL: value('arm') }, () => value('mouth'))
+  viewer?.setPose({
+    ParamEyeLOpen: value('eye'), ParamEyeROpen: value('eye'), ParamAngleZ: value('tilt'),
+    ParamArmL: value('arm'), ParamElbowL: value('elbow'), ParamWristL: value('wrist')
+  }, () => value('mouth'))
   emotion.textContent = '你来当导演'; direction.textContent = '拖动滑块，观察模型参数如何改变画面。'
 })
 element('reset-pose').addEventListener('click', () => {

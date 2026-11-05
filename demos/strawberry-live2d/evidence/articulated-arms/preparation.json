@@ -1,0 +1,9 @@
+{
+  "status": "layered candidate; NOT a bound or exported Live2D model",
+  "sourceSha256": "5f7b3a3642c195d30db916f39cc53989306d971cfa7c27dc3da8528f6af0da1d",
+  "layers": 24,
+  "mismatchedVisiblePixels": 0,
+  "alphaMismatches": 0,
+  "uniquePixelOwnership": true,
+  "existingModelChanged": false
+}

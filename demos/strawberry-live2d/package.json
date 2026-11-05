@@ -10,6 +10,7 @@
     "test": "node --experimental-transform-types --test tests/*.test.mjs",
     "prepare:assets": "node scripts/prepare-reference-assets.mjs",
     "prepare:motion": "node scripts/prepare-reference-assets.mjs && node scripts/prepare-motion-assets.mjs",
+    "prepare:arms": "node scripts/prepare-articulated-arms.mjs && node scripts/preview-articulated-arms.mjs",
     "prepare:audio": "node scripts/prepare-audio.mjs",
     "prepare:texture": "node scripts/pad-runtime-texture.mjs",
     "check:model": "node scripts/check-model.mjs"
