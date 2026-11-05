@@ -1,0 +1,40 @@
+<!doctype html>
+<html lang="zh-CN">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <meta name="theme-color" content="#fff8f5" />
+    <title>草莓兔的小剧场 · Live2D 段子演示</title>
+  </head>
+  <body>
+    <main class="shell">
+      <header class="page-header">
+        <div class="brand"><span class="brand-mark">✿</span><span>ZaiZai <i>实验小剧场</i></span></div>
+        <span class="status" id="model-status" role="status">正在检查 Live2D 模型…</span>
+      </header>
+      <section class="intro"><p class="eyebrow">A LITTLE EXPRESSION, A LITTLE COMPANY</p><h1>同一句话，也有小表情<span>。</span></h1><p>让草莓兔停一停、眨眨眼，再把包袱轻轻抖出来。</p></section>
+      <div class="workspace">
+        <section class="theater" aria-label="草莓兔表演舞台">
+          <div class="stage-top"><span><i></i> 草莓兔的小剧场</span><span id="emotion-label">等你开场</span></div>
+          <div class="preview-toolbar"><div class="preview-modes" aria-label="预览方式"><button id="mode-study" aria-pressed="false">分层动作预演</button><button id="mode-live2d" aria-pressed="true">Live2D 模型</button></div><label class="reference-control"><input id="reference" type="checkbox" disabled />对照原图</label></div>
+          <div class="bubble" id="bubble" aria-live="polite"><span class="bubble-name">草莓兔</span><p id="dialogue">今天，想听哪个小段子？</p><span class="bubble-dots">✧</span></div>
+          <div class="stage" id="stage"><canvas id="character" aria-label="草莓兔 Live2D 角色"></canvas><img id="art-preview" alt="草莓兔原始待机图" hidden /><div class="accent" id="accent" aria-hidden="true"></div><div class="stage-ground"></div></div>
+          <section class="gestures-panel" aria-label="动作试演"><div class="section-label"><h2>先试一个小动作</h2><span>05 个</span></div><div id="gestures" class="gesture-list"></div></section>
+          <p class="direction" id="direction">选择右边的段子，看看她怎么演。</p>
+          <div class="transport"><button class="primary" id="play" disabled>开始表演 <span>↗</span></button><button class="secondary" id="restart" disabled aria-label="从头播放">↺</button><label class="voice-control"><input id="voice" type="checkbox" checked /><span>中文配音</span></label></div>
+          <div class="progress" aria-hidden="true"><span id="progress"></span></div>
+          <p class="notice" id="notice" role="alert" hidden></p>
+        </section>
+        <aside class="sidebar">
+          <div class="section-label"><h2>今天的台词本</h2><span>03 段</span></div>
+          <div id="scenes" class="scene-list"></div>
+          <section class="beats-panel"><div class="section-label"><h2>表演节奏</h2><span id="beat-count">两拍，一个包袱</span></div><ol id="beat-list"></ol></section>
+          <details class="controls-panel"><summary>亲手调一调表情 <span>＋</span></summary><p>停止表演后，可以单独观察参数的效果。预演限制动作幅度，先检查原角色是否保持自然。</p><label>眼睛：闭合 / 半闭 / 睁开<input id="eye" type="range" min="0" max="1" step="0.5" value="1" /></label><label>嘴巴开合<input id="mouth" type="range" min="0" max="1" step="0.01" value="0" /></label><label>歪头幅度<input id="tilt" type="range" min="-12" max="12" step="1" value="0" /></label><label>左手抬起<input id="arm" type="range" min="0" max="0.6" step="0.01" value="0" /></label><button id="reset-pose" class="text-button">恢复自然表情</button></details>
+          <p class="demo-note">本地演示 · 使用预设段子与系统配音<br />后续 AI 可输出相同的台词与动作脚本。</p>
+        </aside>
+      </div>
+      <footer><span>一点点表情，让陪伴更生动。</span><span>STRAWBERRY BUNNY / LIVE2D STUDY</span></footer>
+    </main>
+    <script type="module" src="/src/main.ts"></script>
+  </body>
+</html>

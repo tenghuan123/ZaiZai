@@ -1,0 +1,45 @@
+{
+  "status": "layer-motion-study-verified; cubism-runtime-not-exported",
+  "checkedAt": "2026-11-04T09:45:13.249Z",
+  "files": {
+    "assets/motion-ready/strawberry-bunny.psd": {
+      "bytes": 292369,
+      "sha256": "f771d3c2e8d5fa30af404e0357697abe96a00117157f4253513a222d86a564a5"
+    },
+    "assets/motion-ready/hair-underpaint-generated.png": {
+      "bytes": 818589,
+      "sha256": "8f952904f2ee5265e17bfc6547f0a2b89ea6e423b495073935cd307542f626e9"
+    },
+    "assets/motion-ready/manifest.json": {
+      "bytes": 5672,
+      "sha256": "d7e0091f1873a697b05390eaff83e2f2d321907fc2b01a1c90e6d09b5b75f68a"
+    }
+  },
+  "checks": {
+    "psdLayers": 16,
+    "audioClips": 6,
+    "playerTests": {
+      "passed": 4,
+      "failed": 0
+    },
+    "typecheckAndBuild": "passed",
+    "browser": {
+      "layerStudy": "verified with original art and small pose changes",
+      "neutralMaximumError": 0,
+      "live2dRuntime": "not exported or verified"
+    },
+    "regeneratedFaceUsed": false
+  },
+  "unchanged": "existing app sources and pet resources",
+  "pending": [
+    "User installs Cubism Editor and accepts Editor/SDK terms",
+    "Create bound editable CMO3 from motion-ready PSD; refine mesh/keyforms and larger-motion boundaries",
+    "Export real MOC3, model3.json and textures; add official Core",
+    "Verify actual Cubism rendering and dialogue playback"
+  ],
+  "rejectedCandidate": {
+    "directory": "assets/",
+    "reason": "User rejected overall appearance; independent redraw and nonuniform per-part scaling changed identity and proportions",
+    "supersedes": "previous eye/limb alignment checks were for the rejected candidate, not visual acceptance"
+  }
+}

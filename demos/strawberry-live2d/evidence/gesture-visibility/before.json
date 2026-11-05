@@ -1,0 +1,479 @@
+{
+  "initial": {
+    "width": 2200,
+    "height": 1700,
+    "hidden": false,
+    "stage": {
+      "x": 585,
+      "y": 423.984375,
+      "width": 664,
+      "height": 338,
+      "top": 423.984375,
+      "right": 1249,
+      "bottom": 761.984375,
+      "left": 585
+    },
+    "buttons": {
+      "x": 1306,
+      "y": 754.890625,
+      "width": 338,
+      "height": 32,
+      "top": 754.890625,
+      "right": 1644,
+      "bottom": 786.890625,
+      "left": 1306
+    }
+  },
+  "results": [
+    {
+      "id": "explain",
+      "samples": [
+        {
+          "progress": "0.1176",
+          "tilt": "0.000",
+          "arm": "0.0835",
+          "eye": "1",
+          "stageVisible": true,
+          "top": 423.984375,
+          "hidden": false,
+          "label": "轻抬手"
+        },
+        {
+          "progress": "0.2478",
+          "tilt": "-0.296",
+          "arm": "0.2692",
+          "eye": "1",
+          "stageVisible": true,
+          "top": 423.984375,
+          "hidden": false,
+          "label": "轻抬手"
+        },
+        {
+          "progress": "0.3726",
+          "tilt": "-1.721",
+          "arm": "0.3722",
+          "eye": "1",
+          "stageVisible": true,
+          "top": 423.984375,
+          "hidden": false,
+          "label": "轻抬手"
+        },
+        {
+          "progress": "0.5395",
+          "tilt": "-1.997",
+          "arm": "0.3839",
+          "eye": "1",
+          "stageVisible": true,
+          "top": 423.984375,
+          "hidden": false,
+          "label": "轻抬手"
+        },
+        {
+          "progress": "0.6642",
+          "tilt": "-1.999",
+          "arm": "0.3656",
+          "eye": "1",
+          "stageVisible": true,
+          "top": 423.984375,
+          "hidden": false,
+          "label": "轻抬手"
+        },
+        {
+          "progress": "0.7895",
+          "tilt": "-1.430",
+          "arm": "0.2748",
+          "eye": "1",
+          "stageVisible": true,
+          "top": 423.984375,
+          "hidden": false,
+          "label": "轻抬手"
+        },
+        {
+          "progress": "0.9145",
+          "tilt": "-0.775",
+          "arm": "0.1542",
+          "eye": "1",
+          "stageVisible": true,
+          "top": 423.984375,
+          "hidden": false,
+          "label": "轻抬手"
+        },
+        {
+          "tilt": "-0.091",
+          "arm": "0.0283",
+          "eye": "1",
+          "stageVisible": true,
+          "top": 423.984375,
+          "hidden": false,
+          "label": "动作演完啦"
+        }
+      ]
+    },
+    {
+      "id": "greet",
+      "samples": [
+        {
+          "progress": "0.0994",
+          "tilt": "-0.516",
+          "arm": "0.0593",
+          "eye": "1",
+          "stageVisible": true,
+          "top": 423.984375,
+          "hidden": false,
+          "label": "轻招呼"
+        },
+        {
+          "progress": "0.2046",
+          "tilt": "-2.293",
+          "arm": "0.2908",
+          "eye": "0.5",
+          "stageVisible": true,
+          "top": 423.984375,
+          "hidden": false,
+          "label": "轻招呼"
+        },
+        {
+          "progress": "0.3143",
+          "tilt": "-2.657",
+          "arm": "0.3735",
+          "eye": "1",
+          "stageVisible": true,
+          "top": 423.984375,
+          "hidden": false,
+          "label": "轻招呼"
+        },
+        {
+          "progress": "0.4195",
+          "tilt": "-2.154",
+          "arm": "0.3054",
+          "eye": "1",
+          "stageVisible": true,
+          "top": 423.984375,
+          "hidden": false,
+          "label": "轻招呼"
+        },
+        {
+          "progress": "0.5248",
+          "tilt": "-2.830",
+          "arm": "0.3855",
+          "eye": "1",
+          "stageVisible": true,
+          "top": 423.984375,
+          "hidden": false,
+          "label": "轻招呼"
+        },
+        {
+          "progress": "0.6299",
+          "tilt": "-2.473",
+          "arm": "0.3645",
+          "eye": "1",
+          "stageVisible": true,
+          "top": 423.984375,
+          "hidden": false,
+          "label": "轻招呼"
+        },
+        {
+          "progress": "0.7394",
+          "tilt": "-1.863",
+          "arm": "0.2881",
+          "eye": "1",
+          "stageVisible": true,
+          "top": 423.984375,
+          "hidden": false,
+          "label": "轻招呼"
+        },
+        {
+          "progress": "0.8449",
+          "tilt": "-1.137",
+          "arm": "0.1825",
+          "eye": "1",
+          "stageVisible": true,
+          "top": 423.984375,
+          "hidden": false,
+          "label": "轻招呼"
+        }
+      ]
+    },
+    {
+      "id": "curious",
+      "samples": [
+        {
+          "progress": "0.1111",
+          "tilt": "0.766",
+          "arm": "0.0279",
+          "eye": "1",
+          "stageVisible": true,
+          "top": 423.984375,
+          "hidden": false,
+          "label": "歪头思考"
+        },
+        {
+          "progress": "0.2287",
+          "tilt": "2.952",
+          "arm": "0.0020",
+          "eye": "1",
+          "stageVisible": true,
+          "top": 423.984375,
+          "hidden": false,
+          "label": "歪头思考"
+        },
+        {
+          "progress": "0.3513",
+          "tilt": "7.791",
+          "arm": "0.0001",
+          "eye": "1",
+          "stageVisible": true,
+          "top": 423.984375,
+          "hidden": false,
+          "label": "歪头思考"
+        },
+        {
+          "progress": "0.4689",
+          "tilt": "9.891",
+          "arm": "0.0000",
+          "eye": "1",
+          "stageVisible": true,
+          "top": 423.984375,
+          "hidden": false,
+          "label": "歪头思考"
+        },
+        {
+          "progress": "0.5866",
+          "tilt": "9.997",
+          "arm": "0.0000",
+          "eye": "1",
+          "stageVisible": true,
+          "top": 423.984375,
+          "hidden": false,
+          "label": "歪头思考"
+        },
+        {
+          "progress": "0.7042",
+          "tilt": "10.000",
+          "arm": "0.0000",
+          "eye": "1",
+          "stageVisible": true,
+          "top": 423.984375,
+          "hidden": false,
+          "label": "歪头思考"
+        },
+        {
+          "progress": "0.8268",
+          "tilt": "8.121",
+          "arm": "0.0000",
+          "eye": "1",
+          "stageVisible": true,
+          "top": 423.984375,
+          "hidden": false,
+          "label": "歪头思考"
+        },
+        {
+          "progress": "0.9444",
+          "tilt": "3.859",
+          "arm": "0.0000",
+          "eye": "1",
+          "stageVisible": true,
+          "top": 423.984375,
+          "hidden": false,
+          "label": "歪头思考"
+        }
+      ]
+    },
+    {
+      "id": "smile",
+      "samples": [
+        {
+          "progress": "0.0998",
+          "tilt": "-0.634",
+          "arm": "0.0000",
+          "eye": "1",
+          "stageVisible": true,
+          "top": 423.984375,
+          "hidden": false,
+          "label": "闭眼偷笑"
+        },
+        {
+          "progress": "0.2092",
+          "tilt": "-3.473",
+          "arm": "0.0294",
+          "eye": "0.5",
+          "stageVisible": true,
+          "top": 423.984375,
+          "hidden": false,
+          "label": "闭眼偷笑"
+        },
+        {
+          "progress": "0.3147",
+          "tilt": "-6.707",
+          "arm": "0.1064",
+          "eye": "0",
+          "stageVisible": true,
+          "top": 423.984375,
+          "hidden": false,
+          "label": "闭眼偷笑"
+        },
+        {
+          "progress": "0.4199",
+          "tilt": "-6.990",
+          "arm": "0.1190",
+          "eye": "0",
+          "stageVisible": true,
+          "top": 423.984375,
+          "hidden": false,
+          "label": "闭眼偷笑"
+        },
+        {
+          "progress": "0.5252",
+          "tilt": "-7.000",
+          "arm": "0.1199",
+          "eye": "0",
+          "stageVisible": true,
+          "top": 423.984375,
+          "hidden": false,
+          "label": "闭眼偷笑"
+        },
+        {
+          "progress": "0.6305",
+          "tilt": "-7.000",
+          "arm": "0.1200",
+          "eye": "0",
+          "stageVisible": true,
+          "top": 423.984375,
+          "hidden": false,
+          "label": "闭眼偷笑"
+        },
+        {
+          "progress": "0.7401",
+          "tilt": "-7.000",
+          "arm": "0.1200",
+          "eye": "0",
+          "stageVisible": true,
+          "top": 423.984375,
+          "hidden": false,
+          "label": "闭眼偷笑"
+        },
+        {
+          "progress": "0.8452",
+          "tilt": "-5.509",
+          "arm": "0.0710",
+          "eye": "0",
+          "stageVisible": true,
+          "top": 423.984375,
+          "hidden": false,
+          "label": "闭眼偷笑"
+        }
+      ]
+    },
+    {
+      "id": "sleepy",
+      "samples": [
+        {
+          "progress": "0.0858",
+          "tilt": "0.119",
+          "arm": "0.0066",
+          "eye": "1",
+          "stageVisible": true,
+          "top": 423.984375,
+          "hidden": false,
+          "label": "困困收尾"
+        },
+        {
+          "progress": "0.1805",
+          "tilt": "2.447",
+          "arm": "0.0004",
+          "eye": "1",
+          "stageVisible": true,
+          "top": 423.984375,
+          "hidden": false,
+          "label": "困困收尾"
+        },
+        {
+          "progress": "0.2714",
+          "tilt": "4.517",
+          "arm": "0.0000",
+          "eye": "0.5",
+          "stageVisible": true,
+          "top": 423.984375,
+          "hidden": false,
+          "label": "困困收尾"
+        },
+        {
+          "progress": "0.3623",
+          "tilt": "8.809",
+          "arm": "0.0000",
+          "eye": "0",
+          "stageVisible": true,
+          "top": 423.984375,
+          "hidden": false,
+          "label": "困困收尾"
+        },
+        {
+          "progress": "0.4532",
+          "tilt": "9.948",
+          "arm": "0.0000",
+          "eye": "0",
+          "stageVisible": true,
+          "top": 423.984375,
+          "hidden": false,
+          "label": "困困收尾"
+        },
+        {
+          "progress": "0.5441",
+          "tilt": "9.998",
+          "arm": "0.0000",
+          "eye": "0",
+          "stageVisible": true,
+          "top": 423.984375,
+          "hidden": false,
+          "label": "困困收尾"
+        },
+        {
+          "progress": "0.6386",
+          "tilt": "10.000",
+          "arm": "0.0000",
+          "eye": "0",
+          "stageVisible": true,
+          "top": 423.984375,
+          "hidden": false,
+          "label": "困困收尾"
+        },
+        {
+          "progress": "0.7296",
+          "tilt": "9.998",
+          "arm": "0.0000",
+          "eye": "0",
+          "stageVisible": true,
+          "top": 423.984375,
+          "hidden": false,
+          "label": "困困收尾"
+        }
+      ]
+    }
+  ],
+  "narrow": {
+    "width": 900,
+    "height": 1600,
+    "stage": {
+      "x": 61,
+      "y": 411.015625,
+      "width": 412,
+      "height": 338,
+      "top": 411.015625,
+      "right": 473,
+      "bottom": 749.015625,
+      "left": 61
+    },
+    "buttons": {
+      "x": 530,
+      "y": 746.390625,
+      "width": 338,
+      "height": 32,
+      "top": 746.390625,
+      "right": 868,
+      "bottom": 778.390625,
+      "left": 530
+    },
+    "scrollY": 0
+  },
+  "errors": []
+}

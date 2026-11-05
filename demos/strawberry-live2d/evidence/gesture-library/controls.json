@@ -1,0 +1,10 @@
+{
+  "restartedGesture": "greet",
+  "referenceFrozen": true,
+  "resumed": true,
+  "audioRestart": {
+    "oldPaused": true,
+    "newPlaying": true
+  },
+  "noAudioForGesture": true
+}

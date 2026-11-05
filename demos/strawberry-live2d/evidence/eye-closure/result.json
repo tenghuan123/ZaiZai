@@ -1,0 +1,36 @@
+{
+  "checkedAt": "2026-11-05T05:43:48.705227+00:00",
+  "status": "passed",
+  "cause": "Fractional eye parameters alpha-blended painted eyelid patches over an always-visible open iris",
+  "fix": "Runtime selects exactly 0 / 0.5 / 1 keyforms, adds an explicit 70ms closed hold to automatic blinks and uses endpoint eye poses in dialogue",
+  "checks": {
+    "everyRenderedEyeUsesOpaqueKeyform": true,
+    "completeAutomaticBlinkCaptured": true,
+    "automaticClosureHeldAtLeast60ms": true,
+    "dialogueFullyCloses": true,
+    "threeScenesCompleted": true,
+    "noPageErrors": true
+  },
+  "automaticCompleteClosureDurationsMs": [
+    133.3
+  ],
+  "dialogue": {
+    "effort-2": {
+      "samples": 73,
+      "fullyClosed": true
+    },
+    "rest-2": {
+      "samples": 26,
+      "fullyClosed": true
+    }
+  },
+  "unitTests": 9,
+  "build": "passed",
+  "modelAssetsChanged": false,
+  "evidence": [
+    "before-strip.png",
+    "automatic-closed.png",
+    "automatic-blink.json",
+    "../live2d-runtime.json"
+  ]
+}

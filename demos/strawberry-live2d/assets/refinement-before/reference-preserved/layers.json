@@ -1,0 +1,135 @@
+{
+  "checkedAt": "2026-11-04T09:22:26.281Z",
+  "status": "neutral-reference-preserved; rig preparation incomplete",
+  "source": "resources/pets/strawberry-bunny-v3/keyframes/idle/00.png",
+  "sourceSha256": "5f7b3a3642c195d30db916f39cc53989306d971cfa7c27dc3da8528f6af0da1d",
+  "width": 320,
+  "height": 320,
+  "visiblePixels": 32103,
+  "mismatchedVisiblePixels": 0,
+  "alphaMismatches": 0,
+  "neutralLayers": 10,
+  "totalPsdLayers": 12,
+  "neutralScale": "1:1; no independent resizing, mirroring, or repainting",
+  "layers": [
+    {
+      "name": "HairBack",
+      "left": 69,
+      "top": 151,
+      "width": 177,
+      "height": 118,
+      "sourcePixels": 7823,
+      "sha256": "bb4fbb21a5d6968bff43ec9097ee86231437276f2ae26450d1a79d53bbe4eee7"
+    },
+    {
+      "name": "LegR",
+      "left": 131,
+      "top": 237,
+      "width": 29,
+      "height": 75,
+      "sourcePixels": 1811,
+      "sha256": "e9be8f6be50b128fea4fc277ae15bbe9295ecdecf5b432eb16cfde59bf1b2bd8"
+    },
+    {
+      "name": "LegL",
+      "left": 160,
+      "top": 237,
+      "width": 31,
+      "height": 75,
+      "sourcePixels": 1840,
+      "sha256": "928a8714d7219f3a4a362b4fbb650f163035bda26c86be2f0a75be852d7d0de7"
+    },
+    {
+      "name": "Body",
+      "left": 105,
+      "top": 151,
+      "width": 110,
+      "height": 93,
+      "sourcePixels": 6354,
+      "sha256": "f6de67f6b0713a64246424508427a3e6924063db8cd38fb39431ad95dfbe9b38"
+    },
+    {
+      "name": "ArmR",
+      "left": 95,
+      "top": 168,
+      "width": 47,
+      "height": 47,
+      "sourcePixels": 742,
+      "sha256": "9cf8084a8270cc7a665b665a17c9f74ff3fd49b03444395229247eef6debe090"
+    },
+    {
+      "name": "ArmL",
+      "left": 178,
+      "top": 168,
+      "width": 47,
+      "height": 47,
+      "sourcePixels": 727,
+      "sha256": "c1d30bb3aaef4ed33183c9a7c3189ac1c397bb63eb6524e72c8ce9459114c3ae"
+    },
+    {
+      "name": "Head",
+      "left": 89,
+      "top": 38,
+      "width": 144,
+      "height": 113,
+      "sourcePixels": 11349,
+      "sha256": "7c74b5ba8a03952d59acae1cc9c6687eaba0a465aacba3954b1c022b79da5e09"
+    },
+    {
+      "name": "EyeROpen",
+      "left": 128,
+      "top": 110,
+      "width": 26,
+      "height": 22,
+      "sourcePixels": 572,
+      "sha256": "be17748bdfcd7deaac5344d796c094d153b1fa31df604f52b6cc8635e5f39909"
+    },
+    {
+      "name": "EyeLOpen",
+      "left": 165,
+      "top": 109,
+      "width": 27,
+      "height": 23,
+      "sourcePixels": 621,
+      "sha256": "c33795295c682f5d052ae38863abf9d93fabf54ef1becf1112db67e7e3a18ed2"
+    },
+    {
+      "name": "MouthSmile",
+      "left": 149,
+      "top": 132,
+      "width": 22,
+      "height": 12,
+      "sourcePixels": 264,
+      "sha256": "aa5b59b6f3edb99057dc7e3c3c07b77ed577457785ec1d46d500cf7e1d821d57"
+    },
+    {
+      "name": "EyeRClosed",
+      "left": 128,
+      "top": 110,
+      "width": 26,
+      "height": 22,
+      "hidden": true,
+      "sourceFrame": "20.png",
+      "status": "candidate; edge and animation review pending",
+      "sha256": "be23c7ad1ac1832920c53c461bdf08b975518a2f2d1bf0a143d0f939276acf0f"
+    },
+    {
+      "name": "EyeLClosed",
+      "left": 165,
+      "top": 109,
+      "width": 27,
+      "height": 23,
+      "hidden": true,
+      "sourceFrame": "20.png",
+      "status": "candidate; edge and animation review pending",
+      "sha256": "93f574e90f5280afb13cc544b8ca9cd5f73b3a4ffcd33993aafbf17caf9eda3d"
+    }
+  ],
+  "pending": [
+    "refine separation boundaries and complete only hidden surfaces",
+    "review closed-eye candidate edges",
+    "create and export real Cubism model",
+    "verify deformation and dialogue playback in runtime"
+  ],
+  "runtimeVerified": false
+}

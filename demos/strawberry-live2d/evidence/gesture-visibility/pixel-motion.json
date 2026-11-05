@@ -1,0 +1,27 @@
+[
+  {
+    "id": "explain",
+    "changedStagePixels": 1138,
+    "meanMaximumChannelDelta": 1.150475
+  },
+  {
+    "id": "greet",
+    "changedStagePixels": 1348,
+    "meanMaximumChannelDelta": 1.30425
+  },
+  {
+    "id": "curious",
+    "changedStagePixels": 1769,
+    "meanMaximumChannelDelta": 1.609875
+  },
+  {
+    "id": "smile",
+    "changedStagePixels": 2020,
+    "meanMaximumChannelDelta": 2.0365
+  },
+  {
+    "id": "sleepy",
+    "changedStagePixels": 1946,
+    "meanMaximumChannelDelta": 2.143975
+  }
+]

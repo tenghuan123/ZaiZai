@@ -1,0 +1,14 @@
+{
+  "status": "passed",
+  "date": "2026-11-05",
+  "gestureCount": 5,
+  "actorVisibleThroughout": true,
+  "renderedMotionVerified": true,
+  "restartRevealsActor": true,
+  "sceneCompleted": true,
+  "sourceAndModelAssetsUnchanged": true,
+  "unitTestsPassed": 13,
+  "buildPassed": true,
+  "errors": [],
+  "remainingScope": "Small motions on the existing rig; no new elbow or hand-pose bindings."
+}

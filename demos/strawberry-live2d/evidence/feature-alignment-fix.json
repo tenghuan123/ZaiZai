@@ -1,0 +1,15 @@
+{
+  "checkedAt": "2026-11-04T06:24:04.715Z",
+  "sourceAtlas": "unchanged",
+  "layers": 16,
+  "eyeCorrection": "open and closed eyes shifted 26 canvas pixels outwards on each side; drawn artwork unchanged",
+  "limbCorrection": "arm and leg sources use character left/right; arms aligned to shoulders and placed in front of skirt",
+  "unchangedLayers": "eight other layers byte-identical with unchanged geometry",
+  "verification": [
+    "PSD positions, visibility and sixteen-layer structure match layout",
+    "public preview matches generated composite",
+    "open and closed eye views visually inspected",
+    "relaxed hands and full character visually inspected"
+  ],
+  "runtimeVerified": false
+}

@@ -1,0 +1,75 @@
+{
+  "checkedAt": "2026-11-05T05:03:47.135106+00:00",
+  "status": "passed within demo motion range",
+  "originalArtworkSha256": "5f7b3a3642c195d30db916f39cc53989306d971cfa7c27dc3da8528f6af0da1d",
+  "changes": {
+    "armOwnership": "Complete skin and wrist assigned to arm; hair strip removed from arm and inner forearm removed from dress",
+    "meshVertices": {
+      "MouthTalk": 16,
+      "ArmL": 22,
+      "ArmR": 22,
+      "Body": 35,
+      "HairBack": 70
+    },
+    "hiddenHairOverlapPixels": 8,
+    "mouthTranslationSourcePixels": {
+      "x": 2,
+      "y": -3
+    },
+    "motion": "Critically damped head/body/arm timing; smaller scripted gestures; local pauseable blink clock; smoothed audio mouth"
+  },
+  "tests": {
+    "unitTests": 6,
+    "build": "passed",
+    "runtime": {
+      "nineParametersAffectDrawables": true,
+      "nineEyeCombinations": true,
+      "threeScenesCompleted": true,
+      "pauseFreezesAudioAndPose": true,
+      "cancelStopsOldAudio": true,
+      "modeSwitchStopsAudio": true,
+      "reloadsRealModel": true,
+      "noPageErrors": true,
+      "smoothedMouthFollowsEnvelope": true
+    }
+  },
+  "originalNeutralLayerReconstruction": {
+    "mismatchedVisiblePixels": 0,
+    "alphaMismatches": 0
+  },
+  "visualEvidence": "before-after.png",
+  "runtimeEvidence": "../live2d-runtime.json",
+  "limitations": [
+    "Fixed scripts; no AI service connected",
+    "UI limits: head tilt \u00b12 degrees and arm lift 9 degrees; large compiled-model poses are not production polished",
+    "Core 6 adapter supports this MOC4.2 model without offscreens",
+    "Body root rotation is small; this is not a full feet-pinned or side-face rig"
+  ],
+  "manualPreviewRange": {
+    "limits": {
+      "arm": 0.6,
+      "minTilt": -12,
+      "maxTilt": 12
+    },
+    "poses": [
+      {
+        "name": "maximum-positive",
+        "mouth": 1,
+        "tilt": 12,
+        "eye": 1
+      },
+      {
+        "name": "maximum-negative",
+        "mouth": 0.5,
+        "tilt": -12,
+        "eye": 1
+      },
+      {
+        "name": "returned",
+        "mouth": 0,
+        "tilt": 0,
+        "eye": 1
+      }
+    ]
+  }
+}

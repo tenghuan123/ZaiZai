@@ -1,0 +1,46 @@
+{
+  "checkedAt": "2026-11-05T05:43:48.705227+00:00",
+  "status": "passed",
+  "renderer": "live2d-cubism",
+  "parameters": 29,
+  "drawables": 16,
+  "checks": {
+    "nineParametersAffectDrawables": true,
+    "nineEyeCombinations": true,
+    "threeScenesCompleted": true,
+    "pauseFreezesAudioAndPose": true,
+    "cancelStopsOldAudio": true,
+    "modeSwitchStopsAudio": true,
+    "reloadsRealModel": true,
+    "noPageErrors": true,
+    "smoothedMouthFollowsEnvelope": true,
+    "opaqueEyeFramesOnly": true,
+    "automaticBlinkFullyCloses": true,
+    "closedDialogueHoldsClosed": true
+  },
+  "audioEnvelope": {
+    "binMs": 40,
+    "activeSamples": 325,
+    "withinSmoothingWindow": 325,
+    "ratio": 1.0,
+    "comparison": "Prior 120ms / next 40ms envelope range with 0.05 tolerance; mouth intentionally uses opening/closing smoothing"
+  },
+  "referenceComparison": {
+    "checkedAt": "2026-11-05T05:02:50.261Z",
+    "width": 664,
+    "height": 338,
+    "meanAbsoluteRgbError": 0.6939384757966779,
+    "maximumChannelError": 154,
+    "changedPixels": 35411,
+    "method": "Full browser screenshots cropped at measured CSS/screenshot scale; compiled Core neutral versus original; includes filtering and hidden-layer compositing"
+  },
+  "limitations": [
+    "Fixed scripts; no AI service connected",
+    "UI limits: head tilt \u00b12 degrees and arm lift 9 degrees; large compiled-model poses are not production polished",
+    "Core 6 adapter supports this MOC4.2 model without offscreens",
+    "Body root rotation is small; this is not a full feet-pinned or side-face rig"
+  ],
+  "evidence": "live2d-runtime.json",
+  "refinementEvidence": "refinement/result.json",
+  "eyeClosureEvidence": "eye-closure/result.json"
+}

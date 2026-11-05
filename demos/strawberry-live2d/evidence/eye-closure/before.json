@@ -1,0 +1,206 @@
+{
+  "shots": [
+    {
+      "eye": 1,
+      "innerWidth": 2560,
+      "stage": {
+        "x": 765,
+        "y": 423.984375,
+        "width": 664,
+        "height": 338,
+        "top": 423.984375,
+        "right": 1429,
+        "bottom": 761.984375,
+        "left": 765
+      }
+    },
+    {
+      "eye": 0.8,
+      "innerWidth": 2560,
+      "stage": {
+        "x": 765,
+        "y": 423.984375,
+        "width": 664,
+        "height": 338,
+        "top": 423.984375,
+        "right": 1429,
+        "bottom": 761.984375,
+        "left": 765
+      }
+    },
+    {
+      "eye": 0.65,
+      "innerWidth": 2560,
+      "stage": {
+        "x": 765,
+        "y": 423.984375,
+        "width": 664,
+        "height": 338,
+        "top": 423.984375,
+        "right": 1429,
+        "bottom": 761.984375,
+        "left": 765
+      }
+    },
+    {
+      "eye": 0.5,
+      "innerWidth": 2560,
+      "stage": {
+        "x": 765,
+        "y": 423.984375,
+        "width": 664,
+        "height": 338,
+        "top": 423.984375,
+        "right": 1429,
+        "bottom": 761.984375,
+        "left": 765
+      }
+    },
+    {
+      "eye": 0.35,
+      "innerWidth": 2560,
+      "stage": {
+        "x": 765,
+        "y": 423.984375,
+        "width": 664,
+        "height": 338,
+        "top": 423.984375,
+        "right": 1429,
+        "bottom": 761.984375,
+        "left": 765
+      }
+    },
+    {
+      "eye": 0.2,
+      "innerWidth": 2560,
+      "stage": {
+        "x": 765,
+        "y": 423.984375,
+        "width": 664,
+        "height": 338,
+        "top": 423.984375,
+        "right": 1429,
+        "bottom": 761.984375,
+        "left": 765
+      }
+    },
+    {
+      "eye": 0.1,
+      "innerWidth": 2560,
+      "stage": {
+        "x": 765,
+        "y": 423.984375,
+        "width": 664,
+        "height": 338,
+        "top": 423.984375,
+        "right": 1429,
+        "bottom": 761.984375,
+        "left": 765
+      }
+    },
+    {
+      "eye": 0,
+      "innerWidth": 2560,
+      "stage": {
+        "x": 765,
+        "y": 423.984375,
+        "width": 664,
+        "height": 338,
+        "top": 423.984375,
+        "right": 1429,
+        "bottom": 761.984375,
+        "left": 765
+      }
+    }
+  ],
+  "poses": [
+    {
+      "eye": 1,
+      "opacities": {
+        "EyeLClosed": 0,
+        "EyeLHalf": 0,
+        "EyeRClosed": 0,
+        "EyeRHalf": 0,
+        "EyeLOpen": 1,
+        "EyeROpen": 1
+      }
+    },
+    {
+      "eye": 0.8,
+      "opacities": {
+        "EyeLClosed": 0,
+        "EyeLHalf": 0.3999999761581421,
+        "EyeRClosed": 0,
+        "EyeRHalf": 0.3999999761581421,
+        "EyeLOpen": 1,
+        "EyeROpen": 1
+      }
+    },
+    {
+      "eye": 0.65,
+      "opacities": {
+        "EyeLClosed": 0,
+        "EyeLHalf": 0.7000000476837158,
+        "EyeRClosed": 0,
+        "EyeRHalf": 0.7000000476837158,
+        "EyeLOpen": 1,
+        "EyeROpen": 1
+      }
+    },
+    {
+      "eye": 0.5,
+      "opacities": {
+        "EyeLClosed": 0,
+        "EyeLHalf": 1,
+        "EyeRClosed": 0,
+        "EyeRHalf": 1,
+        "EyeLOpen": 1,
+        "EyeROpen": 1
+      }
+    },
+    {
+      "eye": 0.35,
+      "opacities": {
+        "EyeLClosed": 0.30000001192092896,
+        "EyeLHalf": 0.699999988079071,
+        "EyeRClosed": 0.30000001192092896,
+        "EyeRHalf": 0.699999988079071,
+        "EyeLOpen": 1,
+        "EyeROpen": 1
+      }
+    },
+    {
+      "eye": 0.2,
+      "opacities": {
+        "EyeLClosed": 0.6000000238418579,
+        "EyeLHalf": 0.4000000059604645,
+        "EyeRClosed": 0.6000000238418579,
+        "EyeRHalf": 0.4000000059604645,
+        "EyeLOpen": 1,
+        "EyeROpen": 1
+      }
+    },
+    {
+      "eye": 0.1,
+      "opacities": {
+        "EyeLClosed": 0.800000011920929,
+        "EyeLHalf": 0.20000000298023224,
+        "EyeRClosed": 0.800000011920929,
+        "EyeRHalf": 0.20000000298023224,
+        "EyeLOpen": 1,
+        "EyeROpen": 1
+      }
+    },
+    {
+      "eye": 0,
+      "opacities": {
+        "EyeLClosed": 1,
+        "EyeLHalf": 0,
+        "EyeRClosed": 1,
+        "EyeRHalf": 0,
+        "EyeLOpen": 1,
+        "EyeROpen": 1
+      }
+    }
+  ]
+}

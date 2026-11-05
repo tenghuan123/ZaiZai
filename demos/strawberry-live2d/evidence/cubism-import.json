@@ -1,0 +1,24 @@
+{
+  "checkedAt": "2026-11-04T12:05:11Z",
+  "status": "model-created-and-compiled; superseded-by-cubism-export.json",
+  "editor": {
+    "path": "/Applications/Live2D Cubism 5.3/Live2D Cubism Editor 5.3.app",
+    "version": "5.3.04",
+    "modeObserved": "trial"
+  },
+  "source": "assets/motion-ready/strawberry-bunny.psd",
+  "observed": [
+    "PSD file was selected through Cubism's own file chooser",
+    "Cubism displayed the PSD loading progress window",
+    "Cubism displayed the model creation settings dialog"
+  ],
+  "blockingCondition": null,
+  "screenshot": "cubism-import-dialog.png",
+  "modelCreated": true,
+  "cmo3Saved": true,
+  "moc3Exported": true,
+  "webCorePresent": false,
+  "live2dRuntimeVerified": false,
+  "existingAppChanged": false,
+  "currentEvidence": "cubism-export.json"
+}

@@ -1,0 +1,48 @@
+{
+  "generatedAt": "2026-11-05T04:56:54.434Z",
+  "method": "Two-pixel overlap using each original part edge color, restricted to the original character silhouette; no visible source texels replaced",
+  "sourceAtlasSha256": "2dc55895034eb35b00b0fd7558a69618997641c3deefcd16d5c349606fa38fce",
+  "outputSha256": "0ccd6017337fff7c3c9635d41d712931d070f3d0a099a51152ac28c34bf21f4b",
+  "changes": [
+    {
+      "mesh": "MouthSmile",
+      "pixels": 64
+    },
+    {
+      "mesh": "EyeLOpen",
+      "pixels": 96
+    },
+    {
+      "mesh": "EyeROpen",
+      "pixels": 92
+    },
+    {
+      "mesh": "Head",
+      "pixels": 678
+    },
+    {
+      "mesh": "ArmL",
+      "pixels": 140
+    },
+    {
+      "mesh": "ArmR",
+      "pixels": 236
+    },
+    {
+      "mesh": "Body",
+      "pixels": 840
+    },
+    {
+      "mesh": "LegL",
+      "pixels": 38
+    },
+    {
+      "mesh": "LegR",
+      "pixels": 41
+    },
+    {
+      "mesh": "HairBack",
+      "pixels": 199
+    }
+  ]
+}

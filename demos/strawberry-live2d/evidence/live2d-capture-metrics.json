@@ -1,0 +1,122 @@
+[
+  {
+    "name": "neutral",
+    "innerWidth": 2560,
+    "stage": {
+      "x": 765,
+      "y": 423.984375,
+      "width": 664,
+      "height": 338,
+      "top": 423.984375,
+      "right": 1429,
+      "bottom": 761.984375,
+      "left": 765
+    },
+    "shell": {
+      "x": 704,
+      "y": 0,
+      "width": 1152,
+      "height": 970.234375,
+      "top": 0,
+      "right": 1856,
+      "bottom": 970.234375,
+      "left": 704
+    }
+  },
+  {
+    "name": "reference",
+    "innerWidth": 2560,
+    "stage": {
+      "x": 765,
+      "y": 423.984375,
+      "width": 664,
+      "height": 338,
+      "top": 423.984375,
+      "right": 1429,
+      "bottom": 761.984375,
+      "left": 765
+    },
+    "shell": {
+      "x": 704,
+      "y": 0,
+      "width": 1152,
+      "height": 970.234375,
+      "top": 0,
+      "right": 1856,
+      "bottom": 970.234375,
+      "left": 704
+    }
+  },
+  {
+    "name": "closed",
+    "innerWidth": 2560,
+    "stage": {
+      "x": 765,
+      "y": 423.984375,
+      "width": 664,
+      "height": 338,
+      "top": 423.984375,
+      "right": 1429,
+      "bottom": 761.984375,
+      "left": 765
+    },
+    "shell": {
+      "x": 704,
+      "y": 0,
+      "width": 1152,
+      "height": 1039.375,
+      "top": 0,
+      "right": 1856,
+      "bottom": 1039.375,
+      "left": 704
+    }
+  },
+  {
+    "name": "half",
+    "innerWidth": 2560,
+    "stage": {
+      "x": 765,
+      "y": 423.984375,
+      "width": 664,
+      "height": 338,
+      "top": 423.984375,
+      "right": 1429,
+      "bottom": 761.984375,
+      "left": 765
+    },
+    "shell": {
+      "x": 704,
+      "y": 0,
+      "width": 1152,
+      "height": 1039.375,
+      "top": 0,
+      "right": 1856,
+      "bottom": 1039.375,
+      "left": 704
+    }
+  },
+  {
+    "name": "acting",
+    "innerWidth": 2560,
+    "stage": {
+      "x": 765,
+      "y": 423.984375,
+      "width": 664,
+      "height": 338,
+      "top": 423.984375,
+      "right": 1429,
+      "bottom": 761.984375,
+      "left": 765
+    },
+    "shell": {
+      "x": 704,
+      "y": 0,
+      "width": 1152,
+      "height": 1039.375,
+      "top": 0,
+      "right": 1856,
+      "bottom": 1039.375,
+      "left": 704
+    }
+  }
+]

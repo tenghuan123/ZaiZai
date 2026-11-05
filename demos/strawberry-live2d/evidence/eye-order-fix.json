@@ -1,0 +1,39 @@
+{
+  "checkedAt": "2026-11-04T06:17:12.223Z",
+  "changed": [
+    "EyeLClosed",
+    "EyeLOpen",
+    "EyeRClosed",
+    "EyeROpen"
+  ],
+  "geometry": "unchanged",
+  "otherLayers": "all twelve byte-identical",
+  "sourceAtlas": "unchanged",
+  "psd": "regenerated with sixteen layers",
+  "mapping": [
+    {
+      "name": "EyeLOpen",
+      "cell": 9,
+      "x": 520,
+      "y": 421
+    },
+    {
+      "name": "EyeROpen",
+      "cell": 8,
+      "x": 368,
+      "y": 421
+    },
+    {
+      "name": "EyeLClosed",
+      "cell": 11,
+      "x": 520,
+      "y": 421
+    },
+    {
+      "name": "EyeRClosed",
+      "cell": 10,
+      "x": 368,
+      "y": 421
+    }
+  ]
+}

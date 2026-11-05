@@ -1,0 +1,10 @@
+{
+  "status": "files-ready",
+  "checkedAt": "2026-11-05T05:01:28.978Z",
+  "checks": [
+    "model3.json points to an existing compiled MOC3 and all its textures",
+    "the Cubism Core runtime file is present"
+  ],
+  "errors": [],
+  "runtimeVerified": false
+}

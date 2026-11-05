@@ -1,0 +1,9 @@
+{
+  "checkedAt": "2026-11-05T05:02:50.261Z",
+  "width": 664,
+  "height": 338,
+  "meanAbsoluteRgbError": 0.6939384757966779,
+  "maximumChannelError": 154,
+  "changedPixels": 35411,
+  "method": "Full browser screenshots cropped at measured CSS/screenshot scale; compiled Core neutral versus original; includes filtering and hidden-layer compositing"
+}

@@ -1,0 +1,252 @@
+{
+  "width": 1000,
+  "height": 1280,
+  "atlasSha256": "cc8451d8b4a496e4d7a180f596b630858ec5f67e8e512ee87cc62c3b5035c762",
+  "layers": [
+    {
+      "name": "HairBack",
+      "cell": 0,
+      "x": 170,
+      "y": 185,
+      "width": 660,
+      "height": 835,
+      "sourceCrop": {
+        "left": 32,
+        "top": 19,
+        "width": 268,
+        "height": 326
+      },
+      "sha256": "cef3831c6b5da2341bcf2c50f82775443657cd198f0adbababf992bb947910d1"
+    },
+    {
+      "name": "LegL",
+      "cell": 7,
+      "x": 512,
+      "y": 925,
+      "width": 108,
+      "height": 255,
+      "sourceCrop": {
+        "left": 1049,
+        "top": 362,
+        "width": 95,
+        "height": 295
+      },
+      "sha256": "6a40b00340ca6e00c3a3240095c5ed291bf869e0438e0e311b885224c9fe3d01"
+    },
+    {
+      "name": "LegR",
+      "cell": 6,
+      "x": 380,
+      "y": 925,
+      "width": 108,
+      "height": 255,
+      "sourceCrop": {
+        "left": 730,
+        "top": 363,
+        "width": 102,
+        "height": 294
+      },
+      "sha256": "8c8817166e872d3e670feb54b3c710a58c945244bc265b2f54070a9a9c527d9e"
+    },
+    {
+      "name": "Body",
+      "cell": 3,
+      "x": 305,
+      "y": 614,
+      "width": 390,
+      "height": 390,
+      "sourceCrop": {
+        "left": 949,
+        "top": 33,
+        "width": 293,
+        "height": 286
+      },
+      "sha256": "fe1bcbfddf843676b8e6113e28a1753dcf7a548d134ff1826711a904c4804c8c"
+    },
+    {
+      "name": "ArmL",
+      "cell": 5,
+      "x": 590,
+      "y": 658,
+      "width": 110,
+      "height": 275,
+      "sourceCrop": {
+        "left": 410,
+        "top": 373,
+        "width": 166,
+        "height": 262
+      },
+      "sha256": "6341612396546bad41a2840ae35d40823ac65e29b97a07f2ce8cb2d5ea2d1158"
+    },
+    {
+      "name": "ArmR",
+      "cell": 4,
+      "x": 300,
+      "y": 658,
+      "width": 110,
+      "height": 275,
+      "sourceCrop": {
+        "left": 54,
+        "top": 373,
+        "width": 168,
+        "height": 262
+      },
+      "sha256": "5fc3909893a8b54031730f0965ec14231fdb0e4921e2ea9ac0aca2d511102133"
+    },
+    {
+      "name": "Face",
+      "cell": 1,
+      "x": 315,
+      "y": 302,
+      "width": 370,
+      "height": 350,
+      "sourceCrop": {
+        "left": 338,
+        "top": 55,
+        "width": 261,
+        "height": 242
+      },
+      "sha256": "46f52c61682ebd4064692cbc60d6a27495b8f08f65184680c8dcc61a438dcfda"
+    },
+    {
+      "name": "Blush",
+      "cell": 15,
+      "x": 340,
+      "y": 535,
+      "width": 320,
+      "height": 70,
+      "hidden": true,
+      "sourceCrop": {
+        "left": 963,
+        "top": 1062,
+        "width": 263,
+        "height": 77
+      },
+      "sha256": "3078b20c05e42a18c8365b12271790bd7026c6d5ce8f69a266550ffc7290c250"
+    },
+    {
+      "name": "EyeLOpen",
+      "cell": 9,
+      "x": 546,
+      "y": 421,
+      "width": 112,
+      "height": 137,
+      "sourceCrop": {
+        "left": 393,
+        "top": 700,
+        "width": 181,
+        "height": 207
+      },
+      "sha256": "1235514f368321332efe0be46a516229d798460287b56c1dd79e7799017d9552"
+    },
+    {
+      "name": "EyeROpen",
+      "cell": 8,
+      "x": 342,
+      "y": 421,
+      "width": 112,
+      "height": 137,
+      "sourceCrop": {
+        "left": 53,
+        "top": 700,
+        "width": 185,
+        "height": 207
+      },
+      "sha256": "a4e969996ad454ae49bd6c4afd61bc67c1ef3c4203b3011b0d5c4d0716da7382"
+    },
+    {
+      "name": "EyeLClosed",
+      "cell": 11,
+      "x": 546,
+      "y": 421,
+      "width": 112,
+      "height": 137,
+      "hidden": true,
+      "sourceCrop": {
+        "left": 1023,
+        "top": 731,
+        "width": 180,
+        "height": 164
+      },
+      "sha256": "5267d304e39dc8e909ca44d56c4fbc703d2eeac3f83e045c78cd3663136a8a3d"
+    },
+    {
+      "name": "EyeRClosed",
+      "cell": 10,
+      "x": 342,
+      "y": 421,
+      "width": 112,
+      "height": 137,
+      "hidden": true,
+      "sourceCrop": {
+        "left": 675,
+        "top": 728,
+        "width": 183,
+        "height": 167
+      },
+      "sha256": "4521111cb03f1d2804bd58d8cb3aa5849c9ccd3ecf2aed3e109a83e0258998d9"
+    },
+    {
+      "name": "MouthSmile",
+      "cell": 12,
+      "x": 472,
+      "y": 578,
+      "width": 56,
+      "height": 24,
+      "sourceCrop": {
+        "left": 108,
+        "top": 1086,
+        "width": 101,
+        "height": 38
+      },
+      "sha256": "4be2f2aab84774d3a3bc831b493256154fcdf9a7517a4e95cf68f3e6c62a24bd"
+    },
+    {
+      "name": "MouthOpen",
+      "cell": 13,
+      "x": 475,
+      "y": 565,
+      "width": 50,
+      "height": 51,
+      "hidden": true,
+      "sourceCrop": {
+        "left": 422,
+        "top": 1062,
+        "width": 98,
+        "height": 87
+      },
+      "sha256": "3339b8ccd4dac6f79e2d520b27fe2d2dcdb4d7ce297d74e5f8abacbddd01d19a"
+    },
+    {
+      "name": "MouthSmirk",
+      "cell": 14,
+      "x": 472,
+      "y": 578,
+      "width": 56,
+      "height": 24,
+      "hidden": true,
+      "sourceCrop": {
+        "left": 738,
+        "top": 1077,
+        "width": 96,
+        "height": 46
+      },
+      "sha256": "014123389abd5ee4eb8b6f711ecaca30906ee58721f89aca72410af1b4c2e151"
+    },
+    {
+      "name": "HairFront",
+      "cell": 2,
+      "x": 211,
+      "y": 151,
+      "width": 578,
+      "height": 490,
+      "sourceCrop": {
+        "left": 633,
+        "top": 18,
+        "width": 303,
+        "height": 319
+      },
+      "sha256": "f271f9049c0c9aa241c8f11a1bd0fde90dd716b2121c2cb152b03a9140e6152b"
+    }
+  ]
+}

@@ -1,0 +1,67 @@
+{
+  "status": "layer-motion-study-verified; cubism-runtime-not-exported",
+  "checkedAt": "2026-11-04T09:45:13.249Z",
+  "sourceSha256": "5f7b3a3642c195d30db916f39cc53989306d971cfa7c27dc3da8528f6af0da1d",
+  "psdLayers": 16,
+  "underpaintPixels": 8263,
+  "regeneratedFaceUsed": false,
+  "staticChecks": [
+    "TypeScript and Vite build passed",
+    "Four ScenePlayer cancellation/pause/error/retry tests passed",
+    "16-layer PSD structure checked",
+    "Original head, open eyes, smile, body and arm textures byte-identical to source baseline"
+  ],
+  "browserChecks": [
+    {
+      "check": "actual neutral layered render compared with original",
+      "result": "passed",
+      "maximumPremultipliedChannelError": 0,
+      "renderer": "layer-study"
+    },
+    {
+      "check": "dialogue drives real audio envelope and pose",
+      "result": "passed",
+      "observedBeat": "hurry-1",
+      "observedMouth": 0.759
+    },
+    {
+      "check": "manual eye/mouth/head/arm controls",
+      "result": "passed",
+      "poses": [
+        "neutral",
+        "open eyes + talking + head tilt + arm",
+        "closed eyes + talking + head tilt + arm"
+      ]
+    },
+    {
+      "check": "original comparison pauses ongoing performance",
+      "result": "passed",
+      "beforeProgress": "width: 0.521563%;",
+      "afterProgress": "width: 0.521563%;",
+      "playDisabledDuringComparison": true
+    },
+    {
+      "check": "switch scene during playback",
+      "result": "passed",
+      "observedNewBeat": "effort-1"
+    },
+    {
+      "check": "real Live2D mode still requires actual Core/model",
+      "result": "passed",
+      "missingCoreDisablesPlayback": true,
+      "returnToLayerStudyWorks": true
+    }
+  ],
+  "screenshots": [
+    "study-neutral.jpg",
+    "study-open-talk.jpg",
+    "study-closed-talk.jpg",
+    "study-pose-strip.png"
+  ],
+  "limitations": [
+    "The browser study uses 2D layer transforms and expression patches; it is not a MOC3 model",
+    "Head tilt is limited to 5 degrees, arms to 15 degrees and body to 1.5 degrees",
+    "Larger movements, final Cubism meshes/keyforms and actual MOC3 rendering remain unverified"
+  ],
+  "live2dRuntimeVerified": false
+}

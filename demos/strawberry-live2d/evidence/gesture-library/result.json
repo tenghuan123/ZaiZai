@@ -1,0 +1,556 @@
+{
+  "date": "2026-11-05",
+  "status": "passed",
+  "scope": "Five runtime gesture timelines on the existing real Live2D rig. No Cubism UI automation or model re-export.",
+  "checks": [
+    {
+      "id": "explain",
+      "pauseFrozen": true
+    },
+    {
+      "id": "greet",
+      "pauseFrozen": true
+    },
+    {
+      "id": "curious",
+      "pauseFrozen": true
+    },
+    {
+      "id": "smile",
+      "pauseFrozen": true
+    },
+    {
+      "id": "sleepy",
+      "pauseFrozen": true
+    }
+  ],
+  "completedScenes": [
+    "take-it-easy",
+    "effort",
+    "rest"
+  ],
+  "errors": [],
+  "silentPreviewAudioCount": 0,
+  "previewCancelled": true,
+  "speechCancelled": true,
+  "canonicalEyesOnly": true,
+  "closedHolds": {
+    "smile": {
+      "samples": 92,
+      "allClosed": true
+    },
+    "sleepy": {
+      "samples": 83,
+      "allClosed": true
+    }
+  },
+  "range": {
+    "maxArm": 0.3975,
+    "maxTilt": 10,
+    "maxBody": 0.8
+  },
+  "shots": [
+    {
+      "id": "explain",
+      "phase": "start",
+      "file": "explain-start-full.png",
+      "innerWidth": 2560,
+      "stage": {
+        "x": 765,
+        "y": 423.984375,
+        "width": 664,
+        "height": 338,
+        "top": 423.984375,
+        "right": 1429,
+        "bottom": 761.984375,
+        "left": 765
+      },
+      "pose": {
+        "gesture": "explain",
+        "gestureProgress": "0.0036",
+        "tilt": "0.000",
+        "armLeft": "0.0000",
+        "eyeLeftFrame": "1",
+        "mouth": "0.000",
+        "renderer": "live2d-cubism"
+      }
+    },
+    {
+      "id": "explain",
+      "phase": "enter",
+      "file": "explain-enter-full.png",
+      "innerWidth": 2560,
+      "stage": {
+        "x": 765,
+        "y": 423.984375,
+        "width": 664,
+        "height": 338,
+        "top": 423.984375,
+        "right": 1429,
+        "bottom": 761.984375,
+        "left": 765
+      },
+      "pose": {
+        "gesture": "explain",
+        "gestureProgress": "0.2119",
+        "tilt": "-0.064",
+        "armLeft": "0.2336",
+        "eyeLeftFrame": "1",
+        "mouth": "0.000",
+        "renderer": "live2d-cubism"
+      }
+    },
+    {
+      "id": "explain",
+      "phase": "hold",
+      "file": "explain-hold-full.png",
+      "innerWidth": 2560,
+      "stage": {
+        "x": 765,
+        "y": 423.984375,
+        "width": 664,
+        "height": 338,
+        "top": 423.984375,
+        "right": 1429,
+        "bottom": 761.984375,
+        "left": 765
+      },
+      "pose": {
+        "gesture": "explain",
+        "gestureProgress": "0.5713",
+        "tilt": "-1.999",
+        "armLeft": "0.3789",
+        "eyeLeftFrame": "1",
+        "mouth": "0.000",
+        "renderer": "live2d-cubism"
+      }
+    },
+    {
+      "id": "explain",
+      "phase": "returned",
+      "file": "explain-returned-full.png",
+      "innerWidth": 2560,
+      "stage": {
+        "x": 765,
+        "y": 423.984375,
+        "width": 664,
+        "height": 338,
+        "top": 423.984375,
+        "right": 1429,
+        "bottom": 761.984375,
+        "left": 765
+      },
+      "pose": {
+        "tilt": "-0.000",
+        "armLeft": "0.0003",
+        "eyeLeftFrame": "0",
+        "mouth": "0.000",
+        "renderer": "live2d-cubism"
+      }
+    },
+    {
+      "id": "greet",
+      "phase": "start",
+      "file": "greet-start-full.png",
+      "innerWidth": 2560,
+      "stage": {
+        "x": 765,
+        "y": 423.984375,
+        "width": 664,
+        "height": 338,
+        "top": 423.984375,
+        "right": 1429,
+        "bottom": 761.984375,
+        "left": 765
+      },
+      "pose": {
+        "gesture": "greet",
+        "gestureProgress": "0.0039",
+        "tilt": "-0.000",
+        "armLeft": "0.0002",
+        "eyeLeftFrame": "0",
+        "mouth": "0.000",
+        "renderer": "live2d-cubism"
+      }
+    },
+    {
+      "id": "greet",
+      "phase": "enter",
+      "file": "greet-enter-full.png",
+      "innerWidth": 2560,
+      "stage": {
+        "x": 765,
+        "y": 423.984375,
+        "width": 664,
+        "height": 338,
+        "top": 423.984375,
+        "right": 1429,
+        "bottom": 761.984375,
+        "left": 765
+      },
+      "pose": {
+        "gesture": "greet",
+        "gestureProgress": "0.2100",
+        "tilt": "-2.367",
+        "armLeft": "0.3016",
+        "eyeLeftFrame": "1",
+        "mouth": "0.000",
+        "renderer": "live2d-cubism"
+      }
+    },
+    {
+      "id": "greet",
+      "phase": "hold",
+      "file": "greet-hold-full.png",
+      "innerWidth": 2560,
+      "stage": {
+        "x": 765,
+        "y": 423.984375,
+        "width": 664,
+        "height": 338,
+        "top": 423.984375,
+        "right": 1429,
+        "bottom": 761.984375,
+        "left": 765
+      },
+      "pose": {
+        "gesture": "greet",
+        "gestureProgress": "0.5696",
+        "tilt": "-2.840",
+        "armLeft": "0.3969",
+        "eyeLeftFrame": "1",
+        "mouth": "0.000",
+        "renderer": "live2d-cubism"
+      }
+    },
+    {
+      "id": "greet",
+      "phase": "returned",
+      "file": "greet-returned-full.png",
+      "innerWidth": 2560,
+      "stage": {
+        "x": 765,
+        "y": 423.984375,
+        "width": 664,
+        "height": 338,
+        "top": 423.984375,
+        "right": 1429,
+        "bottom": 761.984375,
+        "left": 765
+      },
+      "pose": {
+        "tilt": "-0.000",
+        "armLeft": "0.0001",
+        "eyeLeftFrame": "1",
+        "mouth": "0.000",
+        "renderer": "live2d-cubism"
+      }
+    },
+    {
+      "id": "curious",
+      "phase": "start",
+      "file": "curious-start-full.png",
+      "innerWidth": 2560,
+      "stage": {
+        "x": 765,
+        "y": 423.984375,
+        "width": 664,
+        "height": 338,
+        "top": 423.984375,
+        "right": 1429,
+        "bottom": 761.984375,
+        "left": 765
+      },
+      "pose": {
+        "gesture": "curious",
+        "gestureProgress": "0.0044",
+        "tilt": "0.000",
+        "armLeft": "0.0001",
+        "eyeLeftFrame": "1",
+        "mouth": "0.000",
+        "renderer": "live2d-cubism"
+      }
+    },
+    {
+      "id": "curious",
+      "phase": "enter",
+      "file": "curious-enter-full.png",
+      "innerWidth": 2560,
+      "stage": {
+        "x": 765,
+        "y": 423.984375,
+        "width": 664,
+        "height": 338,
+        "top": 423.984375,
+        "right": 1429,
+        "bottom": 761.984375,
+        "left": 765
+      },
+      "pose": {
+        "gesture": "curious",
+        "gestureProgress": "0.2101",
+        "tilt": "2.649",
+        "armLeft": "0.0000",
+        "eyeLeftFrame": "1",
+        "mouth": "0.000",
+        "renderer": "live2d-cubism"
+      }
+    },
+    {
+      "id": "curious",
+      "phase": "hold",
+      "file": "curious-hold-full.png",
+      "innerWidth": 2560,
+      "stage": {
+        "x": 765,
+        "y": 423.984375,
+        "width": 664,
+        "height": 338,
+        "top": 423.984375,
+        "right": 1429,
+        "bottom": 761.984375,
+        "left": 765
+      },
+      "pose": {
+        "gesture": "curious",
+        "gestureProgress": "0.5776",
+        "tilt": "9.996",
+        "armLeft": "0.0000",
+        "eyeLeftFrame": "1",
+        "mouth": "0.000",
+        "renderer": "live2d-cubism"
+      }
+    },
+    {
+      "id": "curious",
+      "phase": "returned",
+      "file": "curious-returned-full.png",
+      "innerWidth": 2560,
+      "stage": {
+        "x": 765,
+        "y": 423.984375,
+        "width": 664,
+        "height": 338,
+        "top": 423.984375,
+        "right": 1429,
+        "bottom": 761.984375,
+        "left": 765
+      },
+      "pose": {
+        "tilt": "0.001",
+        "armLeft": "0.0000",
+        "eyeLeftFrame": "1",
+        "mouth": "0.000",
+        "renderer": "live2d-cubism"
+      }
+    },
+    {
+      "id": "smile",
+      "phase": "start",
+      "file": "smile-start-full.png",
+      "innerWidth": 2560,
+      "stage": {
+        "x": 765,
+        "y": 423.984375,
+        "width": 664,
+        "height": 338,
+        "top": 423.984375,
+        "right": 1429,
+        "bottom": 761.984375,
+        "left": 765
+      },
+      "pose": {
+        "gesture": "smile",
+        "gestureProgress": "0.0038",
+        "tilt": "0.000",
+        "armLeft": "0.0000",
+        "eyeLeftFrame": "1",
+        "mouth": "0.000",
+        "renderer": "live2d-cubism"
+      }
+    },
+    {
+      "id": "smile",
+      "phase": "enter",
+      "file": "smile-enter-full.png",
+      "innerWidth": 2560,
+      "stage": {
+        "x": 765,
+        "y": 423.984375,
+        "width": 664,
+        "height": 338,
+        "top": 423.984375,
+        "right": 1429,
+        "bottom": 761.984375,
+        "left": 765
+      },
+      "pose": {
+        "gesture": "smile",
+        "gestureProgress": "0.2098",
+        "tilt": "-3.498",
+        "armLeft": "0.0297",
+        "eyeLeftFrame": "0.5",
+        "mouth": "0.000",
+        "renderer": "live2d-cubism"
+      }
+    },
+    {
+      "id": "smile",
+      "phase": "hold",
+      "file": "smile-hold-full.png",
+      "innerWidth": 2560,
+      "stage": {
+        "x": 765,
+        "y": 423.984375,
+        "width": 664,
+        "height": 338,
+        "top": 423.984375,
+        "right": 1429,
+        "bottom": 761.984375,
+        "left": 765
+      },
+      "pose": {
+        "gesture": "smile",
+        "gestureProgress": "0.5697",
+        "tilt": "-7.000",
+        "armLeft": "0.1200",
+        "eyeLeftFrame": "0",
+        "mouth": "0.000",
+        "renderer": "live2d-cubism"
+      }
+    },
+    {
+      "id": "smile",
+      "phase": "returned",
+      "file": "smile-returned-full.png",
+      "innerWidth": 2560,
+      "stage": {
+        "x": 765,
+        "y": 423.984375,
+        "width": 664,
+        "height": 338,
+        "top": 423.984375,
+        "right": 1429,
+        "bottom": 761.984375,
+        "left": 765
+      },
+      "pose": {
+        "tilt": "-0.001",
+        "armLeft": "0.0000",
+        "eyeLeftFrame": "1",
+        "mouth": "0.000",
+        "renderer": "live2d-cubism"
+      }
+    },
+    {
+      "id": "sleepy",
+      "phase": "start",
+      "file": "sleepy-start-full.png",
+      "innerWidth": 2560,
+      "stage": {
+        "x": 765,
+        "y": 423.984375,
+        "width": 664,
+        "height": 338,
+        "top": 423.984375,
+        "right": 1429,
+        "bottom": 761.984375,
+        "left": 765
+      },
+      "pose": {
+        "gesture": "sleepy",
+        "gestureProgress": "0.0031",
+        "tilt": "-0.000",
+        "armLeft": "0.0000",
+        "eyeLeftFrame": "1",
+        "mouth": "0.000",
+        "renderer": "live2d-cubism"
+      }
+    },
+    {
+      "id": "sleepy",
+      "phase": "enter",
+      "file": "sleepy-enter-full.png",
+      "innerWidth": 2560,
+      "stage": {
+        "x": 765,
+        "y": 423.984375,
+        "width": 664,
+        "height": 338,
+        "top": 423.984375,
+        "right": 1429,
+        "bottom": 761.984375,
+        "left": 765
+      },
+      "pose": {
+        "gesture": "sleepy",
+        "gestureProgress": "0.2077",
+        "tilt": "2.814",
+        "armLeft": "0.0000",
+        "eyeLeftFrame": "1",
+        "mouth": "0.000",
+        "renderer": "live2d-cubism"
+      }
+    },
+    {
+      "id": "sleepy",
+      "phase": "hold",
+      "file": "sleepy-hold-full.png",
+      "innerWidth": 2560,
+      "stage": {
+        "x": 765,
+        "y": 423.984375,
+        "width": 664,
+        "height": 338,
+        "top": 423.984375,
+        "right": 1429,
+        "bottom": 761.984375,
+        "left": 765
+      },
+      "pose": {
+        "gesture": "sleepy",
+        "gestureProgress": "0.5714",
+        "tilt": "9.999",
+        "armLeft": "0.0000",
+        "eyeLeftFrame": "0",
+        "mouth": "0.000",
+        "renderer": "live2d-cubism"
+      }
+    },
+    {
+      "id": "sleepy",
+      "phase": "returned",
+      "file": "sleepy-returned-full.png",
+      "innerWidth": 2560,
+      "stage": {
+        "x": 765,
+        "y": 423.984375,
+        "width": 664,
+        "height": 338,
+        "top": 423.984375,
+        "right": 1429,
+        "bottom": 761.984375,
+        "left": 765
+      },
+      "pose": {
+        "tilt": "0.001",
+        "armLeft": "0.0000",
+        "eyeLeftFrame": "1",
+        "mouth": "0.000",
+        "renderer": "live2d-cubism"
+      }
+    }
+  ],
+  "study": {
+    "gesture": "smile",
+    "gestureProgress": "0.2319",
+    "tilt": "-4.493",
+    "armLeft": "0.0501",
+    "eyeLeftFrame": "0",
+    "mouth": "0.000",
+    "renderer": "layer-study"
+  },
+  "sourceAndModelAssetsUnchanged": true,
+  "unitTestsPassed": 13,
+  "buildPassed": true
+}

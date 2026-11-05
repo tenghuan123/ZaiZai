@@ -1,0 +1,92 @@
+[
+  {
+    "left": 0,
+    "right": 0,
+    "opacities": {
+      "EyeLClosed": 1,
+      "EyeLHalf": 0,
+      "EyeRClosed": 1,
+      "EyeRHalf": 0
+    }
+  },
+  {
+    "left": 0,
+    "right": 0.5,
+    "opacities": {
+      "EyeLClosed": 1,
+      "EyeLHalf": 0,
+      "EyeRClosed": 0,
+      "EyeRHalf": 1
+    }
+  },
+  {
+    "left": 0,
+    "right": 1,
+    "opacities": {
+      "EyeLClosed": 1,
+      "EyeLHalf": 0,
+      "EyeRClosed": 0,
+      "EyeRHalf": 0
+    }
+  },
+  {
+    "left": 0.5,
+    "right": 0,
+    "opacities": {
+      "EyeLClosed": 0,
+      "EyeLHalf": 1,
+      "EyeRClosed": 1,
+      "EyeRHalf": 0
+    }
+  },
+  {
+    "left": 0.5,
+    "right": 0.5,
+    "opacities": {
+      "EyeLClosed": 0,
+      "EyeLHalf": 1,
+      "EyeRClosed": 0,
+      "EyeRHalf": 1
+    }
+  },
+  {
+    "left": 0.5,
+    "right": 1,
+    "opacities": {
+      "EyeLClosed": 0,
+      "EyeLHalf": 1,
+      "EyeRClosed": 0,
+      "EyeRHalf": 0
+    }
+  },
+  {
+    "left": 1,
+    "right": 0,
+    "opacities": {
+      "EyeLClosed": 0,
+      "EyeLHalf": 0,
+      "EyeRClosed": 1,
+      "EyeRHalf": 0
+    }
+  },
+  {
+    "left": 1,
+    "right": 0.5,
+    "opacities": {
+      "EyeLClosed": 0,
+      "EyeLHalf": 0,
+      "EyeRClosed": 0,
+      "EyeRHalf": 1
+    }
+  },
+  {
+    "left": 1,
+    "right": 1,
+    "opacities": {
+      "EyeLClosed": 0,
+      "EyeLHalf": 0,
+      "EyeRClosed": 0,
+      "EyeRHalf": 0
+    }
+  }
+]

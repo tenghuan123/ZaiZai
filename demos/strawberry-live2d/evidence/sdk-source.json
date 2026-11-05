@@ -1,0 +1,33 @@
+{
+  "installedAt": "2026-11-05T01:57:01.683Z",
+  "sdkFolder": "CubismSdkForWeb-5-r.5",
+  "source": "Official SDK downloaded and copied into workspace by user",
+  "downloadPage": "https://www.live2d.com/zh-CHS/sdk/download/web/",
+  "scope": "local demo",
+  "artifacts": [
+    {
+      "source": "CubismSdkForWeb-5-r.5/Core/live2dcubismcore.min.js",
+      "path": "public/vendor/live2dcubismcore.min.js",
+      "bytes": 228042,
+      "sha256": "8741f739779b5d5210872bd3d7d99f0f1e56e6c87409e7d26d6bb4b80aa1ef47"
+    },
+    {
+      "source": "CubismSdkForWeb-5-r.5/Core/LICENSE.md",
+      "path": "public/vendor/cubism-core.LICENSE.md",
+      "bytes": 520,
+      "sha256": "b81e37048010ef1d336106151201a0323c3309cae44aecdedf57831fe88fa991"
+    },
+    {
+      "source": "CubismSdkForWeb-5-r.5/LICENSE.md",
+      "path": "public/vendor/cubism-sdk.LICENSE.md",
+      "bytes": 3042,
+      "sha256": "787a7d1454240865420b96ea9a20ab5e1a5ec3c1abced2e308288c2de8aac991"
+    },
+    {
+      "source": "CubismSdkForWeb-5-r.5/NOTICE.md",
+      "path": "public/vendor/cubism-sdk.NOTICE.md",
+      "bytes": 1509,
+      "sha256": "fa72aa00a7bf8b98a7617a9d67a3530a9fe23705808163cf54ca799398b22fbc"
+    }
+  ]
+}

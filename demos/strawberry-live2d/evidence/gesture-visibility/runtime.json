@@ -1,0 +1,484 @@
+{
+  "viewport": "600×800 CSS pixels, stacked layout",
+  "errors": [],
+  "results": [
+    {
+      "id": "explain",
+      "clicked": {
+        "width": 600,
+        "height": 800,
+        "stage": {
+          "x": 35,
+          "y": 240.390625,
+          "width": 500,
+          "height": 320,
+          "top": 240.390625,
+          "right": 535,
+          "bottom": 560.390625,
+          "left": 35
+        },
+        "scrollY": 137,
+        "fullyVisible": true,
+        "progress": null,
+        "tilt": 0,
+        "arm": 0,
+        "leftEye": 1,
+        "rightEye": 1,
+        "renderer": "live2d-cubism"
+      },
+      "onset": {
+        "width": 600,
+        "height": 800,
+        "stage": {
+          "x": 35,
+          "y": 240.390625,
+          "width": 500,
+          "height": 320,
+          "top": 240.390625,
+          "right": 535,
+          "bottom": 560.390625,
+          "left": 35
+        },
+        "scrollY": 137,
+        "fullyVisible": true,
+        "progress": 0.2282,
+        "tilt": -3.16,
+        "arm": 0.4815,
+        "leftEye": 1,
+        "rightEye": 1,
+        "renderer": "live2d-cubism"
+      },
+      "hold": {
+        "width": 600,
+        "height": 800,
+        "stage": {
+          "x": 35,
+          "y": 240.390625,
+          "width": 500,
+          "height": 320,
+          "top": 240.390625,
+          "right": 535,
+          "bottom": 560.390625,
+          "left": 35
+        },
+        "scrollY": 137,
+        "fullyVisible": true,
+        "progress": 0.4937,
+        "tilt": -5.997,
+        "arm": 0.5787,
+        "leftEye": 1,
+        "rightEye": 1,
+        "renderer": "live2d-cubism"
+      },
+      "returned": {
+        "width": 600,
+        "height": 800,
+        "stage": {
+          "x": 35,
+          "y": 240.390625,
+          "width": 500,
+          "height": 320,
+          "top": 240.390625,
+          "right": 535,
+          "bottom": 560.390625,
+          "left": 35
+        },
+        "scrollY": 137,
+        "fullyVisible": true,
+        "progress": null,
+        "tilt": -0.002,
+        "arm": 0.001,
+        "leftEye": 1,
+        "rightEye": 1,
+        "renderer": "live2d-cubism"
+      }
+    },
+    {
+      "id": "greet",
+      "clicked": {
+        "width": 600,
+        "height": 800,
+        "stage": {
+          "x": 35,
+          "y": 240.390625,
+          "width": 500,
+          "height": 320,
+          "top": 240.390625,
+          "right": 535,
+          "bottom": 560.390625,
+          "left": 35
+        },
+        "scrollY": 137,
+        "fullyVisible": true,
+        "progress": 0,
+        "tilt": 0,
+        "arm": 0.0003,
+        "leftEye": 1,
+        "rightEye": 1,
+        "renderer": "live2d-cubism"
+      },
+      "onset": {
+        "width": 600,
+        "height": 800,
+        "stage": {
+          "x": 35,
+          "y": 240.390625,
+          "width": 500,
+          "height": 320,
+          "top": 240.390625,
+          "right": 535,
+          "bottom": 560.390625,
+          "left": 35
+        },
+        "scrollY": 137,
+        "fullyVisible": true,
+        "progress": 0.1688,
+        "tilt": -6.544,
+        "arm": 0.4403,
+        "leftEye": 1,
+        "rightEye": 1,
+        "renderer": "live2d-cubism"
+      },
+      "hold": {
+        "width": 600,
+        "height": 800,
+        "stage": {
+          "x": 35,
+          "y": 240.390625,
+          "width": 500,
+          "height": 320,
+          "top": 240.390625,
+          "right": 535,
+          "bottom": 560.390625,
+          "left": 35
+        },
+        "scrollY": 137,
+        "fullyVisible": true,
+        "progress": 0.5326,
+        "tilt": -7.578,
+        "arm": 0.543,
+        "leftEye": 1,
+        "rightEye": 1,
+        "renderer": "live2d-cubism"
+      },
+      "returned": {
+        "width": 600,
+        "height": 800,
+        "stage": {
+          "x": 35,
+          "y": 240.390625,
+          "width": 500,
+          "height": 320,
+          "top": 240.390625,
+          "right": 535,
+          "bottom": 560.390625,
+          "left": 35
+        },
+        "scrollY": 137,
+        "fullyVisible": true,
+        "progress": null,
+        "tilt": -0.009,
+        "arm": 0.0018,
+        "leftEye": 1,
+        "rightEye": 1,
+        "renderer": "live2d-cubism"
+      }
+    },
+    {
+      "id": "curious",
+      "clicked": {
+        "width": 600,
+        "height": 800,
+        "stage": {
+          "x": 35,
+          "y": 240.390625,
+          "width": 500,
+          "height": 320,
+          "top": 240.390625,
+          "right": 535,
+          "bottom": 560.390625,
+          "left": 35
+        },
+        "scrollY": 137,
+        "fullyVisible": true,
+        "progress": null,
+        "tilt": -0.004,
+        "arm": 0.001,
+        "leftEye": 1,
+        "rightEye": 1,
+        "renderer": "live2d-cubism"
+      },
+      "onset": {
+        "width": 600,
+        "height": 800,
+        "stage": {
+          "x": 35,
+          "y": 240.390625,
+          "width": 500,
+          "height": 320,
+          "top": 240.390625,
+          "right": 535,
+          "bottom": 560.390625,
+          "left": 35
+        },
+        "scrollY": 137,
+        "fullyVisible": true,
+        "progress": 0.156,
+        "tilt": 5.436,
+        "arm": 0,
+        "leftEye": 1,
+        "rightEye": 1,
+        "renderer": "live2d-cubism"
+      },
+      "hold": {
+        "width": 600,
+        "height": 800,
+        "stage": {
+          "x": 35,
+          "y": 240.390625,
+          "width": 500,
+          "height": 320,
+          "top": 240.390625,
+          "right": 535,
+          "bottom": 560.390625,
+          "left": 35
+        },
+        "scrollY": 137,
+        "fullyVisible": true,
+        "progress": 0.4988,
+        "tilt": 11.996,
+        "arm": 0,
+        "leftEye": 1,
+        "rightEye": 1,
+        "renderer": "live2d-cubism"
+      },
+      "returned": {
+        "width": 600,
+        "height": 800,
+        "stage": {
+          "x": 35,
+          "y": 240.390625,
+          "width": 500,
+          "height": 320,
+          "top": 240.390625,
+          "right": 535,
+          "bottom": 560.390625,
+          "left": 35
+        },
+        "scrollY": 137,
+        "fullyVisible": true,
+        "progress": null,
+        "tilt": 0.009,
+        "arm": 0,
+        "leftEye": 1,
+        "rightEye": 1,
+        "renderer": "live2d-cubism"
+      }
+    },
+    {
+      "id": "smile",
+      "clicked": {
+        "width": 600,
+        "height": 800,
+        "stage": {
+          "x": 35,
+          "y": 240.390625,
+          "width": 500,
+          "height": 320,
+          "top": 240.390625,
+          "right": 535,
+          "bottom": 560.390625,
+          "left": 35
+        },
+        "scrollY": 137,
+        "fullyVisible": true,
+        "progress": null,
+        "tilt": 0.003,
+        "arm": 0,
+        "leftEye": 1,
+        "rightEye": 1,
+        "renderer": "live2d-cubism"
+      },
+      "onset": {
+        "width": 600,
+        "height": 800,
+        "stage": {
+          "x": 35,
+          "y": 240.390625,
+          "width": 500,
+          "height": 320,
+          "top": 240.390625,
+          "right": 535,
+          "bottom": 560.390625,
+          "left": 35
+        },
+        "scrollY": 137,
+        "fullyVisible": true,
+        "progress": 0.1389,
+        "tilt": -4.466,
+        "arm": 0.0158,
+        "leftEye": 0.5,
+        "rightEye": 0.5,
+        "renderer": "live2d-cubism"
+      },
+      "hold": {
+        "width": 600,
+        "height": 800,
+        "stage": {
+          "x": 35,
+          "y": 240.390625,
+          "width": 500,
+          "height": 320,
+          "top": 240.390625,
+          "right": 535,
+          "bottom": 560.390625,
+          "left": 35
+        },
+        "scrollY": 137,
+        "fullyVisible": true,
+        "progress": 0.4898,
+        "tilt": -12,
+        "arm": 0.1799,
+        "leftEye": 0,
+        "rightEye": 0,
+        "renderer": "live2d-cubism"
+      },
+      "returned": {
+        "width": 600,
+        "height": 800,
+        "stage": {
+          "x": 35,
+          "y": 240.390625,
+          "width": 500,
+          "height": 320,
+          "top": 240.390625,
+          "right": 535,
+          "bottom": 560.390625,
+          "left": 35
+        },
+        "scrollY": 137,
+        "fullyVisible": true,
+        "progress": null,
+        "tilt": -0.009,
+        "arm": 0,
+        "leftEye": 1,
+        "rightEye": 1,
+        "renderer": "live2d-cubism"
+      }
+    },
+    {
+      "id": "sleepy",
+      "clicked": {
+        "width": 600,
+        "height": 800,
+        "stage": {
+          "x": 35,
+          "y": 240.390625,
+          "width": 500,
+          "height": 320,
+          "top": 240.390625,
+          "right": 535,
+          "bottom": 560.390625,
+          "left": 35
+        },
+        "scrollY": 137,
+        "fullyVisible": true,
+        "progress": null,
+        "tilt": -0.003,
+        "arm": 0,
+        "leftEye": 1,
+        "rightEye": 1,
+        "renderer": "live2d-cubism"
+      },
+      "onset": {
+        "width": 600,
+        "height": 800,
+        "stage": {
+          "x": 35,
+          "y": 240.390625,
+          "width": 500,
+          "height": 320,
+          "top": 240.390625,
+          "right": 535,
+          "bottom": 560.390625,
+          "left": 35
+        },
+        "scrollY": 137,
+        "fullyVisible": true,
+        "progress": 0.1188,
+        "tilt": 3.105,
+        "arm": 0,
+        "leftEye": 1,
+        "rightEye": 1,
+        "renderer": "live2d-cubism"
+      },
+      "hold": {
+        "width": 600,
+        "height": 800,
+        "stage": {
+          "x": 35,
+          "y": 240.390625,
+          "width": 500,
+          "height": 320,
+          "top": 240.390625,
+          "right": 535,
+          "bottom": 560.390625,
+          "left": 35
+        },
+        "scrollY": 137,
+        "fullyVisible": true,
+        "progress": 0.4939,
+        "tilt": 12,
+        "arm": 0,
+        "leftEye": 0,
+        "rightEye": 0,
+        "renderer": "live2d-cubism"
+      },
+      "returned": {
+        "width": 600,
+        "height": 800,
+        "stage": {
+          "x": 35,
+          "y": 240.390625,
+          "width": 500,
+          "height": 320,
+          "top": 240.390625,
+          "right": 535,
+          "bottom": 560.390625,
+          "left": 35
+        },
+        "scrollY": 137,
+        "fullyVisible": true,
+        "progress": null,
+        "tilt": 0.009,
+        "arm": 0,
+        "leftEye": 1,
+        "rightEye": 1,
+        "renderer": "live2d-cubism"
+      }
+    }
+  ],
+  "restarted": {
+    "width": 600,
+    "height": 800,
+    "stage": {
+      "x": 35,
+      "y": 240.390625,
+      "width": 500,
+      "height": 320,
+      "top": 240.390625,
+      "right": 535,
+      "bottom": 560.390625,
+      "left": 35
+    },
+    "scrollY": 137,
+    "fullyVisible": true,
+    "progress": null,
+    "tilt": 2.764,
+    "arm": 0,
+    "leftEye": 1,
+    "rightEye": 1,
+    "renderer": "live2d-cubism"
+  },
+  "sceneCompleted": true
+}

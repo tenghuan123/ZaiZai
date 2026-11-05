@@ -1,0 +1,71 @@
+{
+  "checkedAt": "2026-11-04T15:24:02.236Z",
+  "status": "compiled-model-exported; web-runtime-verified",
+  "editorVersion": "5.3.04",
+  "editorModeObserved": "trial",
+  "exportTargetObserved": "SDK 4.2 / Cubism 4.2",
+  "textureAtlas": {
+    "width": 1024,
+    "height": 1024,
+    "sourceImages": "all",
+    "unpackedImagesObserved": 0
+  },
+  "artifacts": [
+    {
+      "path": "assets/motion-ready/strawberry-bunny.cmo3",
+      "bytes": 1090655,
+      "sha256": "9d6389a35072e10af2dc6adba13015d94218872a97e352eb6c3e49fc565f0c5a",
+      "modifiedAt": "2026-11-05T04:52:16.559526+00:00"
+    },
+    {
+      "path": "public/model/strawberry-bunny.moc3",
+      "bytes": 19968,
+      "sha256": "cd3276247a228a03913d54b41ad7c18045f0d6e19fe3120dfd9a651a18e7d683",
+      "modifiedAt": "2026-11-05T04:55:59.351856+00:00"
+    },
+    {
+      "path": "public/model/strawberry-bunny.model3.json",
+      "bytes": 342,
+      "sha256": "9cc572a326424946314f9193459034739fd928093f7d87872c66961d87809ab3",
+      "modifiedAt": "2026-11-05T04:55:59.353018+00:00"
+    },
+    {
+      "path": "public/model/strawberry-bunny.1024/texture_00.png",
+      "bytes": 204525,
+      "sha256": "0ccd6017337fff7c3c9635d41d712931d070f3d0a099a51152ac28c34bf21f4b",
+      "modifiedAt": "2026-11-05T04:56:54.433457+00:00"
+    },
+    {
+      "path": "public/model/strawberry-bunny.cdi3.json",
+      "bytes": 2332,
+      "sha256": "f2bf0ea2360d74c3c1b940aaa1a925c2d9e4f900bb236250db002f8a1e258e5a",
+      "modifiedAt": "2026-11-05T04:55:59.352803+00:00"
+    }
+  ],
+  "sourceSha256": "5f7b3a3642c195d30db916f39cc53989306d971cfa7c27dc3da8528f6af0da1d",
+  "observedInEditor": [
+    "neutral eyes open; alternative half-eye opacity fixed",
+    "independent left/right eye and mouth opacity keys",
+    "head tilt three keyforms and head horizontal displacement three keyforms",
+    "body rotation three keyforms",
+    "left/right shoulder rotation deformers with custom ParamArmL and ParamArmR",
+    "micro smile scale deformer on ParamMouthForm",
+    "hair underpaint parented to body rather than tilting head"
+  ],
+  "cmo3Saved": true,
+  "moc3Exported": true,
+  "webCorePresent": true,
+  "live2dRuntimeVerified": true,
+  "existingAppChanged": false,
+  "limitations": [
+    "Fixed scripts; no AI service connected",
+    "UI limits: head tilt \u00b12 degrees and arm lift 9 degrees; large compiled-model poses are not production polished",
+    "Core 6 adapter supports this MOC4.2 model without offscreens",
+    "Body root rotation is small; this is not a full feet-pinned or side-face rig"
+  ],
+  "runtimeEvidence": "live2d-acceptance.json",
+  "texturePostprocessing": "texture-padding.json",
+  "lastVerifiedAt": "2026-11-05T05:03:47.135106+00:00",
+  "eyeCombinationEvidence": "eye-combinations.json",
+  "refinementEvidence": "refinement/result.json"
+}
