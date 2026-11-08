@@ -1,3 +1,4 @@
+import { desktopPages } from './desktop-pages.mjs'
 import { _electron } from 'playwright'
 import { createRequire } from 'node:module'
 import { spawnSync } from 'node:child_process'
@@ -16,7 +17,7 @@ const report = { directory, checks: [], errors: [], status: 'running' }
 let app
 try {
   app = await _electron.launch({ executablePath: executable ? resolve(executable) : require('electron'), args: executable ? [] : [resolve('.')], env, timeout: 30_000 })
-  const page = await app.firstWindow()
+  const { panel: page } = await desktopPages(app)
   page.setDefaultTimeout(10_000)
   page.on('pageerror', error => report.errors.push(error.message))
   await page.waitForSelector('.widget')

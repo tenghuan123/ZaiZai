@@ -1,3 +1,4 @@
+import { desktopPages } from './desktop-pages.mjs'
 // Run after npm run build: node --import tsx scripts/bunny-proportions-smoke.mjs
 import { chromium, _electron } from 'playwright';
 import { readFile, writeFile, mkdir } from 'node:fs/promises';
@@ -179,19 +180,19 @@ try {
     env,
     timeout: 30000
   });
-  const page = await app.firstWindow();
+  const { panel: page, pet } = await desktopPages(app);
   page.on('pageerror', e => report.errors.push(e.message));
   page.on('console', m => {
     if (m.type() === 'error') report.errors.push(m.text());
   });
-  await page.emulateMedia({
+  await pet.emulateMedia({
     reducedMotion: 'reduce'
   });
   await page.getByRole('button', {
     name: '桌宠动作',
     exact: true
   }).click();
-  const ready = async action => page.waitForFunction(a => {
+  const ready = async action => pet.waitForFunction(a => {
     const c = document.querySelector('.pet-sprite');
     return c?.dataset.petAction === a && c.dataset.status === 'ready';
   }, action, {
@@ -203,7 +204,7 @@ try {
       exact: true
     }).click();
     await ready(action);
-    const difference = await page.locator('.pet-sprite').evaluate(async (c, expectedURL) => {
+    const difference = await pet.locator('.pet-sprite').evaluate(async (c, expectedURL) => {
       const image = new Image();
       image.src = expectedURL;
       await image.decode();
@@ -235,17 +236,17 @@ try {
     exact: true
   }).click();
   await ready('idle');
-  await page.emulateMedia({
+  await pet.emulateMedia({
     reducedMotion: 'no-preference'
   });
-  await page.getByRole('button', {
+  await pet.getByRole('button', {
     name: '互动桌宠，双击展开或收起',
     exact: true
   }).press('Enter');
   await ready('react');
   await ready('idle');
   report.checks.push('interaction waves once, animates normally and returns to idle');
-  await page.screenshot({
+  await pet.screenshot({
     path: join(directory, 'application.png'),
     omitBackground: true
   });

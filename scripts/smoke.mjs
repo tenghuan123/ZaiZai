@@ -1,3 +1,4 @@
+import { desktopPages } from './desktop-pages.mjs'
 import { _electron } from 'playwright'
 import { createRequire } from 'node:module'
 import { spawn, spawnSync } from 'node:child_process'
@@ -36,10 +37,10 @@ async function snapshot(page) {
 async function launch() {
   const start = Date.now()
   application = await _electron.launch({ executablePath, args, env, timeout: 30_000 })
-  const page = await application.firstWindow()
-  page.on('pageerror', error => report.errors.push(error.message))
+  const { panel: page, pet } = await desktopPages(application)
+  for (const view of [page, pet]) view.on('pageerror', error => report.errors.push(error.message))
   await page.waitForFunction(() => !!window.desktop && !!document.querySelector('.widget'))
-  return { page, startupMs: Date.now() - start }
+  return { page, pet, startupMs: Date.now() - start }
 }
 async function quit(page) {
   const closed = application.waitForEvent('close')
@@ -51,26 +52,26 @@ async function quit(page) {
 }
 
 try {
-  let { page, startupMs } = await launch()
+  let { page, pet, startupMs } = await launch()
   report.startupMs = startupMs
   let state = await snapshot(page)
   assert.equal(state.diagnostics.trayReady, true)
   assert.equal(state.window.bounds.width, 356)
-  assert.equal(state.window.bounds.height, 480)
+  assert.equal(state.window.panel.bounds.height, 378)
   report.runtime = state.diagnostics.versions
   report.checks.push('native window and tray created; SQLite opened')
   await page.screenshot({ path: join(runDirectory, 'expanded.png'), omitBackground: true })
   await page.getByRole('button', { name: '仅显示桌宠', exact: true }).click()
-  await waitUntil(async () => (await snapshot(page)).window.bounds.height === 224, 'card collapse before native resize')
+  const stablePet = state.window.bounds
+  await waitUntil(async () => !(await snapshot(page)).window.panel.visible, 'task panel folds then hides')
   state = await snapshot(page)
   assert.equal(state.window.mode, 'compact')
-  assert.equal(state.window.bounds.height, 224)
-  const nativeBounds = await application.evaluate(({ BrowserWindow }) => BrowserWindow.getAllWindows()[0].getBounds())
-  assert.equal(nativeBounds.height, 224)
-  await page.screenshot({ path: join(runDirectory, 'compact.png'), omitBackground: true })
-  await page.getByRole('button', { name: '展开清单', exact: true }).click()
-  assert.equal((await snapshot(page)).window.bounds.height, 480)
-  report.checks.push('expanded ↔ compact changes actual native window bounds')
+  assert.deepEqual(state.window.bounds, stablePet)
+  await pet.screenshot({ path: join(runDirectory, 'compact.png'), omitBackground: true })
+  await pet.getByRole('button', { name: '展开清单', exact: true }).click()
+  assert.equal((await snapshot(page)).window.panel.visible, true)
+  assert.deepEqual((await snapshot(page)).window.bounds, stablePet)
+  report.checks.push('task panel folds and expands while the pet native window stays fixed')
 
   const invalid = await page.evaluate(() => window.desktop.tasks.createOnce({ requestId: crypto.randomUUID(), title: 'bad input',
     scheduledDate: '2026-02-30', scheduledTime: null, reminderEnabled: true, scene: 'generic' }))
@@ -133,7 +134,7 @@ try {
   })
   await waitUntil(async () => (await snapshot(page)).window.visible, 'second instance restores original window')
   report.checks.push('single-instance relaunch restores the original hidden window')
-  await page.getByRole('button', { name: '完成了', exact: true }).click()
+  await pet.getByRole('button', { name: '完成了', exact: true }).click()
   await waitUntil(async () => (await snapshot(page)).reminders[0].completedAt !== null, 'completion saved')
   assert.equal((await snapshot(page)).activeReminderIds.length, 0)
   report.checks.push('bubble completion saves state and dismisses active reminder')
@@ -177,15 +178,15 @@ try {
   await quit(page)
   const afterExit = await readFile(join(dataDirectory, 'm0-events.ndjson'), 'utf8')
   assert.ok(afterExit.includes('app-quit'))
-  ;({ page } = await launch())
+  ;({ page, pet } = await launch())
   state = await snapshot(page)
   assert.equal(state.today.items.length, 2)
   assert.equal(state.today.progress.completed, 1)
   assert.equal(state.window.mode, 'compact')
-  assert.equal(state.window.bounds.height, 224)
+  assert.equal(state.window.panel.visible, false)
   assert.equal(state.activeReminderIds.length, 0)
   report.checks.push('explicit quit exits process; restart restores SQLite data and compact preference without repeating old reminder')
-  const workspaceChecks = await runWorkspaceChecks({ page, snapshot, waitUntil, runDirectory, databaseSQL,
+  const workspaceChecks = await runWorkspaceChecks({ page, pet, snapshot, waitUntil, runDirectory, databaseSQL,
     withMainClock: async (now, action) => {
       await application.evaluate((_electron, time) => {
         globalThis.__m2OriginalNow = Date.now
@@ -196,7 +197,7 @@ try {
         await snapshot(page)
       }
     },
-    restart: async () => { await quit(page); ({ page } = await launch()); return page } })
+    restart: async () => { await quit(page); ({ page, pet } = await launch()); return { page, pet } } })
   report.checks.push(...workspaceChecks)
   await quit(page)
   assert.deepEqual(report.errors, [])

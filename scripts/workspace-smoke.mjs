@@ -6,7 +6,7 @@ function shiftDate(date, days) {
   return value.toISOString().slice(0, 10)
 }
 export async function runWorkspaceChecks(context) {
-  let page = context.page
+  let { page, pet } = context
   const { snapshot, waitUntil, runDirectory, databaseSQL } = context
   const checks = []
   const today = (await snapshot(page)).today.date, tomorrow = shiftDate(today, 1), yesterday = shiftDate(today, -1)
@@ -31,7 +31,7 @@ export async function runWorkspaceChecks(context) {
     await dialog().getByLabel('到点提醒', { exact: true }).uncheck()
     await saveEditor()
   }
-  await page.getByRole('button', { name: '展开清单', exact: true }).click()
+  await pet.getByRole('button', { name: '展开清单', exact: true }).click()
   // Setup only touches this run's isolated database; every feature below uses the actual UI.
   await page.evaluate(async () => {
     const result = await window.desktop.bootstrap()
@@ -155,7 +155,7 @@ export async function runWorkspaceChecks(context) {
   await page.screenshot({ path: join(runDirectory, 'history.png'), omitBackground: true, animations: 'disabled' })
   const todayBeforeMove = (await snapshot(page)).today.progress
   await page.getByRole('button', { name: '仅显示桌宠', exact: true }).click()
-  const dock = page.getByRole('button', { name: '展开清单', exact: true })
+  const dock = pet.getByRole('button', { name: '展开清单', exact: true })
   assert.ok((await dock.textContent()).includes(`今天 ${todayBeforeMove.completed}/${todayBeforeMove.total}`))
   await dock.click()
   await row('昨日未完成').getByRole('button', { name: '移到今天', exact: true }).click()
@@ -203,8 +203,8 @@ export async function runWorkspaceChecks(context) {
   })
   checks.push('controlled main clock crosses a day: UI follows today, creates two fresh instances and preserves yesterday completion and pending facts')
 
-  page = await context.restart()
-  if ((await snapshot(page)).window.mode === 'compact') await page.getByRole('button', { name: '展开清单', exact: true }).click()
+  ;({ page, pet } = await context.restart())
+  if ((await snapshot(page)).window.mode === 'compact') await pet.getByRole('button', { name: '展开清单', exact: true }).click()
   await row('昨日未完成').waitFor()
   assert.equal((await snapshot(page)).today.items.filter(item => item.occurrence?.id === old.value.id).length, 1)
   await selectDate(tomorrow)

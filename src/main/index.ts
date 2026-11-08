@@ -40,7 +40,6 @@ let updates: UpdateService | undefined
 let updateNotification: Notification | undefined
 let shuttingDown = false
 let revision = 0
-let focusedReminderId: string | null = null
 const sessionId = randomUUID()
 
 function log(event: string, details?: object): void {
@@ -59,7 +58,7 @@ function changed(): void {
   try {
     tray?.refresh()
     const event: AppEvent = { sessionId, revision, kind: 'data-changed' }
-    if (desktop && !desktop.window.webContents.isDestroyed()) desktop.window.webContents.send(channels.changed, event)
+    desktop?.broadcast(channels.changed, event)
   } catch (error) { reportError(error) }
 }
 function snapshot(): Snapshot {
@@ -67,7 +66,7 @@ function snapshot(): Snapshot {
   const clock = clockSnapshot()
   return { revision, sessionId, platform: process.platform, today: tasks.getDay(clock.today, clock),
     reminders: records.listDay(clock.today), activeReminderIds: records.active(clock), settings: settings.getSettings(),
-    window: desktop.state, focusedReminderId,
+    window: desktop.state,
     diagnostics: { trayReady: !!tray && !tray.tray.isDestroyed(), notificationSupported: Notification.isSupported(),
       databasePath: connection.path, backupPath: connection.backupPath,
       versions: { electron: process.versions.electron ?? '', chrome: process.versions.chrome ?? '', node: process.versions.node } } }
@@ -120,10 +119,9 @@ if (!app.requestSingleInstanceLock()) {
     const preferenceService = new SettingsService(preferences, loginItems, next => window.applyPreferences(next), reportError)
     notifications = new NativeNotifications(ids => {
       const target = ids.map(id => taskRepository.get(id)).find(item => item?.status === 'pending')
-      focusedReminderId = target?.id ?? null
       for (const id of ids) reminderRecords.acknowledge(id, Date.now())
-      window.setMode('expanded')
-      window.show()
+      if (target) window.openPanel({ kind: 'reminder', reminderId: target.id })
+      else { window.setMode('expanded'); window.show() }
       changed()
     }, log)
     const native = notifications
@@ -143,7 +141,7 @@ if (!app.requestSingleInstanceLock()) {
     updates = new UpdateService(updatesEnabled ? electronUpdater.autoUpdater : null, app.getVersion(),
       app.isPackaged ? '此安装包未配置自动更新，请安装支持更新的正式版本。' : '开发模式不检查更新。', state => {
         try {
-          if (!window.window.webContents.isDestroyed()) window.window.webContents.send(channels.updateChanged, state)
+          window.broadcast(channels.updateChanged, state)
           if (state.status.phase === 'ready' && !window.state.visible && Notification.isSupported()) {
             updateNotification?.close()
             updateNotification = new Notification({ title: 'zaizai 更新已就绪', body: `版本 ${state.status.version} 已下载，点击查看并重启更新。`, silent: true })

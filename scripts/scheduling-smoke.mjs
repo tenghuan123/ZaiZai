@@ -1,3 +1,4 @@
+import { desktopPages } from './desktop-pages.mjs'
 import { _electron } from 'playwright'
 import { createRequire } from 'node:module'
 import { mkdir, writeFile } from 'node:fs/promises'
@@ -10,7 +11,7 @@ await mkdir(directory, { recursive: true })
 const env = { ...process.env, TIA_M0_DATA_DIR: join(directory, 'data') }
 delete env.ELECTRON_RUN_AS_NODE; delete env.ELECTRON_RENDERER_URL
 const report = { directory, checks: [], errors: [], status: 'running' }
-let app, page
+let app, page, pet
 const button = name => page.getByRole('button', { name, exact: true })
 const row = title => page.getByRole('article', { name: title, exact: true })
 const dialog = () => page.getByRole('dialog')
@@ -25,7 +26,7 @@ async function snapshot() {
 }
 async function launch() {
   app = await _electron.launch({ executablePath: require('electron'), args: [resolve('.')], env, timeout: 30_000 })
-  page = await app.firstWindow(); page.setDefaultTimeout(15_000)
+  ;({ panel: page, pet } = await desktopPages(app)); page.setDefaultTimeout(15_000)
   page.on('pageerror', error => report.errors.push(error.message))
   await page.waitForSelector('.widget')
 }
@@ -90,8 +91,8 @@ try {
 
   await settings()
   await dialog().getByRole('button', { name: '拉大框框', exact: true }).click()
-  await until(async () => (await snapshot()).window.bounds.height === 610, 'large native window')
-  assert.equal((await snapshot()).window.bounds.width, 440)
+  await until(async () => (await snapshot()).window.panel.bounds.height === 508, 'large native window')
+  assert.equal((await snapshot()).window.panel.bounds.width, 440)
   await page.screenshot({ path: join(directory, 'settings.png'), omitBackground: true })
   await dialog().getByRole('button', { name: '🖥 仅在桌面', exact: true }).click()
   await until(async () => !(await snapshot()).window.alwaysOnTop, 'desktop layer native')
@@ -113,26 +114,27 @@ try {
   await page.mouse.move(box.x + box.width / 2 - 5, box.y + box.height / 2 - 5)
   await page.waitForTimeout(80)
   await app.evaluate(() => { globalThis.__cursor = { x: 740, y: 350 } })
-  await until(async () => (await snapshot()).window.bounds.width === 480, 'resize changes native width')
+  await until(async () => (await snapshot()).window.panel.bounds.width === 480, 'resize changes native width')
   await page.mouse.up()
   await until(async () => (await snapshot()).settings.expandedSize.width === 480, 'resize saved')
   await app.evaluate(({ screen }) => { screen.getCursorScreenPoint = globalThis.__originalCursor; delete globalThis.__originalCursor; delete globalThis.__cursor })
   const resized = (await snapshot()).settings.expandedSize
   assert.deepEqual(resized, { width: 480, height: 660 })
-  await button('仅显示桌宠').click(); await until(async () => (await snapshot()).window.bounds.height === 224, 'compact')
-  await button('展开清单').click(); await until(async () => (await snapshot()).window.bounds.height === 660, 'restore size after compact')
-  await button('调整窗口尺寸').dblclick(); await until(async () => (await snapshot()).window.bounds.height === 480, 'double-click standard')
-  await button('调整窗口尺寸').dblclick(); await until(async () => (await snapshot()).window.bounds.height === 610, 'double-click large')
+  await button('仅显示桌宠').click(); await until(async () => !(await snapshot()).window.panel.visible, 'compact')
+  await pet.getByRole('button', { name: '展开清单', exact: true }).click(); await until(async () => (await snapshot()).window.panel.visible, 'restore size after compact')
+  assert.equal((await snapshot()).window.panel.bounds.width, 480)
+  await button('调整窗口尺寸').dblclick(); await until(async () => (await snapshot()).window.panel.bounds.height === 378, 'double-click standard')
+  await button('调整窗口尺寸').dblclick(); await until(async () => (await snapshot()).window.panel.bounds.height === 508, 'double-click large')
   report.checks.push('resize pointer path updates native bounds with injected cursor positions; saved size restores after compact; double-click presets work')
 
-  await page.evaluate(() => {
+  await pet.evaluate(() => {
     window.__sounds = 0; window.__oscillators = 0
     window.desktop.subscribeSound(() => window.__sounds++)
     const create = AudioContext.prototype.createOscillator
     AudioContext.prototype.createOscillator = function () { window.__oscillators++; return create.call(this) }
   })
   await settings(); await dialog().getByRole('button', { name: '🔊 试听', exact: true }).click()
-  await until(async () => await page.evaluate(() => window.__oscillators) === 8, 'bell synthesized')
+  await until(async () => await pet.evaluate(() => window.__oscillators) === 8, 'bell synthesized')
   await dialog().getByLabel('提醒摇铃声音', { exact: true }).uncheck(); await closeSettings()
   async function dueBatch(names) {
     // Freeze just before a minute, insert both times, then advance main clock and wake the scheduler via resume.
@@ -150,13 +152,13 @@ try {
     await app.evaluate(() => { Date.now = globalThis.__originalNow; delete globalThis.__originalNow })
   }
   await dueBatch(['静音提醒甲', '静音提醒乙'])
-  assert.equal(await page.evaluate(() => window.__sounds), 1)
+  assert.equal(await pet.evaluate(() => window.__sounds), 1)
   await settings(); await dialog().getByLabel('提醒摇铃声音', { exact: true }).check(); await closeSettings()
   await page.evaluate(() => window.desktop.hide())
   await dueBatch(['有声提醒甲', '有声提醒乙'])
-  await until(async () => await page.evaluate(() => window.__oscillators) === 16, 'one bell per hidden batch')
-  assert.equal(await page.evaluate(() => window.__sounds), 2)
-  await app.evaluate(({ BrowserWindow }) => BrowserWindow.getAllWindows()[0].show())
+  await until(async () => await pet.evaluate(() => window.__oscillators) === 16, 'one bell per hidden batch')
+  assert.equal(await pet.evaluate(() => window.__sounds), 2)
+  await app.evaluate(({ app }) => app.emit('activate'))
   report.checks.push('preview creates the eight-oscillator bell; mute suppresses automatic sound; a two-task batch signals once while window hidden (controlled clock)')
 
   await settings()
@@ -192,8 +194,8 @@ try {
   await page.screenshot({ path: join(directory, 'tasks.png'), omitBackground: true })
   await quit(); await launch()
   assert.deepEqual((await snapshot()).settings.expandedSize, { width: 440, height: 610 })
-  assert.equal((await snapshot()).window.bounds.width, 440)
-  assert.equal((await snapshot()).window.bounds.height, 610)
+  assert.equal((await snapshot()).window.panel.bounds.width, 440)
+  assert.equal((await snapshot()).window.panel.bounds.height, 508)
   assert.equal((await snapshot()).today.items.find(item => item.occurrence?.title === '紧急待办').occurrence.priority, 'urgent')
   assert.equal((await page.evaluate(() => window.desktop.plans.list())).value.length, 2)
   report.checks.push('restart restores native size, priority and both recurrence rules from SQLite')

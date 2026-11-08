@@ -1,2 +1,2 @@
-// Keep the native window tall until the task card has finished folding away.
+// Let the card fold before hiding its native window.
 export const MENU_TRANSITION_MS = 340

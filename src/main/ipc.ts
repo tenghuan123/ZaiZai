@@ -11,6 +11,8 @@ import type { NativeNotifications } from './desktop/notifications'
 import { AppError } from './domain/errors'
 import { fields, identifier, object } from './domain/validation'
 import type { UpdateService } from './updates/service'
+import { PET_ACTIONS } from '../shared/pet'
+import type { PetAction } from '../shared/pet'
 
 interface Context {
   desktop: DesktopWindow; tasks: TaskService; settings: SettingsService; reminders: ReminderService
@@ -32,13 +34,13 @@ export function registerIPC(context: Context): void {
     sideEffect(() => reminders.arm())
     return result
   }
-  function handle(name: string, action: (input: unknown) => unknown): void {
+  function handle(name: string, action: (input: unknown, event: IpcMainInvokeEvent) => unknown): void {
     ipcMain.handle(name, async (event: IpcMainInvokeEvent, input: unknown): Promise<AppResult<unknown>> => {
       try {
-        if (event.sender !== desktop.window.webContents || event.senderFrame !== event.sender.mainFrame ||
-          !desktop.isTrustedUrl(event.senderFrame.url)) throw new AppError('UNAVAILABLE', '这个界面没有操作权限。')
+        if (event.senderFrame !== event.sender.mainFrame ||
+          !desktop.isTrustedRenderer(event.sender, event.senderFrame.url)) throw new AppError('UNAVAILABLE', '这个界面没有操作权限。')
         if (tasks.coordinateDay()) afterWrite(() => {})
-        const pending = action(input)
+        const pending = action(input, event)
         // Synchronous reads and their revision must be captured before another command can run.
         const value = pending instanceof Promise ? await pending : pending
         return { ok: true, value, ...context.metadata() }
@@ -95,10 +97,27 @@ export function registerIPC(context: Context): void {
     if (input !== 'expanded' && input !== 'compact') throw new AppError('VALIDATION', '窗口模式不正确。')
     desktop.setMode(input)
   })
+  handle(channels.openPanel, input => {
+    const value = object(input)
+    if (value.kind === 'settings') desktop.openPanel({ kind: 'settings' })
+    else if (value.kind === 'reminder') desktop.openPanel({ kind: 'reminder', reminderId: identifier(value.reminderId) })
+    else throw new AppError('VALIDATION', '清单入口不正确。')
+  })
+  handle(channels.presentPet, (input, event) => {
+    if (event.sender !== desktop.panel.webContents) throw new AppError('UNAVAILABLE', '这个界面没有操作权限。')
+    const value = object(input)
+    if (value.kind === 'preview' && (value.action === null || PET_ACTIONS.some(action => action === value.action))) {
+      desktop.presentPet({ kind: 'preview', action: value.action as PetAction | null })
+    } else if (value.kind === 'feedback' && typeof value.text === 'string' && value.text.length <= 300 &&
+      (value.reaction === undefined || value.reaction === null || value.reaction === 'celebrate' || value.reaction === 'all_done')) {
+      desktop.presentPet({ kind: 'feedback', text: value.text, reaction: value.reaction })
+    } else throw new AppError('VALIDATION', '桌宠互动内容不正确。')
+  })
   handle(channels.hide, () => desktop.hide())
   handle(channels.close, () => desktop.requestClose())
   handle(channels.quit, () => { setImmediate(context.quit) })
   handle(channels.dragStart, () => desktop.beginDrag())
+  handle(channels.dragMove, () => desktop.moveDrag())
   handle(channels.dragEnd, () => desktop.endDrag())
   handle(channels.resizeStart, () => desktop.beginResize())
   handle(channels.resizeEnd, () => desktop.endResize(true))

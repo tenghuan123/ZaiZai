@@ -7,7 +7,7 @@ import { tmpdir } from 'node:os'
 import { join } from 'node:path'
 import { Connection, MigrationError, schemaVersion } from '../src/main/database/connection'
 import { fixture, saved } from './helpers'
-import { fitToWorkArea, petAnchor, placeWindow, WINDOW_SIZE } from '../src/main/desktop/geometry'
+import { fitToWorkArea, petAnchor, placePetWindow, placeTaskPanel } from '../src/main/desktop/geometry'
 import { LARGE_SIZE, PET_AREA } from '../src/shared/window'
 import { AppError } from '../src/main/domain/errors'
 
@@ -139,7 +139,7 @@ test('window recovery fits negative-coordinate secondary screens', () => {
     { x: -1920, y: 0, width: 356, height: 224 })
 })
 
-test('expanding or folding in any corner preserves the pet anchor on a secondary display', () => {
+test('the panel opens on the available sides of a separate pet window on a secondary display', () => {
   const area = { x: -1440, y: 40, width: 1440, height: 860 }
   for (const horizontal of ['left', 'right'] as const) {
     for (const vertical of ['up', 'down'] as const) {
@@ -147,25 +147,25 @@ test('expanding or folding in any corner preserves the pet anchor on a secondary
         x: horizontal === 'left' ? area.x + area.width - PET_AREA.width : area.x,
         y: vertical === 'up' ? area.y + area.height - PET_AREA.height : area.y
       }
-      for (const size of [WINDOW_SIZE.compact, LARGE_SIZE]) {
-        const { bounds, layout } = placeWindow(anchor, size, LARGE_SIZE, area)
-        assert.deepEqual(petAnchor(bounds, layout), anchor)
-        assert.deepEqual(fitToWorkArea(bounds, area), bounds)
-        assert.equal(layout.horizontal, horizontal)
-        assert.equal(layout.vertical, vertical)
-      }
+      const pet = placePetWindow(anchor, area)
+      const panel = placeTaskPanel(anchor, LARGE_SIZE, area)
+      assert.deepEqual(petAnchor(pet.bounds, pet.layout), anchor)
+      assert.deepEqual(fitToWorkArea(pet.bounds, area), pet.bounds)
+      assert.deepEqual(fitToWorkArea(panel.bounds, area), panel.bounds)
+      assert.deepEqual(panel.direction, { horizontal, vertical })
+      assert.equal(vertical === 'up' ? anchor.y - panel.bounds.y - panel.bounds.height
+        : panel.bounds.y - anchor.y - PET_AREA.height, 6)
     }
   }
 })
 
-test('window placement clamps the panel when neither side fits and keeps the pet stationary', () => {
+test('panel placement shrinks to the free space beside the pet without covering the character', () => {
   const area = { x: 0, y: 25, width: 620, height: 700 }
   const anchor = { x: 270, y: 400 }
-  for (const size of [WINDOW_SIZE.compact, LARGE_SIZE]) {
-    const { bounds, layout } = placeWindow(anchor, size, LARGE_SIZE, area)
-    assert.deepEqual(fitToWorkArea(bounds, area), bounds)
-    assert.deepEqual(petAnchor(bounds, layout), anchor)
-    assert.equal(layout.horizontal, 'left')
-    assert.equal(layout.vertical, 'up')
-  }
+  const pet = placePetWindow(anchor, area)
+  const { bounds, direction } = placeTaskPanel(anchor, LARGE_SIZE, area)
+  assert.deepEqual(petAnchor(pet.bounds, pet.layout), anchor)
+  assert.deepEqual(direction, { horizontal: 'left', vertical: 'up' })
+  assert.deepEqual(fitToWorkArea(bounds, area), bounds)
+  assert.equal(bounds.height, anchor.y - area.y - 6)
 })

@@ -1,5 +1,6 @@
 import { useEffect, useRef, useState } from 'react'
 import type { DayItem } from '../../../../shared/tasks'
+import { PET_AREA } from '../../../../shared/window'
 import { itemKey } from './TaskList'
 
 export interface TaskCompletion {
@@ -10,7 +11,7 @@ export interface TaskCompletion {
 }
 interface CompletionJob extends TaskCompletion { timer?: ReturnType<typeof setTimeout> }
 
-export function useTaskCompletion(commit: (item: DayItem, completed: boolean) => Promise<boolean>) {
+export function useTaskCompletion(commit: (item: DayItem, completed: boolean) => Promise<boolean>, petAnchor?: { x: number; y: number }) {
   const jobs = useRef(new Map<string, CompletionJob>())
   const [pending, setPending] = useState<ReadonlyMap<string, TaskCompletion>>(new Map())
   const latestCommit = useRef(commit)
@@ -49,10 +50,12 @@ export function useTaskCompletion(commit: (item: DayItem, completed: boolean) =>
       return
     }
     const bounds = button.getBoundingClientRect()
-    const pet = document.querySelector('.pet')!.getBoundingClientRect()
+    const origin = { x: bounds.x + bounds.width / 2, y: bounds.y + bounds.height / 2 }
     const job: CompletionJob = { item, phase: 'saving',
-      origin: { x: bounds.x + bounds.width / 2, y: bounds.y + bounds.height / 2 },
-      target: { x: pet.x + pet.width / 2, y: pet.y + pet.height / 2 } }
+      origin, target: petAnchor ? {
+        x: Math.max(0, Math.min(window.innerWidth, petAnchor.x + PET_AREA.width / 2 - window.screenX)),
+        y: Math.max(0, Math.min(window.innerHeight, petAnchor.y + PET_AREA.height / 2 - window.screenY))
+      } : origin }
     jobs.current.set(key, job); publish()
     // Persist first. Animation never owns task state; cancelling sends an explicit undo command.
     void latestCommit.current(item, true).then(saved => {

@@ -1,4 +1,4 @@
-import { useState } from 'react'
+import { useEffect, useRef, useState } from 'react'
 import type { Updates } from './use-updates'
 
 export function UpdatePanel({ updates, onInstall, busy }: { updates: Updates; onInstall: () => Promise<void>; busy: boolean }): React.JSX.Element {
@@ -21,10 +21,17 @@ export function UpdatePanel({ updates, onInstall, busy }: { updates: Updates; on
   </section>
 }
 
-export function UpdateNotice({ updates, onDetails }: { updates: Updates; onDetails: () => void }): React.JSX.Element | null {
+export function UpdateNotice({ updates, onDetails, visible = true }: { updates: Updates; onDetails: () => void; visible?: boolean }): React.JSX.Element | null {
   const [dismissed, setDismissed] = useState('')
+  const channel = useRef<BroadcastChannel | null>(null)
+  useEffect(() => {
+    const notices = new BroadcastChannel('update-notice-dismissal')
+    channel.current = notices
+    notices.onmessage = event => { if (typeof event.data === 'string') setDismissed(event.data) }
+    return () => { notices.close(); channel.current = null }
+  }, [])
   const status = updates.state?.status
-  if (!status || (status.phase !== 'downloading' && status.phase !== 'ready')) return null
+  if (!visible || !status || (status.phase !== 'downloading' && status.phase !== 'ready')) return null
   const key = `${status.version}/${status.phase}`
   if (dismissed === key) return null
   return <aside className="update-notice" aria-label="新版本提示" role="status">
@@ -32,7 +39,7 @@ export function UpdateNotice({ updates, onDetails }: { updates: Updates; onDetai
     <span>{status.phase === 'ready' ? '重启后完成更新' : `后台下载中 ${status.progress}%`}</span>
     <div><button onClick={onDetails}>查看详情</button>
       {status.phase === 'ready' && <button className="primary" onClick={() => { void updates.install() }}>重启更新</button>}
-      <button onClick={() => setDismissed(key)}>稍后</button></div>
+      <button onClick={() => { setDismissed(key); channel.current?.postMessage(key) }}>稍后</button></div>
     {updates.error && <p role="alert">{updates.error}</p>}
   </aside>
 }

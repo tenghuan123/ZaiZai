@@ -4,7 +4,7 @@ import type { DayView, RepeatPlan } from '../../../../shared/tasks'
 
 const api = window.desktop
 interface Workspace { snapshot: Snapshot; day: DayView; plans: RepeatPlan[]; historyDates: string[] }
-export function useWorkspace(selectedDate: string | null) {
+export function useWorkspace(selectedDate: string | null, readPanel = true) {
   const [workspace, setWorkspace] = useState<Workspace | null>(null)
   const [error, setError] = useState('')
   const [loading, setLoading] = useState(true)
@@ -20,6 +20,7 @@ export function useWorkspace(selectedDate: string | null) {
       if (token !== request.current || selected !== selection.current) return
       if (!result.ok) { setError(result.error.message); return }
       const snapshot = result.value
+      if (!readPanel) { setWorkspace({ snapshot, day: snapshot.today, plans: [], historyDates: [] }); return }
       const date = selected ?? snapshot.today.date
       const [plans, day, history] = await Promise.all([
         api.plans.list(), date === snapshot.today.date
@@ -41,7 +42,7 @@ export function useWorkspace(selectedDate: string | null) {
         ? previous : { snapshot, day: day.value, plans: plans.value, historyDates: history.value })
     } catch { if (token === request.current) setError('与桌面主进程的连接中断，请重新读取。') }
     finally { if (token === request.current && selected === selection.current) setLoading(false) }
-  }, [])
+  }, [readPanel])
 
   useEffect(() => {
     setLoading(true)

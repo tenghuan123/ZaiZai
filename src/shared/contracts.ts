@@ -1,7 +1,11 @@
 import type { CompletionResult, CreateOnceInput, CreatePlanInput, DayView, Occurrence, OccurrenceRef, Priority, RepeatPlan, UpdateOnceInput, UpdatePlanInput } from './tasks'
 import type { UpdateState } from './updates'
-import type { WindowLayout } from './window'
+import type { WindowDirection, WindowLayout } from './window'
+import type { PetAction } from './pet'
 export type DisplayMode = 'expanded' | 'compact'
+export type PanelTarget = { kind: 'settings' } | { kind: 'reminder'; reminderId: string }
+export type PetPresentation = { kind: 'preview'; action: PetAction | null }
+  | { kind: 'feedback'; text: string; reaction?: 'celebrate' | 'all_done' | null }
 export type DispatchState = 'pending' | 'claimed' | 'submitted' | 'failed' | 'unavailable' | 'uncertain'
 // Read-only presentation of a timed occurrence and its current dispatch. Never a second task record.
 export interface Reminder {
@@ -19,11 +23,13 @@ export interface WindowState {
   mode: DisplayMode; visible: boolean; alwaysOnTop: boolean; animationsPaused: boolean
   bounds: { x: number; y: number; width: number; height: number }
   layout: WindowLayout
+  petAnchor: { x: number; y: number }
+  panel: { visible: boolean; bounds: WindowState['bounds']; direction: WindowDirection }
+  panelRequest: { sequence: number; target: PanelTarget } | null
 }
 export interface Snapshot {
   revision: number; sessionId: string; platform: string; today: DayView
   reminders: Reminder[]; activeReminderIds: string[]; settings: Settings; window: WindowState
-  focusedReminderId: string | null
   diagnostics: { trayReady: boolean; notificationSupported: boolean; databasePath: string; backupPath: string | null
     versions: { electron: string; chrome: string; node: string } }
 }
@@ -62,10 +68,14 @@ export interface DesktopAPI {
   settings: { update(input: { expectedVersion: number; patch: SettingsPatch }): Promise<AppResult<Settings>> }
   acknowledgeReminder(id: string): Promise<AppResult<void>>
   setMode(mode: DisplayMode): Promise<AppResult<void>>
+  openPanel(target: PanelTarget): Promise<AppResult<void>>
+  presentPet(presentation: PetPresentation): Promise<AppResult<void>>
+  subscribePet(listener: (presentation: PetPresentation) => void): () => void
   hide(): Promise<AppResult<void>>
   requestClose(): Promise<AppResult<void>>
   quit(): Promise<AppResult<void>>
   beginDrag(): Promise<AppResult<void>>
+  moveDrag(): Promise<AppResult<void>>
   endDrag(): Promise<AppResult<void>>
   beginResize(): Promise<AppResult<void>>
   endResize(): Promise<AppResult<void>>
@@ -81,7 +91,8 @@ export const channels = {
   priority: 'tasks:set-priority',
   plans: 'plans:list', createPlan: 'plans:create', updatePlan: 'plans:update', pausePlan: 'plans:set-paused', endPlan: 'plans:end',
   settings: 'settings:update', acknowledge: 'reminders:acknowledge', mode: 'window:mode',
+  openPanel: 'window:open-panel', presentPet: 'window:present-pet', petPresentation: 'window:pet-presentation',
   hide: 'window:hide', close: 'window:request-close', quit: 'app:quit', dragStart: 'window:drag-start',
-  dragEnd: 'window:drag-end', resizeStart: 'window:resize-start', resizeEnd: 'window:resize-end',
+  dragMove: 'window:drag-move', dragEnd: 'window:drag-end', resizeStart: 'window:resize-start', resizeEnd: 'window:resize-end',
   previewSound: 'reminders:preview-sound', playSound: 'reminders:play-sound', contextMenu: 'window:context-menu', changed: 'app:changed'
 } as const

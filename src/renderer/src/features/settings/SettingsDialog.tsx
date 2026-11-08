@@ -56,7 +56,7 @@ export function SettingsDialog({ snapshot, command, onClose, updates }: {
         <div><div className="preference-row"><strong>📐 框框尺寸预设</strong><div className="segmented">
           <button aria-pressed={settings.expandedSize.width === STANDARD_SIZE.width && settings.expandedSize.height === STANDARD_SIZE.height} onClick={() => { void update({ expandedSize: STANDARD_SIZE }) }}>标准尺寸</button>
           <button aria-pressed={settings.expandedSize.width === LARGE_SIZE.width && settings.expandedSize.height === LARGE_SIZE.height} onClick={() => { void update({ expandedSize: LARGE_SIZE }) }}>拉大框框</button></div></div>
-          <p className="preference-description">当前：{settings.expandedSize.width} × {settings.expandedSize.height} px，也可拖拽主面板右下角 ↘</p></div>
+          <p className="preference-description">当前：{snapshot.window.panel.bounds.width} × {snapshot.window.panel.bounds.height} px，也可拖拽主面板右下角 ↘</p></div>
       </section>
       <section className="preference-group"><div className="preference-row"><strong>🕒 固定下班时间</strong><div className="preference-tools">
         <button onClick={() => { void update({ offworkTime: '18:00' }) }}>18:00</button><button onClick={() => { void update({ offworkTime: null }) }}>清空</button></div></div>

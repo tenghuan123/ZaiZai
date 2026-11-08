@@ -1,6 +1,6 @@
 import { contextBridge, ipcRenderer } from 'electron'
 import { channels } from '../shared/contracts'
-import type { AppEvent, AppResult, DesktopAPI } from '../shared/contracts'
+import type { AppEvent, AppResult, DesktopAPI, PetPresentation } from '../shared/contracts'
 import type { UpdateState } from '../shared/updates'
 
 function invoke<T>(channel: string, input?: unknown): Promise<AppResult<T>> {
@@ -30,8 +30,15 @@ const desktop: DesktopAPI = {
   },
   settings: { update: input => invoke(channels.settings, input) },
   acknowledgeReminder: value => invoke(channels.acknowledge, value), setMode: value => invoke(channels.mode, value),
+  openPanel: target => invoke(channels.openPanel, target),
+  presentPet: presentation => invoke(channels.presentPet, presentation),
+  subscribePet: listener => {
+    const handler = (_event: Electron.IpcRendererEvent, presentation: PetPresentation): void => listener(presentation)
+    ipcRenderer.on(channels.petPresentation, handler)
+    return () => { ipcRenderer.removeListener(channels.petPresentation, handler) }
+  },
   hide: () => invoke(channels.hide), requestClose: () => invoke(channels.close), quit: () => invoke(channels.quit),
-  beginDrag: () => invoke(channels.dragStart), endDrag: () => invoke(channels.dragEnd),
+  beginDrag: () => invoke(channels.dragStart), moveDrag: () => invoke(channels.dragMove), endDrag: () => invoke(channels.dragEnd),
   beginResize: () => invoke(channels.resizeStart), endResize: () => invoke(channels.resizeEnd),
   previewReminderSound: () => invoke(channels.previewSound), showContextMenu: () => invoke(channels.contextMenu),
   subscribeSound: listener => {

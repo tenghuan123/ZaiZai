@@ -1,3 +1,4 @@
+import { desktopPages } from './desktop-pages.mjs'
 import { _electron } from 'playwright'
 import { createRequire } from 'node:module'
 import { spawnSync } from 'node:child_process'
@@ -16,7 +17,7 @@ const report = { directory, checks: [], errors: [], status: 'running' }
 let app
 try {
   app = await _electron.launch({ executablePath: executable ? resolve(executable) : require('electron'), args: executable ? [] : [resolve('.')], env, timeout: 30_000 })
-  const page = await app.firstWindow()
+  const { panel: page, pet } = await desktopPages(app)
   page.setDefaultTimeout(10_000)
   page.on('pageerror', error => report.errors.push(error.message))
   await page.waitForSelector('.widget')
@@ -39,10 +40,13 @@ try {
     }
     throw new Error(`Timed out: ${description}`)
   }
-  async function nativeHeight(height) {
-    await until(async () => (await snapshot()).window.bounds.height === height, `native height ${height}`)
-    assert.equal(await app.evaluate(({ BrowserWindow }) => BrowserWindow.getAllWindows()[0].getBounds().height), height)
+  const stablePet = (await snapshot()).window.bounds
+  async function panelVisibility(visible) {
+    await until(async () => (await snapshot()).window.panel.visible === visible, `panel visibility ${visible}`)
+    assert.deepEqual((await snapshot()).window.bounds, stablePet)
   }
+  const openPanel = () => pet.getByRole('button', { name: '展开清单', exact: true }).click()
+  const togglePet = () => pet.getByRole('button', { name: '互动桌宠，双击展开或收起', exact: true }).dblclick()
   const today = (await snapshot()).today.date
   await add('交互验收甲'); await add('交互验收乙'); await add('交互验收丙')
   const original = (await snapshot()).today.progress
@@ -97,7 +101,7 @@ try {
   await button('完成：交互验收乙').click()
   await button('完成：交互验收丙').click()
   await until(async () => (await snapshot()).today.progress.percentage === 100, 'independent completions persisted')
-  await page.waitForFunction(() => document.querySelector('.pet-sprite')?.dataset.petAction === 'all_done')
+  await pet.waitForFunction(() => document.querySelector('.pet-sprite')?.dataset.petAction === 'all_done')
   await row('交互验收乙').waitFor({ state: 'hidden' })
   await row('交互验收丙').waitFor({ state: 'hidden' })
   report.checks.push('changing tabs preserves pending completion; two independent completions reach 100% and trigger all-done celebration')
@@ -107,26 +111,26 @@ try {
   const folding = await page.locator('.card').evaluate(card => ({ opacity: Number(getComputedStyle(card).opacity), inert: card.inert }))
   assert.ok(folding.opacity > 0 && folding.opacity < 1)
   assert.equal(folding.inert, true)
-  assert.equal((await snapshot()).window.bounds.height, 480)
+  assert.equal((await snapshot()).window.panel.visible, true)
   await page.screenshot({ path: join(directory, 'menu-folding.png'), omitBackground: true })
-  await nativeHeight(224)
-  await page.screenshot({ path: join(directory, 'compact.png'), omitBackground: true })
-  const separation = await page.evaluate(() => document.querySelector('.mini-dock').getBoundingClientRect().top - document.querySelector('.pet').getBoundingClientRect().bottom)
+  await panelVisibility(false)
+  await pet.screenshot({ path: join(directory, 'compact.png'), omitBackground: true })
+  const separation = await pet.evaluate(() => document.querySelector('.mini-dock').getBoundingClientRect().top - document.querySelector('.pet').getBoundingClientRect().bottom)
   assert.ok(separation >= 16)
-  await button('展开清单').click(); await nativeHeight(480)
+  await openPanel(); await panelVisibility(true)
   await button('仅显示桌宠').waitFor()
-  report.checks.push('the card folds while native height stays 480, then shrinks to 224; the compact dock clears the pet and expands back')
+  report.checks.push('the card folds before its window hides; the pet bounds stay fixed and its dock opens the card again')
 
-  // Reverse while the delayed compact resize is still pending.
+  // Reverse while the delayed panel hide is still pending.
   await page.evaluate(() => window.desktop.setMode('compact'))
   await page.waitForTimeout(60)
   await page.evaluate(() => window.desktop.setMode('expanded'))
   await page.waitForTimeout(450)
-  assert.equal((await snapshot()).window.bounds.height, 480)
+  assert.equal((await snapshot()).window.panel.visible, true)
   assert.equal((await snapshot()).window.mode, 'expanded')
-  await button('互动桌宠，双击展开或收起').dblclick(); await nativeHeight(224)
-  await button('互动桌宠，双击展开或收起').dblclick(); await nativeHeight(480)
-  report.checks.push('rapid reversal cancels the stale native resize; pet double-click uses the same animated mode transition')
+  await togglePet(); await panelVisibility(false)
+  await togglePet(); await panelVisibility(true)
+  report.checks.push('rapid reversal cancels the stale panel hide; pet double-click uses the same animated mode transition')
 
   const tomorrowDate = new Date(`${today}T12:00:00Z`)
   tomorrowDate.setUTCDate(tomorrowDate.getUTCDate() + 1)
@@ -158,8 +162,8 @@ try {
   await button('完成：减少动态效果').click()
   await row('减少动态效果').waitFor({ state: 'hidden' })
   assert.equal(await page.locator('.completion-origin').count(), 0)
-  await button('仅显示桌宠').click(); await nativeHeight(224)
-  await button('展开清单').click(); await nativeHeight(480)
+  await button('仅显示桌宠').click(); await panelVisibility(false)
+  await openPanel(); await panelVisibility(true)
   await page.waitForTimeout(100)
   assert.equal(await page.locator('.card').evaluate(card => card.getAnimations().length), 0)
   report.checks.push('reduced motion completes directly without particles or delayed row removal, and mode switching has no CSS animation')

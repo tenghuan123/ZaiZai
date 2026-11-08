@@ -1,3 +1,4 @@
+import { desktopPages } from './desktop-pages.mjs'
 import { _electron } from 'playwright'
 import { createRequire } from 'node:module'
 import { createServer } from 'node:http'
@@ -57,7 +58,8 @@ async function phase() { return page.evaluate(async () => (await window.desktop.
 try {
   assert.equal(process.platform, 'darwin', 'This installed-updater harness currently targets macOS.')
   app = await _electron.launch({ executablePath: require('electron'), args: [wrapper], env, timeout: 30_000 })
-  page = await app.firstWindow(); page.setDefaultTimeout(15_000)
+  const { panel: panelPage, pet } = await desktopPages(app)
+  page = panelPage; page.setDefaultTimeout(15_000)
   page.on('pageerror', error => report.errors.push(error.message))
   await page.waitForSelector('.widget')
   await page.getByLabel('新增待办', { exact: true }).fill('更新期间保留的任务')
@@ -96,6 +98,10 @@ try {
   assert.deepEqual(after.today.items, before.today.items)
   assert.equal(after.revision, before.revision, 'update events do not invalidate the task projection')
   assert.equal(await app.evaluate(() => globalThis.__updateInstallCalls.length), 0)
+  await page.getByRole('button', { name: '仅显示桌宠', exact: true }).click()
+  await pet.getByRole('button', { name: '展开清单', exact: true }).waitFor()
+  assert.equal(await pet.getByRole('status', { name: '新版本提示', exact: true }).count(), 0)
+  await pet.getByRole('button', { name: '展开清单', exact: true }).click()
   report.checks.push('verified background download, release notes, dismissible prompt and task preservation work without automatic installation')
 
   await page.getByRole('button', { name: '组件偏好设置', exact: true }).click()

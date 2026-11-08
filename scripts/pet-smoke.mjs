@@ -4,6 +4,7 @@ import { spawnSync } from 'node:child_process'
 import { mkdir, writeFile } from 'node:fs/promises'
 import { join, resolve } from 'node:path'
 import assert from 'node:assert/strict'
+import { desktopPages } from './desktop-pages.mjs'
 
 const require = createRequire(import.meta.url)
 const executable = process.argv.find(value => value.startsWith('--executable='))?.slice('--executable='.length)
@@ -18,13 +19,15 @@ let app
 try {
   app = await _electron.launch({ executablePath: executable ? resolve(executable) : require('electron'),
     args: executable ? [] : [resolve('.')], env, timeout: 30_000 })
-  let page = await app.firstWindow()
-  page.on('pageerror', error => report.errors.push(error.message))
-  page.on('console', message => { if (message.type() === 'error') report.errors.push(message.text()) })
+  let { pet: petPage, panel: page } = await desktopPages(app)
+  for (const view of [page, petPage]) {
+    view.on('pageerror', error => report.errors.push(error.message))
+    view.on('console', message => { if (message.type() === 'error') report.errors.push(message.text()) })
+  }
   await page.waitForSelector('.widget')
-  let canvas = page.locator('.pet-sprite')
+  let canvas = petPage.locator('.pet-sprite')
   async function ready(action, petId) {
-    await page.waitForFunction(({ action, petId }) => {
+    await petPage.waitForFunction(({ action, petId }) => {
       const canvas = document.querySelector('.pet-sprite')
       return canvas?.dataset.petAction === action && canvas.dataset.status === 'ready' && (!petId || canvas.dataset.petId === petId)
     }, { action, petId })
@@ -33,10 +36,10 @@ try {
     const result = await page.evaluate(() => window.desktop.bootstrap())
     assert.equal(result.ok, true); return result.value
   }
-  const pet = () => page.getByRole('button', { name: '互动桌宠，双击展开或收起', exact: true })
-  const questions = () => page.getByRole('group', { name: '桌宠快捷气泡' })
-  const answer = () => page.locator('.answer-bubble')
-  const button = name => page.getByRole('button', { name, exact: true })
+  const pet = () => petPage.getByRole('button', { name: '互动桌宠，双击展开或收起', exact: true })
+  const questions = () => petPage.getByRole('group', { name: '桌宠快捷气泡' })
+  const answer = () => petPage.locator('.answer-bubble')
+  const button = name => petPage.getByRole('button', { name, exact: true })
   async function screenPet() {
     const { bounds } = (await snapshot()).window
     const box = await pet().boundingBox()
@@ -48,17 +51,13 @@ try {
   }
   async function moving() {
     const before = await canvas.getAttribute('data-frame')
-    await page.waitForFunction(before => document.querySelector('.pet-sprite')?.dataset.frame !== before, before)
+    await petPage.waitForFunction(before => document.querySelector('.pet-sprite')?.dataset.frame !== before, before)
   }
   await ready('idle'); await moving()
   assert.equal((await snapshot()).settings.petId, 'strawberry-bunny-v3')
-  const hitAreas = await page.evaluate(() => {
-    const pet = document.querySelector('.pet').getBoundingClientRect()
-    const control = document.querySelector('[aria-label="仅显示桌宠"]').getBoundingClientRect()
-    return { petBottom: pet.bottom, controlTop: control.top }
-  })
-  assert.ok(hitAreas.petBottom <= hitAreas.controlTop)
-  report.checks.push('built-in V3 loads via production buddy-app protocol and does not cover window controls')
+  assert.equal(await petPage.locator('.card').count(), 0)
+  assert.equal(await page.locator('.pet').count(), 0)
+  report.checks.push('the character and task controls render in separate native windows')
 
   await page.getByRole('button', { name: '桌宠动作', exact: true }).click()
   const actions = { idle: '待机眨眼', react: '挥手回应', celebrate: '鼓掌庆祝', all_done: '跳跃欢呼', remind: '摇铃提醒', drink_water: '喝水提醒', stretch: '头顶伸展' }
@@ -104,7 +103,7 @@ try {
     return window.desktop.settings.update({ expectedVersion: settings.version, patch: { offworkTime: null } })
   })
   assert.equal(clearedOffworkTime.ok, true)
-  assert.equal(await page.locator('.bubble').count(), 0)
+  await petPage.locator('.bubble').waitFor({ state: 'hidden' })
   await pet().press('Enter')
   await questions().waitFor()
   await ready('react'); await moving(); await ready('idle')
@@ -130,17 +129,17 @@ try {
   await answer().waitFor({ state: 'hidden' })
   report.checks.push('idle pet is quiet; keyboard and mouse open three actions, countdown uses settings, and jokes wrap and refresh')
 
-  await page.emulateMedia({ reducedMotion: 'reduce' })
-  await page.waitForFunction(() => document.querySelector('.pet-sprite')?.dataset.paused === 'true', null, { polling: 100 })
+  await petPage.emulateMedia({ reducedMotion: 'reduce' })
+  await petPage.waitForFunction(() => document.querySelector('.pet-sprite')?.dataset.paused === 'true', null, { polling: 100 })
   let before = await canvas.getAttribute('data-frame')
   await page.waitForTimeout(200)
   assert.equal(await canvas.getAttribute('data-frame'), before)
-  await page.emulateMedia({ reducedMotion: 'no-preference' }); await moving()
+  await petPage.emulateMedia({ reducedMotion: 'no-preference' }); await moving()
   const visibleRevision = (await snapshot()).revision
   await page.evaluate(() => window.desktop.hide())
   await page.waitForFunction(async () => (await window.desktop.bootstrap()).value.window.animationsPaused, null, { polling: 100 })
   assert.ok((await snapshot()).revision > visibleRevision)
-  await page.waitForFunction(() => document.querySelector('.pet-sprite')?.dataset.paused === 'true', null, { polling: 100 })
+  await petPage.waitForFunction(() => document.querySelector('.pet-sprite')?.dataset.paused === 'true', null, { polling: 100 })
   before = await canvas.getAttribute('data-frame')
   await page.waitForTimeout(250)
   assert.equal(await canvas.getAttribute('data-frame'), before)
@@ -149,16 +148,24 @@ try {
   await moving()
   report.checks.push('reduced-motion and hidden-window states stop the frame clock; showing the window resumes it')
 
-  await page.getByRole('button', { name: '仅显示桌宠', exact: true }).click()
-  for (let attempt = 0; attempt < 100 && (await snapshot()).window.bounds.height !== 224; attempt++) await page.waitForTimeout(20)
-  assert.equal((await snapshot()).window.bounds.height, 224)
+  const collapse = () => page.getByRole('button', { name: '仅显示桌宠', exact: true }).click()
+  async function waitPanel(visible) {
+    for (let attempt = 0; attempt < 100; attempt++) {
+      if ((await snapshot()).window.panel.visible === visible) return
+      await page.waitForTimeout(20)
+    }
+    throw new Error(`Panel did not become ${visible ? 'visible' : 'hidden'}`)
+  }
+  const originalBounds = (await snapshot()).window.bounds
+  await collapse()
+  await waitPanel(false)
   await ready('idle')
-  await page.screenshot({ path: join(directory, 'compact.png'), omitBackground: true })
-  await page.getByRole('button', { name: '展开清单', exact: true }).click()
-  assert.equal((await snapshot()).window.bounds.height, 480)
-  await page.waitForFunction(() => document.querySelector('.card')?.inert === false && !document.querySelector('.widget')?.classList.contains('compact'))
-  await page.locator('.card').evaluate(async element => { await Promise.all(element.getAnimations().map(animation => animation.finished)) })
-  report.checks.push('the actual compact and expanded native window sizes still fit the new character')
+  await petPage.screenshot({ path: join(directory, 'compact.png'), omitBackground: true })
+  await button('展开清单').click()
+  await waitPanel(true)
+  assert.deepEqual((await snapshot()).window.bounds, originalBounds)
+  await page.getByRole('button', { name: '仅显示桌宠', exact: true }).waitFor()
+  report.checks.push('opening and folding the task window preserves the compact pet window')
 
   for (const title of ['素材验收甲', '素材验收乙']) {
     await page.getByLabel('新增待办', { exact: true }).fill(title)
@@ -197,10 +204,14 @@ try {
     }, scene)
     assert.equal(created.ok, true)
     await ready(action)
-    await page.locator('.reminder-bubble').getByText('动作提醒验收', { exact: true }).waitFor()
+    await petPage.locator('.reminder-bubble').getByText('动作提醒验收', { exact: true }).waitFor()
     assert.equal(await button('再讲一个 ↻').count(), 0)
     await pet().press('Enter')
     assert.equal(await canvas.getAttribute('data-pet-action'), action)
+    if (scene === 'generic') {
+      await button('查看清单').click()
+      await page.locator(`[data-occurrence-id="${created.value.id}"].focused`).waitFor()
+    }
     await page.getByRole('button', { name: '桌宠动作', exact: true }).click()
     assert.equal(await page.getByRole('button', { name: '挥手回应', exact: true }).isDisabled(), true)
     if (scene === 'water') {
@@ -211,20 +222,13 @@ try {
       assert.deepEqual((await snapshot()).activeReminderIds, pending)
     }
     await page.getByRole('button', { name: '返回清单', exact: true }).click()
-    await page.getByRole('button', { name: '收起这次提醒', exact: true }).click()
+    await button('收起这次提醒').click()
     await ready('idle')
     assert.equal(await answer().count(), 0)
   }
   report.checks.push('due bell/water/stretch scenes override clicks and previews; character switching preserves the pending reminder and its scene until acknowledgment')
-  const area = await app.evaluate(({ screen }) => screen.getPrimaryDisplay().workArea)
-  for (const [horizontal, vertical] of [['right', 'down'], ['left', 'down'], ['right', 'up'], ['left', 'up']]) {
-    await button('仅显示桌宠').click()
-    await page.waitForFunction(() => window.innerHeight === 224)
+  async function dragPet(target, missPointerUp = false) {
     const from = await screenPet()
-    const target = {
-      x: horizontal === 'left' ? area.x + area.width - 143 : area.x + 11,
-      y: vertical === 'up' ? area.y + area.height - 134 : area.y + 4
-    }
     await app.evaluate(({ screen }, from) => {
       globalThis.petTestCursor = { x: from.x + 60, y: from.y + 60 }
       globalThis.readSystemCursor = screen.getCursorScreenPoint
@@ -232,25 +236,47 @@ try {
     }, from)
     try {
       const box = await pet().boundingBox()
-      await page.mouse.move(box.x + 60, box.y + 60)
-      await page.mouse.down()
-      await page.mouse.move(box.x + 66, box.y + 60)
+      await petPage.mouse.move(box.x + 60, box.y + 60)
+      await petPage.mouse.down()
+      await petPage.mouse.move(box.x + 66, box.y + 60)
       await page.waitForTimeout(80)
       await app.evaluate((_electron, target) => { globalThis.petTestCursor = { x: target.x + 60, y: target.y + 60 } }, target)
+      await petPage.mouse.move(box.x + 70, box.y + 60)
       for (let attempt = 0; attempt < 100; attempt++) {
         const position = await screenPet()
         if (position.x === target.x && position.y === target.y) break
         await page.waitForTimeout(50)
       }
       assert.deepEqual(await screenPet(), target)
+      if (missPointerUp) {
+        // Simulate a release that never reaches the pet's pointerup handler.
+        await petPage.evaluate(() => window.addEventListener('pointerup', event => event.stopImmediatePropagation(),
+          { once: true, capture: true }))
+      }
+      await petPage.mouse.move(-20, -20)
+      await petPage.mouse.up()
+      await app.evaluate((_electron, from) => { globalThis.petTestCursor = { x: from.x + 60, y: from.y + 60 } }, from)
+      await page.waitForTimeout(100)
+      assert.deepEqual(await screenPet(), target)
     } finally {
-      await page.mouse.up()
+      await petPage.mouse.up()
       await app.evaluate(({ screen }) => {
         screen.getCursorScreenPoint = globalThis.readSystemCursor
         delete globalThis.readSystemCursor
         delete globalThis.petTestCursor
       })
     }
+  }
+
+  const area = await app.evaluate(({ screen }) => screen.getPrimaryDisplay().workArea)
+  for (const [horizontal, vertical] of [['right', 'down'], ['left', 'down'], ['right', 'up'], ['left', 'up']]) {
+    await collapse()
+    await waitPanel(false)
+    const target = {
+      x: horizontal === 'left' ? area.x + area.width - 143 : area.x + 11,
+      y: vertical === 'up' ? area.y + area.height - 134 : area.y + 4
+    }
+    await dragPet(target, horizontal === 'left' && vertical === 'down')
     assert.equal(await questions().count(), 0)
     await openQuestions()
     const bubbleBox = await questions().boundingBox()
@@ -264,36 +290,71 @@ try {
     await button('展开清单').click()
     await questions().waitFor({ state: 'hidden' })
     await answer().waitFor({ state: 'hidden' })
-    await button('仅显示桌宠').waitFor()
+    await page.getByRole('button', { name: '仅显示桌宠', exact: true }).waitFor()
     const card = page.locator('.card')
     await card.evaluate(async el => { await Promise.allSettled(el.getAnimations().map(animation => animation.finished)) })
-    const { layout, bounds } = (await snapshot()).window
-    assert.equal(layout.horizontal, horizontal)
-    assert.equal(layout.vertical, vertical)
+    const { panel, bounds } = (await snapshot()).window
+    assert.equal(panel.direction.horizontal, horizontal)
+    assert.equal(panel.direction.vertical, vertical)
     assert.deepEqual(await screenPet(), target)
     const cardBox = await card.boundingBox()
-    const petCenter = await pet().boundingBox()
-    assert.ok(cardBox.x >= 0 && cardBox.y >= 0 && cardBox.x + cardBox.width <= bounds.width && cardBox.y + cardBox.height <= bounds.height)
-    assert.equal(cardBox.x + cardBox.width / 2 < petCenter.x + petCenter.width / 2, horizontal === 'left')
-    assert.equal(cardBox.y + cardBox.height / 2 < petCenter.y + petCenter.height / 2, vertical === 'up')
+    assert.ok(cardBox.x >= 0 && cardBox.y >= 0 && cardBox.x + cardBox.width <= panel.bounds.width && cardBox.y + cardBox.height <= panel.bounds.height)
+    const petTop = target.y
+    const panelTop = panel.bounds.y + cardBox.y
+    const panelBottom = panelTop + cardBox.height
+    const gap = vertical === 'up' ? petTop - panelBottom : panelTop - petTop - petBox.height
+    assert.ok(gap >= 16 && gap <= 24, `visible card-to-pet gap: ${gap}px`)
+    assert.ok(vertical === 'up' ? panel.bounds.y + panel.bounds.height > bounds.y : panel.bounds.y < bounds.y + bounds.height)
   }
-  report.checks.push('real window drag flips bubbles and the task card in all four corners, keeps the card visible and pins the pet through expansion')
+  report.checks.push('drag stops on release outside the window, even when pointerup is lost; all four corners still expand around the pet')
+
+  const below = await screenPet()
+  const stableBounds = (await snapshot()).window.bounds
+  await app.evaluate(({ BrowserWindow }) => {
+    const pet = BrowserWindow.getAllWindows().find(window => new URL(window.webContents.getURL()).searchParams.get('view') === 'pet')
+    const setBounds = pet.setBounds.bind(pet)
+    globalThis.petWindowChanges = []
+    pet.setBounds = (...args) => { globalThis.petWindowChanges.push('setBounds'); setBounds(...args) }
+    pet.on('move', () => globalThis.petWindowChanges.push('move'))
+    pet.on('resize', () => globalThis.petWindowChanges.push('resize'))
+  })
+  for (let attempt = 0; attempt < 3; attempt++) {
+    await pet().dblclick()
+    await waitPanel(false)
+    assert.deepEqual(await screenPet(), below)
+    assert.deepEqual((await snapshot()).window.bounds, stableBounds)
+    await pet().dblclick()
+    await waitPanel(true)
+    assert.deepEqual(await screenPet(), below)
+    assert.deepEqual((await snapshot()).window.bounds, stableBounds)
+  }
+  assert.deepEqual(await app.evaluate(() => globalThis.petWindowChanges), [])
+  report.checks.push('bottom-right double-click toggles only the panel; no native bounds call, move, or resize reaches the pet')
   await page.screenshot({ path: join(directory, 'expanded.png'), omitBackground: true })
   const saved = await snapshot()
   const savedPet = await screenPet()
   await app.close()
   app = await _electron.launch({ executablePath: executable ? resolve(executable) : require('electron'),
     args: executable ? [] : [resolve('.')], env, timeout: 30_000 })
-  page = await app.firstWindow()
-  page.on('pageerror', error => report.errors.push(error.message))
-  page.on('console', message => { if (message.type() === 'error') report.errors.push(message.text()) })
-  canvas = page.locator('.pet-sprite')
+  ;({ pet: petPage, panel: page } = await desktopPages(app))
+  for (const view of [page, petPage]) {
+    view.on('pageerror', error => report.errors.push(error.message))
+    view.on('console', message => { if (message.type() === 'error') report.errors.push(message.text()) })
+  }
+  canvas = petPage.locator('.pet-sprite')
   await ready('idle', selectedPetId); await moving()
   assert.equal((await snapshot()).settings.petId, selectedPetId)
   assert.deepEqual((await snapshot()).today.progress, saved.today.progress)
   assert.deepEqual(await screenPet(), savedPet)
   await page.screenshot({ path: join(directory, 'reopened.png'), omitBackground: true })
   report.checks.push('a complete application restart restores Teng Junlong and preserves task progress')
+  await app.evaluate(({ BrowserWindow }) => {
+    const view = name => BrowserWindow.getAllWindows().find(window => new URL(window.webContents.getURL()).searchParams.get('view') === name)
+    const pet = view('pet')
+    view('panel').destroy()
+    pet.emit('focus')
+  })
+  report.checks.push('a late pet focus event is safe after Electron destroys the panel')
   assert.deepEqual(report.errors, [])
   report.status = 'passed'
 } catch (error) {
