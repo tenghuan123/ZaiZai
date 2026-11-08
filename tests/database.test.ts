@@ -7,7 +7,8 @@ import { tmpdir } from 'node:os'
 import { join } from 'node:path'
 import { Connection, MigrationError, schemaVersion } from '../src/main/database/connection'
 import { fixture, saved } from './helpers'
-import { fitToWorkArea } from '../src/main/desktop/geometry'
+import { fitToWorkArea, petAnchor, placeWindow, WINDOW_SIZE } from '../src/main/desktop/geometry'
+import { LARGE_SIZE, PET_AREA } from '../src/shared/window'
 import { AppError } from '../src/main/domain/errors'
 
 function m0(file: string): Database.Database {
@@ -136,4 +137,35 @@ test('window recovery fits negative-coordinate secondary screens', () => {
     { x: 1084, y: 340, width: 356, height: 560 })
   assert.deepEqual(fitToWorkArea({ x: -3000, y: -200, width: 356, height: 224 }, { x: -1920, y: 0, width: 1920, height: 1080 }),
     { x: -1920, y: 0, width: 356, height: 224 })
+})
+
+test('expanding or folding in any corner preserves the pet anchor on a secondary display', () => {
+  const area = { x: -1440, y: 40, width: 1440, height: 860 }
+  for (const horizontal of ['left', 'right'] as const) {
+    for (const vertical of ['up', 'down'] as const) {
+      const anchor = {
+        x: horizontal === 'left' ? area.x + area.width - PET_AREA.width : area.x,
+        y: vertical === 'up' ? area.y + area.height - PET_AREA.height : area.y
+      }
+      for (const size of [WINDOW_SIZE.compact, LARGE_SIZE]) {
+        const { bounds, layout } = placeWindow(anchor, size, LARGE_SIZE, area)
+        assert.deepEqual(petAnchor(bounds, layout), anchor)
+        assert.deepEqual(fitToWorkArea(bounds, area), bounds)
+        assert.equal(layout.horizontal, horizontal)
+        assert.equal(layout.vertical, vertical)
+      }
+    }
+  }
+})
+
+test('window placement clamps the panel when neither side fits and keeps the pet stationary', () => {
+  const area = { x: 0, y: 25, width: 620, height: 700 }
+  const anchor = { x: 270, y: 400 }
+  for (const size of [WINDOW_SIZE.compact, LARGE_SIZE]) {
+    const { bounds, layout } = placeWindow(anchor, size, LARGE_SIZE, area)
+    assert.deepEqual(fitToWorkArea(bounds, area), bounds)
+    assert.deepEqual(petAnchor(bounds, layout), anchor)
+    assert.equal(layout.horizontal, 'left')
+    assert.equal(layout.vertical, 'up')
+  }
 })

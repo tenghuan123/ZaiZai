@@ -1,9 +1,11 @@
 import { BrowserWindow, dialog, screen } from 'electron'
 import type { DisplayMode, Settings, WindowState } from '../../shared/contracts'
 import { channels } from '../../shared/contracts'
-import { MIN_SIZE, MAX_SIZE } from '../../shared/window'
+import { MIN_SIZE, MAX_SIZE, PET_AREA } from '../../shared/window'
+import type { WindowLayout } from '../../shared/window'
 import type { SettingsRepository } from '../settings/repository'
-import { fitToWorkArea, WINDOW_SIZE } from './geometry'
+import { fitToWorkArea, petAnchor, placeWindow, WINDOW_SIZE } from './geometry'
+import type { Point } from './geometry'
 import { MENU_TRANSITION_MS } from '../../shared/motion'
 
 interface WindowOptions {
@@ -18,6 +20,7 @@ interface WindowOptions {
 export class DesktopWindow {
   readonly window: BrowserWindow
   private mode: DisplayMode
+  private layout: WindowLayout
   private closingDialog = false
   private quitting = false
   private systemIdle = false
@@ -32,12 +35,15 @@ export class DesktopWindow {
     this.mode = settings.displayMode
     const area = screen.getPrimaryDisplay().workArea
     const size = this.mode === 'expanded' ? settings.expandedSize : WINDOW_SIZE.compact
-    const desired = { ...size, x: settings.position?.x ?? area.x + area.width - size.width - 40,
+    // In older versions the pet area started at the window origin, so saved positions are already anchors.
+    const anchor = { x: settings.position?.x ?? area.x + area.width - size.width - 40,
       y: settings.position?.y ?? area.y + 80 }
-    const display = screen.getDisplayMatching(desired)
+    const display = screen.getDisplayMatching({ ...anchor, ...PET_AREA })
+    const placement = placeWindow(anchor, size, settings.expandedSize, display.workArea)
+    this.layout = placement.layout
     this.expectedRenderer = new URL(options.rendererUrl)
     this.window = new BrowserWindow({
-      ...fitToWorkArea(desired, display.workArea), title: 'zaizai',
+      ...placement.bounds, title: 'zaizai',
       frame: false, transparent: true, resizable: false, maximizable: false,
       fullscreenable: false, alwaysOnTop: settings.alwaysOnTop, show: false,
       skipTaskbar: !settings.alwaysOnTop,
@@ -81,7 +87,7 @@ export class DesktopWindow {
   get state(): WindowState {
     return { mode: this.mode, visible: this.window.isVisible(), alwaysOnTop: this.window.isAlwaysOnTop(),
       animationsPaused: this.systemIdle || !this.window.isVisible(),
-      bounds: this.window.getBounds() }
+      bounds: this.window.getBounds(), layout: this.layout }
   }
 
   setSystemIdle(idle: boolean): void { this.systemIdle = idle; this.options.changed() }
@@ -92,19 +98,15 @@ export class DesktopWindow {
     this.endResize()
     this.store.updateSettings({ displayMode: mode })
     clearTimeout(this.compactTimer)
+    this.compactTimer = undefined
     this.mode = mode
-    const resize = (): void => {
-      const size = mode === 'expanded' ? this.store.getSettings().expandedSize : WINDOW_SIZE.compact
-      const bounds = { ...this.window.getBounds(), ...size }
-      const area = screen.getDisplayMatching(bounds).workArea
-      this.window.setBounds(fitToWorkArea(bounds, area))
-    }
-    if (mode === 'expanded' || !this.window.isVisible()) resize()
+    if (mode === 'expanded' || !this.window.isVisible()) this.placeAtPet(this.store.getSettings().expandedSize)
     else {
       // The renderer folds the card first; shrinking now would clip that animation.
       this.compactTimer = setTimeout(() => {
         this.compactTimer = undefined
-        resize(); this.options.changed()
+        this.placeAtPet(this.store.getSettings().expandedSize)
+        this.options.changed()
       }, MENU_TRANSITION_MS)
     }
     this.options.log('window-mode', this.state)
@@ -118,10 +120,7 @@ export class DesktopWindow {
 
   applyPreferences(settings: Settings): void {
     this.applyAlwaysOnTop(settings.alwaysOnTop)
-    if (this.mode === 'expanded') {
-      const bounds = { ...this.window.getBounds(), ...settings.expandedSize }
-      this.window.setBounds(fitToWorkArea(bounds, screen.getDisplayMatching(bounds).workArea))
-    }
+    if (!this.compactTimer) this.placeAtPet(settings.expandedSize)
   }
 
   playReminderSound(): void {
@@ -165,13 +164,15 @@ export class DesktopWindow {
   beginDrag(): void {
     if (this.dragTimer || this.resizeTimer) return
     const start = screen.getCursorScreenPoint()
-    const bounds = this.window.getBounds()
+    const anchor = petAnchor(this.window.getBounds(), this.layout)
+    const { expandedSize } = this.store.getSettings()
     const startedAt = Date.now()
     this.dragTimer = setInterval(() => {
       if (Date.now() - startedAt > 15_000) { this.endDrag(); return }
       const cursor = screen.getCursorScreenPoint()
-      const next = { ...bounds, x: bounds.x + cursor.x - start.x, y: bounds.y + cursor.y - start.y }
-      this.window.setBounds(fitToWorkArea(next, screen.getDisplayNearestPoint(cursor).workArea))
+      const next = { x: anchor.x + cursor.x - start.x, y: anchor.y + cursor.y - start.y }
+      const layoutChanged = this.placeAtPet(expandedSize, next, screen.getDisplayNearestPoint(cursor).workArea)
+      if (layoutChanged) this.options.changed()
     }, 16)
   }
 
@@ -217,14 +218,26 @@ export class DesktopWindow {
   }
 
   keepOnScreen(): void {
-    const bounds = this.window.getBounds()
-    this.window.setBounds(fitToWorkArea(bounds, screen.getDisplayMatching(bounds).workArea))
+    if (this.placeAtPet(this.store.getSettings().expandedSize)) this.options.changed()
+  }
+
+  private placeAtPet(expandedSize: Settings['expandedSize'], anchor: Point = petAnchor(this.window.getBounds(), this.layout),
+    area = screen.getDisplayMatching({ ...anchor, ...PET_AREA }).workArea): boolean {
+    const size = this.mode === 'expanded' || this.compactTimer ? expandedSize : WINDOW_SIZE.compact
+    const { bounds, layout } = placeWindow(anchor, size, expandedSize, area)
+    const previous = this.layout
+    const currentBounds = this.window.getBounds()
+    const sizeChanged = bounds.width !== currentBounds.width || bounds.height !== currentBounds.height
+    this.layout = layout
+    if (bounds.x !== currentBounds.x || bounds.y !== currentBounds.y || sizeChanged) this.window.setBounds(bounds)
+    return sizeChanged || previous.horizontal !== layout.horizontal || previous.vertical !== layout.vertical ||
+      previous.inset.x !== layout.inset.x || previous.inset.y !== layout.inset.y
   }
 
   private savePosition(): void {
     if (this.quitting || this.dragTimer || this.resizeTimer) return
     try {
-      const { x, y } = this.window.getBounds()
+      const { x, y } = petAnchor(this.window.getBounds(), this.layout)
       const saved = this.store.getSettings().position
       if (saved?.x === x && saved.y === y) return
       this.store.updateSettings({ position: { x, y } })

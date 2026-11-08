@@ -17,11 +17,20 @@ import { CompletionEffects } from './features/tasks/CompletionEffects'
 import { MENU_TRANSITION_MS } from '../../shared/motion'
 import { SettingsDialog } from './features/settings/SettingsDialog'
 import { playReminderBell } from './features/pet/reminder-sound'
-import { LARGE_SIZE, STANDARD_SIZE } from '../../shared/window'
+import { LARGE_SIZE, PET_AREA, STANDARD_SIZE } from '../../shared/window'
 import { useUpdates } from './features/updates/use-updates'
 import { UpdateNotice } from './features/updates/UpdatePanel'
+import { jokes, nextJoke } from './features/pet/jokes'
 
 const api = window.desktop
+const petQuestions = [
+  { type: 'offwork', icon: '⏰', label: '离下班还有多久？' },
+  { type: 'joke', icon: '😂', label: '讲一个笑话' },
+  { type: 'progress', icon: '📊', label: '今日任务进度' }
+] as const
+type PetQuestion = typeof petQuestions[number]['type']
+type PetBubble = { type: 'quick' | 'offwork' | 'progress' } | { type: 'joke'; index: number } | { type: 'feedback'; text: string }
+
 function countdown(time: string | null, now: number): string {
   if (!time) return '点击设置下班时间'
   const [hour, minute] = time.split(':').map(Number)
@@ -52,20 +61,20 @@ export function App(): React.JSX.Element {
   const [editor, setEditor] = useState<EditorTarget | null>(null)
   const [ending, setEnding] = useState<RepeatPlan | null>(null)
   const [busy, setBusy] = useState(new Set<string>())
-  const [feedback, setFeedback] = useState('')
+  const [petBubble, setPetBubble] = useState<PetBubble | null>(null)
   const [focusedId, setFocusedId] = useState<string | null>(null)
   const [completionCount, setCompletionCount] = useState(0)
   const completion = useTaskCompletion(complete)
   const quickRequest = useRef(crypto.randomUUID())
   const busyRef = useRef(new Set<string>())
   const lastFocus = useRef<string | null>(null)
-  const feedbackTimer = useRef<ReturnType<typeof setTimeout> | undefined>(undefined)
   const clickTimer = useRef<ReturnType<typeof setTimeout> | undefined>(undefined)
   const gesture = useRef<{ x: number; y: number; moved: boolean } | null>(null)
   const resizeGesture = useRef<{ x: number; y: number; moved: boolean } | null>(null)
   const snapshot = workspace?.snapshot
   const petPack = getPetPack(snapshot?.settings.petId)
   const activeReminderId = snapshot?.activeReminderIds[0] ?? null
+  const mode = snapshot?.window.mode
 
   useEffect(() => api.subscribeSound(() => {
     void playReminderBell().catch(() => setError('提醒铃声播放失败，请重试试听。'))
@@ -74,6 +83,30 @@ export function App(): React.JSX.Element {
   useEffect(() => {
     if (activeReminderId && petReaction) setPetReaction(null)
   }, [activeReminderId, petReaction])
+
+  useEffect(() => {
+    clearTimeout(clickTimer.current)
+    setPetBubble(null)
+  }, [mode])
+  useEffect(() => {
+    if (activeReminderId) {
+      clearTimeout(clickTimer.current)
+      if (petBubble) setPetBubble(null)
+      return
+    }
+    if (!petBubble || petBubble.type === 'quick') return
+    const duration = petBubble.type === 'joke' ? 7000 : petBubble.type === 'feedback' ? 2800 : 5000
+    const timer = setTimeout(() => setPetBubble(current => current === petBubble ? null : current), duration)
+    return () => clearTimeout(timer)
+  }, [activeReminderId, petBubble])
+  useEffect(() => {
+    function dismissOnBlur(): void {
+      clearTimeout(clickTimer.current)
+      setPetBubble(null)
+    }
+    window.addEventListener('blur', dismissOnBlur)
+    return () => { window.removeEventListener('blur', dismissOnBlur); clearTimeout(clickTimer.current) }
+  }, [])
 
   useEffect(() => {
     if (snapshot?.window.animationsPaused) return
@@ -93,19 +126,19 @@ export function App(): React.JSX.Element {
   useEffect(() => {
     if ((editor || ending || showCalendar || showSettings) && snapshot?.window.mode === 'compact') void command(() => api.setMode('expanded'))
   }, [editor, ending, showCalendar, showSettings, snapshot?.window.mode, command])
-  useEffect(() => () => {
-    if (feedbackTimer.current) clearTimeout(feedbackTimer.current)
-    if (clickTimer.current) clearTimeout(clickTimer.current)
-  }, [])
-
   function say(text: string): void {
-    if (feedbackTimer.current) clearTimeout(feedbackTimer.current)
-    setFeedback(text); feedbackTimer.current = setTimeout(() => setFeedback(''), 2800)
+    setPetBubble({ type: 'feedback', text })
   }
   function respondToPet(): void {
     if (activeReminderId) return
     setPetReaction({ id: crypto.randomUUID(), action: 'react' })
-    say(petPack.quotes.react[0])
+    setPetBubble(bubble => bubble && bubble.type !== 'feedback' ? null : { type: 'quick' })
+  }
+  function answerPetQuestion(type: PetQuestion): void {
+    if (activeReminderId) return
+    if (type !== 'joke') { setPetBubble({ type }); return }
+    const draw = Math.random()
+    setPetBubble(bubble => ({ type, index: nextJoke(draw, bubble?.type === 'joke' ? bubble.index : undefined) }))
   }
   async function withBusy(key: string, action: () => Promise<void>): Promise<void> {
     if (busyRef.current.has(key)) return
@@ -237,6 +270,7 @@ export function App(): React.JSX.Element {
     if (Math.hypot(event.clientX - start.x, event.clientY - start.y) >= 5) {
       start.moved = true
       if (clickTimer.current) clearTimeout(clickTimer.current)
+      setPetBubble(null)
       void command(() => api.beginDrag())
     }
   }
@@ -249,7 +283,8 @@ export function App(): React.JSX.Element {
   }
 
   if (!workspace || !snapshot) return <main className="loading">{error || '桌面伙伴正在醒来…'}{error && <button onClick={() => { void refresh() }}>重新读取</button>}</main>
-  const compact = snapshot.window.mode === 'compact'
+  const compact = mode === 'compact'
+  const { horizontal, vertical, inset } = snapshot.window.layout
   const date = selectedDate ?? snapshot.today.date
   const past = date < snapshot.today.date
   const dateLabel = date === snapshot.today.date ? '待办进度' : `${Number(date.slice(5, 7))}月${Number(date.slice(8))}日 · ${date === shiftDate(snapshot.today.date, 1) ? '明天' : past ? '历史' : '未来'}`
@@ -262,11 +297,27 @@ export function App(): React.JSX.Element {
   const petPlayback = selectPetPlayback(current ? { id: current.id,
     scene: currentItem?.kind === 'saved' ? currentItem.occurrence.scene : 'generic' } : null,
   petReaction, showPet && !compact ? petPreview : null)
+  const bubble = activeReminderId ? null : petBubble
+  const todayProgress = snapshot.today.progress
+  let answer = ''
+  if (bubble?.type === 'offwork') answer = countdown(snapshot.settings.offworkTime, now)
+  if (bubble?.type === 'progress') answer = `今日任务已完成 ${todayProgress.completed}/${todayProgress.total} 项（${todayProgress.percentage}%）`
+  if (bubble?.type === 'joke') answer = jokes[bubble.index]
+  if (bubble?.type === 'feedback') answer = bubble.text
 
   return <main className={`widget ${compact ? 'compact' : ''} ${snapshot.window.animationsPaused ? 'paused' : ''}`}
-    style={{ '--menu-duration': `${MENU_TRANSITION_MS}ms` } as CSSProperties}>
+    data-horizontal={horizontal} data-vertical={vertical}
+    style={{ '--menu-duration': `${MENU_TRANSITION_MS}ms`, '--pet-area-width': `${PET_AREA.width}px`,
+      '--pet-area-height': `${PET_AREA.height}px`, '--pet-inset-x': `${inset.x}px`, '--pet-inset-y': `${inset.y}px` } as CSSProperties}
+    onPointerDownCapture={event => {
+      if ((event.target as Element).closest('.pet, .bubble, .pet-questions')) return
+      clearTimeout(clickTimer.current)
+      setPetBubble(null)
+    }}
+    onKeyDown={event => { if (event.key === 'Escape') { clearTimeout(clickTimer.current); setPetBubble(null) } }}>
     <section className="pet-scene">
-      <button className="pet" aria-label="互动桌宠，双击展开或收起" title="拖动我移动窗口，双击展开或收起"
+      <button className="pet" aria-label="互动桌宠，双击展开或收起" title="单击打开快捷气泡，拖动移动，双击切换清单"
+        aria-expanded={bubble?.type === 'quick'}
         onContextMenu={event => { event.preventDefault(); void command(() => api.showContextMenu()) }}
         onPointerDown={pointerDown} onPointerMove={pointerMove} onPointerUp={pointerUp}
         onPointerCancel={() => { gesture.current = null; void command(() => api.endDrag()) }}
@@ -276,13 +327,23 @@ export function App(): React.JSX.Element {
           setPetReaction(reaction => reaction && `reaction:${reaction.id}` === key ? null : reaction)
         }} />
       </button>
-      <div className={`bubble ${current ? 'reminder-bubble' : ''}`} aria-live="polite">{current ? <>
+      {current ? <div className="bubble reminder-bubble" aria-live="polite">
         <button className="bubble-dismiss" aria-label="收起这次提醒" onClick={() => { void command(() => api.acknowledgeReminder(current.id)) }}>×</button>
         <strong>{current.title}</strong>{active.length > 1 && <small>还有 {active.length - 1} 项到点事项</small>}
         {['failed', 'unavailable'].includes(current.dispatchState) && <small className="notification-error">系统通知未提交，可在这里处理</small>}
         <div className="bubble-actions"><button className="primary" disabled={!currentItem || busy.has(current.id)} onClick={() => { if (currentItem) void complete(currentItem, true) }}>完成了</button>
           <button onClick={() => { setSelectedDate(null); setTab('todo'); setShowSettings(false); setFocusedId(current.id); void command(() => api.setMode('expanded')) }}>查看清单</button></div>
-      </> : <button className="bubble-label" onClick={() => { setShowSettings(true); setShowPet(false); void command(() => api.setMode('expanded')) }}>{feedback || countdown(snapshot.settings.offworkTime, now)}</button>}</div>
+      </div> : bubble?.type === 'quick' ? <div className="pet-questions" role="group" aria-label="桌宠快捷气泡">
+        {petQuestions.map(({ type, icon, label }) => <button key={type} type="button" onClick={() => answerPetQuestion(type)}>
+          <span aria-hidden="true">{icon}</span>{label}
+        </button>)}
+      </div> : bubble && <div className="bubble answer-bubble" aria-live={bubble.type === 'offwork' ? 'off' : 'polite'}>
+        <button className="bubble-dismiss" aria-label="收起回答" onClick={() => setPetBubble(null)}>×</button>
+        {bubble.type === 'offwork' && !snapshot.settings.offworkTime
+          ? <button className="bubble-label" onClick={() => { setPetBubble(null); setShowSettings(true); setShowPet(false) }}>{answer}</button>
+          : answer}
+        {bubble.type === 'joke' && <div className="bubble-actions"><button onClick={() => answerPetQuestion('joke')}>再讲一个 ↻</button></div>}
+      </div>}
     </section>
     <button className="mini-dock" aria-label="展开清单" aria-hidden={!compact} inert={!compact} onClick={() => { void command(() => api.setMode('expanded')) }}>
       <span className="status-dot" /> 今天 {snapshot.today.progress.completed}/{snapshot.today.progress.total}<span>展开清单 ▾</span>

@@ -1,5 +1,6 @@
 import type { CompletionResult, CreateOnceInput, CreatePlanInput, DayView, Occurrence, OccurrenceRef, Priority, RepeatPlan, UpdateOnceInput, UpdatePlanInput } from './tasks'
 import type { UpdateState } from './updates'
+import type { WindowLayout } from './window'
 export type DisplayMode = 'expanded' | 'compact'
 export type DispatchState = 'pending' | 'claimed' | 'submitted' | 'failed' | 'unavailable' | 'uncertain'
 // Read-only presentation of a timed occurrence and its current dispatch. Never a second task record.
@@ -17,6 +18,7 @@ export type SettingsPatch = Partial<Pick<Settings, 'offworkTime' | 'defaultRemin
 export interface WindowState {
   mode: DisplayMode; visible: boolean; alwaysOnTop: boolean; animationsPaused: boolean
   bounds: { x: number; y: number; width: number; height: number }
+  layout: WindowLayout
 }
 export interface Snapshot {
   revision: number; sessionId: string; platform: string; today: DayView

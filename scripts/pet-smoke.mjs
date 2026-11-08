@@ -33,6 +33,19 @@ try {
     const result = await page.evaluate(() => window.desktop.bootstrap())
     assert.equal(result.ok, true); return result.value
   }
+  const pet = () => page.getByRole('button', { name: '互动桌宠，双击展开或收起', exact: true })
+  const questions = () => page.getByRole('group', { name: '桌宠快捷气泡' })
+  const answer = () => page.locator('.answer-bubble')
+  const button = name => page.getByRole('button', { name, exact: true })
+  async function screenPet() {
+    const { bounds } = (await snapshot()).window
+    const box = await pet().boundingBox()
+    return { x: bounds.x + box.x, y: bounds.y + box.y }
+  }
+  async function openQuestions() {
+    await pet().click()
+    await questions().waitFor()
+  }
   async function moving() {
     const before = await canvas.getAttribute('data-frame')
     await page.waitForFunction(before => document.querySelector('.pet-sprite')?.dataset.frame !== before, before)
@@ -86,10 +99,36 @@ try {
   await ready('idle')
   report.checks.push('all seven actual app previews animate, and returning to the task list restores idle')
 
-  await page.getByRole('button', { name: '互动桌宠，双击展开或收起', exact: true }).press('Enter')
-  await page.getByRole('button', { name: '我在这里，陪你稳稳地推进今天的计划。', exact: true }).waitFor()
+  const clearedOffworkTime = await page.evaluate(async () => {
+    const { settings } = (await window.desktop.bootstrap()).value
+    return window.desktop.settings.update({ expectedVersion: settings.version, patch: { offworkTime: null } })
+  })
+  assert.equal(clearedOffworkTime.ok, true)
+  assert.equal(await page.locator('.bubble').count(), 0)
+  await pet().press('Enter')
+  await questions().waitFor()
   await ready('react'); await moving(); await ready('idle')
-  report.checks.push('Teng Junlong keyboard interaction uses his own dialogue, waves once, then returns to idle')
+  assert.equal(await questions().getByRole('button').count(), 3)
+  await button('离下班还有多久？').click()
+  await button('点击设置下班时间').waitFor()
+  const shortReply = await answer().boundingBox()
+  await button('点击设置下班时间').click()
+  await page.getByRole('dialog').waitFor()
+  await page.getByRole('dialog').getByLabel('固定下班时间', { exact: true }).fill('23:59')
+  await page.getByRole('dialog').getByRole('button', { name: '完成', exact: true }).click()
+  await openQuestions()
+  await button('离下班还有多久？').click()
+  assert.match(await answer().innerText(), /离下班还有 \d\d:\d\d:\d\d|已下班/)
+  await button('收起回答').click()
+  await openQuestions()
+  await button('讲一个笑话').click()
+  const firstJoke = await answer().innerText()
+  assert.ok((await answer().boundingBox()).width > shortReply.width)
+  await button('再讲一个 ↻').click()
+  assert.notEqual(await answer().innerText(), firstJoke)
+  await pet().press('Escape')
+  await answer().waitFor({ state: 'hidden' })
+  report.checks.push('idle pet is quiet; keyboard and mouse open three actions, countdown uses settings, and jokes wrap and refresh')
 
   await page.emulateMedia({ reducedMotion: 'reduce' })
   await page.waitForFunction(() => document.querySelector('.pet-sprite')?.dataset.paused === 'true', null, { polling: 100 })
@@ -130,6 +169,10 @@ try {
   await ready('celebrate'); await ready('idle')
   await page.getByRole('button', { name: '完成：素材验收乙', exact: true }).click()
   await ready('all_done'); await ready('idle')
+  await openQuestions()
+  await button('今日任务进度').click()
+  assert.match(await answer().innerText(), /2\/2.*100%/)
+  await button('收起回答').click()
   report.checks.push('successful task completion plays clap; finishing today plays the separate all-done animation')
 
   await page.getByRole('button', { name: '定时或重复', exact: true }).click()
@@ -144,6 +187,9 @@ try {
   // Keep this run local and silent while testing the real due-reminder pipeline.
   await app.evaluate(({ Notification }) => { Notification.isSupported = () => false })
   for (const [scene, action] of [['generic', 'remind'], ['water', 'drink_water'], ['stretch', 'stretch']]) {
+    await openQuestions()
+    await button('讲一个笑话').click()
+    await button('再讲一个 ↻').waitFor()
     const created = await page.evaluate(scene => {
       const now = new Date()
       return window.desktop.tasks.createOnce({ requestId: crypto.randomUUID(), title: '动作提醒验收', scheduledDate: now.toLocaleDateString('sv-SE'),
@@ -151,7 +197,9 @@ try {
     }, scene)
     assert.equal(created.ok, true)
     await ready(action)
-    await page.getByRole('button', { name: '互动桌宠，双击展开或收起', exact: true }).press('Enter')
+    await page.locator('.reminder-bubble').getByText('动作提醒验收', { exact: true }).waitFor()
+    assert.equal(await button('再讲一个 ↻').count(), 0)
+    await pet().press('Enter')
     assert.equal(await canvas.getAttribute('data-pet-action'), action)
     await page.getByRole('button', { name: '桌宠动作', exact: true }).click()
     assert.equal(await page.getByRole('button', { name: '挥手回应', exact: true }).isDisabled(), true)
@@ -165,10 +213,74 @@ try {
     await page.getByRole('button', { name: '返回清单', exact: true }).click()
     await page.getByRole('button', { name: '收起这次提醒', exact: true }).click()
     await ready('idle')
+    assert.equal(await answer().count(), 0)
   }
   report.checks.push('due bell/water/stretch scenes override clicks and previews; character switching preserves the pending reminder and its scene until acknowledgment')
+  const area = await app.evaluate(({ screen }) => screen.getPrimaryDisplay().workArea)
+  for (const [horizontal, vertical] of [['right', 'down'], ['left', 'down'], ['right', 'up'], ['left', 'up']]) {
+    await button('仅显示桌宠').click()
+    await page.waitForFunction(() => window.innerHeight === 224)
+    const from = await screenPet()
+    const target = {
+      x: horizontal === 'left' ? area.x + area.width - 143 : area.x + 11,
+      y: vertical === 'up' ? area.y + area.height - 134 : area.y + 4
+    }
+    await app.evaluate(({ screen }, from) => {
+      globalThis.petTestCursor = { x: from.x + 60, y: from.y + 60 }
+      globalThis.readSystemCursor = screen.getCursorScreenPoint
+      screen.getCursorScreenPoint = () => globalThis.petTestCursor
+    }, from)
+    try {
+      const box = await pet().boundingBox()
+      await page.mouse.move(box.x + 60, box.y + 60)
+      await page.mouse.down()
+      await page.mouse.move(box.x + 66, box.y + 60)
+      await page.waitForTimeout(80)
+      await app.evaluate((_electron, target) => { globalThis.petTestCursor = { x: target.x + 60, y: target.y + 60 } }, target)
+      for (let attempt = 0; attempt < 100; attempt++) {
+        const position = await screenPet()
+        if (position.x === target.x && position.y === target.y) break
+        await page.waitForTimeout(50)
+      }
+      assert.deepEqual(await screenPet(), target)
+    } finally {
+      await page.mouse.up()
+      await app.evaluate(({ screen }) => {
+        screen.getCursorScreenPoint = globalThis.readSystemCursor
+        delete globalThis.readSystemCursor
+        delete globalThis.petTestCursor
+      })
+    }
+    assert.equal(await questions().count(), 0)
+    await openQuestions()
+    const bubbleBox = await questions().boundingBox()
+    const petBox = await pet().boundingBox()
+    assert.ok(horizontal === 'left' ? bubbleBox.x + bubbleBox.width <= petBox.x : bubbleBox.x >= petBox.x + petBox.width)
+    if (horizontal === 'left') {
+      await button('离下班还有多久？').click()
+      const reply = await answer().boundingBox()
+      assert.ok(reply.x >= 0 && reply.x + reply.width <= petBox.x)
+    }
+    await button('展开清单').click()
+    await questions().waitFor({ state: 'hidden' })
+    await answer().waitFor({ state: 'hidden' })
+    await button('仅显示桌宠').waitFor()
+    const card = page.locator('.card')
+    await card.evaluate(async el => { await Promise.allSettled(el.getAnimations().map(animation => animation.finished)) })
+    const { layout, bounds } = (await snapshot()).window
+    assert.equal(layout.horizontal, horizontal)
+    assert.equal(layout.vertical, vertical)
+    assert.deepEqual(await screenPet(), target)
+    const cardBox = await card.boundingBox()
+    const petCenter = await pet().boundingBox()
+    assert.ok(cardBox.x >= 0 && cardBox.y >= 0 && cardBox.x + cardBox.width <= bounds.width && cardBox.y + cardBox.height <= bounds.height)
+    assert.equal(cardBox.x + cardBox.width / 2 < petCenter.x + petCenter.width / 2, horizontal === 'left')
+    assert.equal(cardBox.y + cardBox.height / 2 < petCenter.y + petCenter.height / 2, vertical === 'up')
+  }
+  report.checks.push('real window drag flips bubbles and the task card in all four corners, keeps the card visible and pins the pet through expansion')
   await page.screenshot({ path: join(directory, 'expanded.png'), omitBackground: true })
   const saved = await snapshot()
+  const savedPet = await screenPet()
   await app.close()
   app = await _electron.launch({ executablePath: executable ? resolve(executable) : require('electron'),
     args: executable ? [] : [resolve('.')], env, timeout: 30_000 })
@@ -179,6 +291,7 @@ try {
   await ready('idle', selectedPetId); await moving()
   assert.equal((await snapshot()).settings.petId, selectedPetId)
   assert.deepEqual((await snapshot()).today.progress, saved.today.progress)
+  assert.deepEqual(await screenPet(), savedPet)
   await page.screenshot({ path: join(directory, 'reopened.png'), omitBackground: true })
   report.checks.push('a complete application restart restores Teng Junlong and preserves task progress')
   assert.deepEqual(report.errors, [])
