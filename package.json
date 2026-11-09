@@ -1,6 +1,6 @@
 {
   "name": "desktop-buddy-m0",
-  "version": "0.1.1",
+  "version": "0.1.2",
   "private": true,
   "description": "Windows 与 macOS 本地桌面任务助手",
   "main": "./out/main/index.js",
