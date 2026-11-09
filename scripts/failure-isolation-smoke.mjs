@@ -111,6 +111,7 @@ async function verifyRolloverFailure({ application, page, snapshot, databaseSQL,
         day: await window.desktop.tasks.getDay(date),
         snapshot: await window.desktop.bootstrap(),
         plans: await window.desktop.plans.list(),
+        report: await window.desktop.tasks.getDailyReport(),
         updates: await window.desktop.updates.getState(),
         hide: await window.desktop.hide()
       }), tomorrow.date)
@@ -119,6 +120,7 @@ async function verifyRolloverFailure({ application, page, snapshot, databaseSQL,
         assert.equal(result.error.code, 'STORAGE')
       }
       assert.equal(results.plans.ok, true, 'saved plans are independent of day activation')
+      assert.equal(results.report.ok, true, 'completed-task report is independent of day activation')
       assert.equal(results.updates.ok, true, 'update status is independent of day activation')
       assert.equal(results.hide.ok, true, 'hide is independent of day activation')
       await waitUntil(() => application.evaluate(({ BrowserWindow }) =>
@@ -139,6 +141,6 @@ export async function runFailureIsolationChecks(context) {
   return [
     'a throwing tray refresh leaves task writes and both window updates working',
     'a throwing bell channel leaves native reminder submission and the in-app bubble working',
-    'a failed day activation leaves window controls, update status and saved plans available, and retries after storage recovers'
+    'a failed day activation leaves window controls, update status, saved plans and the daily report available, and retries after storage recovers'
   ]
 }
