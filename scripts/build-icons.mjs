@@ -38,4 +38,13 @@ for (let index = 0; index < images.length; index++) {
   offset += images[index].length
 }
 await writeFile(resolve(destination, 'zaizai.ico'), Buffer.concat([header, ...images]))
-console.log('Generated resources/branding/zaizai.png, zaizai.icns and zaizai.ico')
+
+const menuBarArtwork = resolve(destination, 'zaizai-menubar.svg')
+for (const scale of [1, 2]) {
+  const size = String(18 * scale)
+  const dpi = String(72 * scale)
+  const name = scale === 1 ? 'trayTemplate.png' : 'trayTemplate@2x.png'
+  execFileSync('sips', ['-s', 'format', 'png', '-z', size, size, '-s', 'dpiWidth', dpi, '-s', 'dpiHeight', dpi,
+    menuBarArtwork, '--out', resolve('resources/tray', name)], { stdio: 'ignore' })
+}
+console.log('Generated zaizai app and macOS menu bar icons')

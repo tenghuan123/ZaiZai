@@ -62,7 +62,7 @@ test('UI pet selection accepts installed characters and rejects unknown IDs, sta
     }
     assert.throws(() => f.settings.updateFromUI({ expectedVersion: before.version, patch: { petId: BUILT_IN_PET_ID } }),
       (error: unknown) => error instanceof AppError && error.code === 'CONFLICT')
-    for (const petId of ['other-pack', '../hu-xianya', 'builtin-cat', '', null]) {
+    for (const petId of ['other-pack', '../xiang-xiang-mao', 'builtin-cat', '', null]) {
       assert.throws(() => f.settings.updateFromUI({ expectedVersion: next.version, patch: { petId } }),
         (error: unknown) => error instanceof AppError && error.code === 'VALIDATION' && error.field === 'petId')
     }

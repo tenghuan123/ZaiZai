@@ -1,5 +1,5 @@
 {
-  "directory": "/Users/tenghuan/programming/vjshi/studyDemo/tia-windows-plugins/.cache/animation-runs/built-1793696962888",
+  "directory": ".cache/animation-runs/built-1793696962888",
   "checks": [
     "a second click in the 620 ms feedback sends an explicit undo, cancels every effect, and restores saved progress",
     "check/particles/stroke/stamp retain the row; confirmed persistence updates progress before a smooth exit; undo restores it",

@@ -114,29 +114,29 @@ M1 提交已完成且没有推送；本轮 M2 不自动提交。下一阶段继�
 
 复现命令：`npm run icons:mac`、`npm run pack:mac -- --config.electronDist=node_modules/electron/dist`；回归脚本统一接受 `--executable=release/mac-arm64/zaizai.app/Contents/MacOS/zaizai`。完整回归入口 `scripts/smoke.mjs` 额外传 `--require-notification`。
 
-## 2026-11-03 胡娴雅接入与角色切换
+## 2026-11-03 香香猫接入与角色切换
 
-将已确认的 `resources/pets/hu-xianya` 接入应用，保留草莓兔女孩 V3。顶栏 `🐾` 面板新增「桌宠角色」选择，使用现有 `settings.petId`、版本校验与 SQLite 事务保存；重启后恢复。已有选择和历史占位 ID 对应规则继续保留，保存失败保持当前角色并可重试。回应与完成台词从所选包读取，七组动作继续由现有优先级控制器分发；角色切换不清除待处理提醒。
+将已确认的 `resources/pets/xiang-xiang-mao` 接入应用，保留草莓兔女孩 V3。顶栏 `🐾` 面板新增「桌宠角色」选择，使用现有 `settings.petId`、版本校验与 SQLite 事务保存；重启后恢复。已有选择和历史占位 ID 对应规则继续保留，保存失败保持当前角色并可重试。回应与完成台词从所选包读取，七组动作继续由现有优先级控制器分发；角色切换不清除待处理提醒。
 
 TypeScript 检查和生产构建通过，35 项规则测试通过。[构建版专项](pet-integration-evidence/built-report.json)与[macOS 打包版专项](pet-integration-evidence/packaged-report.json)各 10 项检查通过：两套角色各七组动作、真实 SQLite 写入失败后重试、角色台词、减少动态效果与隐藏暂停、两种窗口尺寸、单项 / 全部完成反馈、按场景提醒及重启恢复。打包版还在待处理喝水提醒期间切换两套角色，确认提醒 ID 与动作均保留。验收脚本在展开窗口后等待界面解除 inert 并完成过渡，再开始输入，避免原生尺寸已变化但界面尚未展开时的自动化输入丢失。
 
-macOS 应用、ZIP 与 Windows x64 NSIS 安装包均已更新。构建仅包含两套角色共十四张精灵图；独立预览 HTML、APNG、绘制帧和生成资料未进入应用包。打包资产、签名与压缩完整性记录见 [build.json](pet-integration-evidence/build.json)。截图见[角色选择与动作](pet-integration-evidence/packaged-actions.png)、[仅桌宠模式](pet-integration-evidence/packaged-compact.png)和[重启后的角色](pet-integration-evidence/packaged-reopened.png)。本轮未操作用户实际数据库，未提交或推送；Windows 仍为交叉构建与静态验证，未完成真机运行验收。
+macOS 应用、ZIP 与 Windows x64 NSIS 安装包均已更新。构建仅包含两套角色共十四张精灵图；独立预览 HTML、APNG、绘制帧和生成资料未进入应用包。打包资产、签名与压缩完整性记录见 [build.json](pet-integration-evidence/build.json)。截图见[仅桌宠模式](pet-integration-evidence/packaged-compact.png)和[重启后的角色](pet-integration-evidence/packaged-reopened.png)。本轮未操作用户实际数据库，未提交或推送；Windows 仍为交叉构建与静态验证，未完成真机运行验收。
 
 复现：`npm test`、`npm run build`、`node scripts/pet-smoke.mjs`、`npm run pack:mac`、`node scripts/pet-smoke.mjs --executable=release/mac-arm64/zaizai.app/Contents/MacOS/zaizai`、`npm run pack:win`。
 
-## 2026-11-03 滕环加入内置角色库
+## 2026-11-03 臭臭汪加入内置角色库
 
-将用户确认的 `resources/pets/teng-huan` v1.0.2 登记为第三个内置角色，七组动作使用最终素材，摇铃为保留原始人物画风的局部修订版。渲染端登记 manifest 与七张精灵图，主进程沿用已有内置 ID 校验、`settings.petId`、版本控制和 SQLite 保存流程。启动最新构建，顶栏 `🐾` →「桌宠角色」可选择「滕环 · 前端工程师」。
+将用户确认的 `resources/pets/chou-chou-wang` v1.0.2 登记为第三个内置角色，七组动作使用最终素材，摇铃为保留原始人物画风的局部修订版。渲染端登记 manifest 与七张精灵图，主进程沿用已有内置 ID 校验、`settings.petId`、版本控制和 SQLite 保存流程。启动最新构建，顶栏 `🐾` →「桌宠角色」可选择「臭臭汪 · 前端工程师」。
 
-TypeScript 检查和生产构建通过，36 项规则测试通过。[生产资源检查](teng-huan-integration-evidence/build.json)确认共 21 张精灵图，滕环七张图片的 SHA-256 与确认版逐一一致。[真实 Electron 构建版专项](teng-huan-integration-evidence/built-report.json)10 项检查通过：三角色各七组动作、v1.0.2 配置、真实保存失败及重试、角色台词、单项与全部完成反馈、摇铃 / 喝水 / 拉伸提醒、待处理提醒期间切换角色及完整重启后恢复。
+TypeScript 检查和生产构建通过，36 项规则测试通过。[生产资源检查](chou-chou-wang-integration-evidence/build.json)确认共 21 张精灵图，臭臭汪七张图片的 SHA-256 与确认版逐一一致。[真实 Electron 构建版专项](chou-chou-wang-integration-evidence/built-report.json)10 项检查通过：三角色各七组动作、v1.0.2 配置、真实保存失败及重试、角色台词、单项与全部完成反馈、摇铃 / 喝水 / 拉伸提醒、待处理提醒期间切换角色及完整重启后恢复。
 
-截图见[角色动作](teng-huan-integration-evidence/built-actions.png)、[仅桌宠模式](teng-huan-integration-evidence/built-compact.png)、[重启后的滕环](teng-huan-integration-evidence/built-reopened.png)。本轮使用隔离数据目录；完成源码与生产构建接入，`release/` 中 macOS、Windows 安装包仍为上轮双角色版本，尚未重新打包。未提交或推送。
+截图见[仅桌宠模式](chou-chou-wang-integration-evidence/built-compact.png)、[重启后的臭臭汪](chou-chou-wang-integration-evidence/built-reopened.png)。本轮使用隔离数据目录；完成源码与生产构建接入，`release/` 中 macOS、Windows 安装包仍为上轮双角色版本，尚未重新打包。未提交或推送。
 
 复现：`npm test`、`npm run build`、`node scripts/pet-smoke.mjs`。
 
 ## 2026-11-03 本地提交整理与回归
 
-按素材归档、日期交互、角色切换、品牌打包、需求原型与验收文档六组整理本地提交。保留各代桌宠的素材、制作来源、独立预览和验证记录；滕俊龙仍是独立资源包，当前应用内登记的角色仍为草莓兔女孩 V3、胡娴雅和滕环。`output/` 中可重新导出的 ZIP 与 `out/`、`release/` 一样作为生成产物忽略，原文件保留在本地。
+按素材归档、日期交互、角色切换、品牌打包、需求原型与验收文档六组整理本地提交。保留各代桌宠的素材、制作来源、独立预览和验证记录；猪猪仍是独立资源包，当前应用内登记的角色仍为草莓兔女孩 V3、香香猫和臭臭汪。`output/` 中可重新导出的 ZIP 与 `out/`、`release/` 一样作为生成产物忽略，原文件保留在本地。
 
 本次重新执行 `npm test`（36 项通过）、`npm run build`（类型检查与生产构建通过），并使用独立测试数据目录运行 [完整 Electron 回归 16 项](local-commit-evidence/workspace-report.json)、[日期专项 7 项](local-commit-evidence/calendar-report.json)、[动效专项 8 项](local-commit-evidence/animation-report.json)和[三角色专项 10 项](local-commit-evidence/pet-report.json)，共 77 项自动化检查通过。资源与证据 JSON 可解析，浏览器原型内联脚本语法检查通过。
 
@@ -144,10 +144,10 @@ TypeScript 检查和生产构建通过，36 项规则测试通过。[生产资�
 
 需求和浏览器原型 v0.3 的周/月计划、任务优先级、提醒声音、开机自启及自定义窗口尺寸仍为目标设计；已在数据模型和 README 中明确其与当前正式应用的实现边界。
 
-## 2026-11-03 滕俊龙接入
+## 2026-11-03 猪猪接入
 
-将 `resources/pets/teng-junlong` v1.0.1 登记为第四个内置角色。七组动作沿用现有播放与提醒流程，待机使用修订后的眨眼帧序。启动最新构建后，顶栏 `🐾` →「桌宠角色」→「滕俊龙 · 路桥工程师」即可切换，角色选择沿用版本校验与 SQLite 保存流程并在重启后恢复。
+将 `resources/pets/zhu-zhu` v1.0.1 登记为第四个内置角色。七组动作沿用现有播放与提醒流程，待机使用修订后的眨眼帧序。启动最新构建后，顶栏 `🐾` →「桌宠角色」→「猪猪 · 路桥工程师」即可切换，角色选择沿用版本校验与 SQLite 保存流程并在重启后恢复。
 
-`npm run build` 的类型检查和生产构建通过，`npm test` 的 37 项测试通过。[构建资源检查](teng-junlong-integration-evidence/build.json)确认共 28 张精灵图，滕俊龙七张图片的 SHA-256 与当前资源逐一一致，待机图匹配眨眼修订版。[真实 Electron 检查](teng-junlong-integration-evidence/built-report.json)的 10 项检查通过：四角色各七组动作、滕俊龙 v1.0.1、保存失败与重试、角色台词、完成反馈、三类提醒、待处理提醒期间切换角色，以及完整重启后恢复角色与任务进度。
+`npm run build` 的类型检查和生产构建通过，`npm test` 的 37 项测试通过。[构建资源检查](zhu-zhu-integration-evidence/build.json)确认共 28 张精灵图，猪猪七张图片的 SHA-256 与当前资源逐一一致，待机图匹配眨眼修订版。[真实 Electron 检查](zhu-zhu-integration-evidence/built-report.json)的 10 项检查通过：四角色各七组动作、猪猪 v1.0.1、保存失败与重试、角色台词、完成反馈、三类提醒、待处理提醒期间切换角色，以及完整重启后恢复角色与任务进度。
 
-截图见[角色动作](teng-junlong-integration-evidence/built-actions.png)、[仅桌宠模式](teng-junlong-integration-evidence/built-compact.png)、[重启恢复](teng-junlong-integration-evidence/built-reopened.png)。本轮使用隔离测试数据目录，完成源码与生产构建接入；`release/` 的 macOS 与 Windows 安装包尚未重新生成。未提交或推送。
+截图见[仅桌宠模式](zhu-zhu-integration-evidence/built-compact.png)、[重启恢复](zhu-zhu-integration-evidence/built-reopened.png)。本轮使用隔离测试数据目录，完成源码与生产构建接入；`release/` 的 macOS 与 Windows 安装包尚未重新生成。未提交或推送。

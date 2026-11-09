@@ -1,0 +1,58 @@
+{
+  "createdAt": "2026-11-03",
+  "mode": "built-in image_gen",
+  "character": "香香猫 / Xiang Xiang Mao",
+  "reference": "source/reference.png",
+  "inputRoles": {
+    "reference": "User-provided character identity and illustration style reference",
+    "idleSheet": "Generated consistency reference for the other six actions",
+    "jumpSheet": "Edit target for a padding-only correction pass"
+  },
+  "actions": [
+    {
+      "id": "idle",
+      "generatorOutputFilename": "exec-778e10da-e324-4e52-87ac-37e302f3f27d.png",
+      "drawnFrames": 24,
+      "sourceSheet": "source/sheets/idle.png"
+    },
+    {
+      "id": "react",
+      "generatorOutputFilename": "exec-9b890e5e-e6bd-4830-b11b-81b7d68293eb.png",
+      "drawnFrames": 24,
+      "sourceSheet": "source/sheets/react.png"
+    },
+    {
+      "id": "celebrate",
+      "generatorOutputFilename": "exec-9a867e85-d9e8-4232-8762-dd294e1b7edc.png",
+      "drawnFrames": 24,
+      "sourceSheet": "source/sheets/celebrate.png"
+    },
+    {
+      "id": "all_done",
+      "generatorOutputFilename": "exec-56ccb6cc-9c5c-406f-8edf-e5fde2564a46.png",
+      "drawnFrames": 24,
+      "sourceSheet": "source/sheets/all_done.png"
+    },
+    {
+      "id": "remind",
+      "generatorOutputFilename": "exec-3fc65f1e-09cd-4918-ba52-2df38be5d466.png",
+      "drawnFrames": 24,
+      "sourceSheet": "source/sheets/remind.png"
+    },
+    {
+      "id": "drink_water",
+      "generatorOutputFilename": "exec-10e635a8-f4d8-4d59-870c-93437961092b.png",
+      "drawnFrames": 24,
+      "sourceSheet": "source/sheets/drink_water.png"
+    },
+    {
+      "id": "stretch",
+      "generatorOutputFilename": "exec-476f7767-b88c-4b59-9739-a45fe09e28ca.png",
+      "drawnFrames": 24,
+      "sourceSheet": "source/sheets/stretch.png"
+    }
+  ],
+  "processing": "Native CoreGraphics/ImageIO: fixed 6x4 source-cell extraction; clear alpha <=4/255 residue only; uniform scale per action using neutral height, sole registration to y304; preserve jump displacement for keys9-14; pack 8 columns of 320x320 frames at24FPS. Source drawings retained. APNG fcTL delays are encoded as exactly1/24s with updated CRC32.",
+  "scope": "New standalone resource pack and offline preview. Current application pet selection is unchanged.",
+  "limits": "Generated hair strands, ruffles, face details and body proportions can vary slightly between drawings. 24FPS is playback exposure timing; each action has24 distinct generated drawings, not24 unique drawings per second."
+}

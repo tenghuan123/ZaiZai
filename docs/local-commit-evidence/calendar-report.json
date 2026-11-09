@@ -1,5 +1,5 @@
 {
-  "directory": "/Users/tenghuan/programming/vjshi/studyDemo/tia-windows-plugins/.cache/calendar-runs/built-1793694061218",
+  "directory": ".cache/calendar-runs/built-1793694061218",
   "checks": [
     "the accessible date icon retains a purpose tooltip and opens an explanatory modal without compressing the list; Escape restores focus",
     "clicking outside dismisses the picker without changing the selected day",

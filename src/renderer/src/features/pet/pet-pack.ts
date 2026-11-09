@@ -9,30 +9,30 @@ import bunnyAllDone from '../../../../../resources/pets/strawberry-bunny-v3/all_
 import bunnyRemind from '../../../../../resources/pets/strawberry-bunny-v3/remind.png?url'
 import bunnyDrinkWater from '../../../../../resources/pets/strawberry-bunny-v3/drink_water.png?url'
 import bunnyStretch from '../../../../../resources/pets/strawberry-bunny-v3/stretch.png?url'
-import xianyaManifest from '../../../../../resources/pets/hu-xianya/manifest.json'
-import xianyaIdle from '../../../../../resources/pets/hu-xianya/idle.png?url'
-import xianyaReact from '../../../../../resources/pets/hu-xianya/react.png?url'
-import xianyaCelebrate from '../../../../../resources/pets/hu-xianya/celebrate.png?url'
-import xianyaAllDone from '../../../../../resources/pets/hu-xianya/all_done.png?url'
-import xianyaRemind from '../../../../../resources/pets/hu-xianya/remind.png?url'
-import xianyaDrinkWater from '../../../../../resources/pets/hu-xianya/drink_water.png?url'
-import xianyaStretch from '../../../../../resources/pets/hu-xianya/stretch.png?url'
-import tengHuanManifest from '../../../../../resources/pets/teng-huan/manifest.json'
-import tengHuanIdle from '../../../../../resources/pets/teng-huan/idle.png?url'
-import tengHuanReact from '../../../../../resources/pets/teng-huan/react.png?url'
-import tengHuanCelebrate from '../../../../../resources/pets/teng-huan/celebrate.png?url'
-import tengHuanAllDone from '../../../../../resources/pets/teng-huan/all_done.png?url'
-import tengHuanRemind from '../../../../../resources/pets/teng-huan/remind.png?url'
-import tengHuanDrinkWater from '../../../../../resources/pets/teng-huan/drink_water.png?url'
-import tengHuanStretch from '../../../../../resources/pets/teng-huan/stretch.png?url'
-import tengJunlongManifest from '../../../../../resources/pets/teng-junlong/manifest.json'
-import tengJunlongIdle from '../../../../../resources/pets/teng-junlong/idle.png?url'
-import tengJunlongReact from '../../../../../resources/pets/teng-junlong/react.png?url'
-import tengJunlongCelebrate from '../../../../../resources/pets/teng-junlong/celebrate.png?url'
-import tengJunlongAllDone from '../../../../../resources/pets/teng-junlong/all_done.png?url'
-import tengJunlongRemind from '../../../../../resources/pets/teng-junlong/remind.png?url'
-import tengJunlongDrinkWater from '../../../../../resources/pets/teng-junlong/drink_water.png?url'
-import tengJunlongStretch from '../../../../../resources/pets/teng-junlong/stretch.png?url'
+import xiangXiangMaoManifest from '../../../../../resources/pets/xiang-xiang-mao/manifest.json'
+import xiangXiangMaoIdle from '../../../../../resources/pets/xiang-xiang-mao/idle.png?url'
+import xiangXiangMaoReact from '../../../../../resources/pets/xiang-xiang-mao/react.png?url'
+import xiangXiangMaoCelebrate from '../../../../../resources/pets/xiang-xiang-mao/celebrate.png?url'
+import xiangXiangMaoAllDone from '../../../../../resources/pets/xiang-xiang-mao/all_done.png?url'
+import xiangXiangMaoRemind from '../../../../../resources/pets/xiang-xiang-mao/remind.png?url'
+import xiangXiangMaoDrinkWater from '../../../../../resources/pets/xiang-xiang-mao/drink_water.png?url'
+import xiangXiangMaoStretch from '../../../../../resources/pets/xiang-xiang-mao/stretch.png?url'
+import chouChouWangManifest from '../../../../../resources/pets/chou-chou-wang/manifest.json'
+import chouChouWangIdle from '../../../../../resources/pets/chou-chou-wang/idle.png?url'
+import chouChouWangReact from '../../../../../resources/pets/chou-chou-wang/react.png?url'
+import chouChouWangCelebrate from '../../../../../resources/pets/chou-chou-wang/celebrate.png?url'
+import chouChouWangAllDone from '../../../../../resources/pets/chou-chou-wang/all_done.png?url'
+import chouChouWangRemind from '../../../../../resources/pets/chou-chou-wang/remind.png?url'
+import chouChouWangDrinkWater from '../../../../../resources/pets/chou-chou-wang/drink_water.png?url'
+import chouChouWangStretch from '../../../../../resources/pets/chou-chou-wang/stretch.png?url'
+import zhuZhuManifest from '../../../../../resources/pets/zhu-zhu/manifest.json'
+import zhuZhuIdle from '../../../../../resources/pets/zhu-zhu/idle.png?url'
+import zhuZhuReact from '../../../../../resources/pets/zhu-zhu/react.png?url'
+import zhuZhuCelebrate from '../../../../../resources/pets/zhu-zhu/celebrate.png?url'
+import zhuZhuAllDone from '../../../../../resources/pets/zhu-zhu/all_done.png?url'
+import zhuZhuRemind from '../../../../../resources/pets/zhu-zhu/remind.png?url'
+import zhuZhuDrinkWater from '../../../../../resources/pets/zhu-zhu/drink_water.png?url'
+import zhuZhuStretch from '../../../../../resources/pets/zhu-zhu/stretch.png?url'
 
 export interface PetSpriteState {
   src: string; frames: number; cols: number; fps: number; loop: boolean; url: string; proportions?: PetProportions
@@ -56,12 +56,12 @@ function createPetPack(manifest: PetManifest, sources: Record<PetAction, string>
 export const petPacks: PetPack[] = [
   createPetPack(bunnyManifest, { idle: bunnyIdle, react: bunnyReact, celebrate: bunnyCelebrate, all_done: bunnyAllDone,
     remind: bunnyRemind, drink_water: bunnyDrinkWater, stretch: bunnyStretch }),
-  createPetPack(xianyaManifest, { idle: xianyaIdle, react: xianyaReact, celebrate: xianyaCelebrate, all_done: xianyaAllDone,
-    remind: xianyaRemind, drink_water: xianyaDrinkWater, stretch: xianyaStretch }),
-  createPetPack(tengHuanManifest, { idle: tengHuanIdle, react: tengHuanReact, celebrate: tengHuanCelebrate, all_done: tengHuanAllDone,
-    remind: tengHuanRemind, drink_water: tengHuanDrinkWater, stretch: tengHuanStretch }),
-  createPetPack(tengJunlongManifest, { idle: tengJunlongIdle, react: tengJunlongReact, celebrate: tengJunlongCelebrate, all_done: tengJunlongAllDone,
-    remind: tengJunlongRemind, drink_water: tengJunlongDrinkWater, stretch: tengJunlongStretch })
+  createPetPack(xiangXiangMaoManifest, { idle: xiangXiangMaoIdle, react: xiangXiangMaoReact, celebrate: xiangXiangMaoCelebrate, all_done: xiangXiangMaoAllDone,
+    remind: xiangXiangMaoRemind, drink_water: xiangXiangMaoDrinkWater, stretch: xiangXiangMaoStretch }),
+  createPetPack(chouChouWangManifest, { idle: chouChouWangIdle, react: chouChouWangReact, celebrate: chouChouWangCelebrate, all_done: chouChouWangAllDone,
+    remind: chouChouWangRemind, drink_water: chouChouWangDrinkWater, stretch: chouChouWangStretch }),
+  createPetPack(zhuZhuManifest, { idle: zhuZhuIdle, react: zhuZhuReact, celebrate: zhuZhuCelebrate, all_done: zhuZhuAllDone,
+    remind: zhuZhuRemind, drink_water: zhuZhuDrinkWater, stretch: zhuZhuStretch })
 ]
 
 export function getPetPack(id: string = BUILT_IN_PET_ID): PetPack {

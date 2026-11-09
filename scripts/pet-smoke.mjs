@@ -8,7 +8,7 @@ import { desktopPages } from './desktop-pages.mjs'
 
 const require = createRequire(import.meta.url)
 const executable = process.argv.find(value => value.startsWith('--executable='))?.slice('--executable='.length)
-const selectedPetId = 'teng-junlong'
+const selectedPetId = 'zhu-zhu'
 const directory = resolve('.cache/pet-runs', `${executable ? 'packaged' : 'built'}-${Date.now()}`)
 await mkdir(directory, { recursive: true })
 const env = { ...process.env, TIA_M0_DATA_DIR: join(directory, 'data') }
@@ -62,11 +62,18 @@ try {
   await page.getByRole('button', { name: '桌宠动作', exact: true }).click()
   const actions = { idle: '待机眨眼', react: '挥手回应', celebrate: '鼓掌庆祝', all_done: '跳跃欢呼', remind: '摇铃提醒', drink_water: '喝水提醒', stretch: '头顶伸展' }
   const selector = page.getByRole('combobox', { name: '桌宠角色', exact: true })
-  for (const petId of ['strawberry-bunny-v3', 'hu-xianya', 'teng-huan', selectedPetId]) {
+  for (const [id, label] of [
+    ['xiang-xiang-mao', '香香猫 · 室内设计师'],
+    ['chou-chou-wang', '臭臭汪 · 前端工程师'],
+    ['zhu-zhu', '猪猪 · 路桥工程师']
+  ]) {
+    assert.equal(await selector.locator(`option[value="${id}"]`).textContent(), label)
+  }
+  for (const petId of ['strawberry-bunny-v3', 'xiang-xiang-mao', 'chou-chou-wang', selectedPetId]) {
     await selector.selectOption(petId)
     await ready('idle', petId)
     assert.equal((await snapshot()).settings.petId, petId)
-    if (petId === 'teng-huan') assert.match(await page.locator('.pet-pack-description').innerText(), /v1\.0\.2/)
+    if (petId === 'chou-chou-wang') assert.match(await page.locator('.pet-pack-description').innerText(), /v1\.0\.2/)
     if (petId === selectedPetId) assert.match(await page.locator('.pet-pack-description').innerText(), /v1\.0\.1/)
     for (const [action, label] of Object.entries(actions)) {
       await page.getByRole('button', { name: label, exact: true }).click()
@@ -93,7 +100,7 @@ try {
   await page.getByRole('button', { name: '关闭错误提示', exact: true }).click()
   await selector.selectOption('strawberry-bunny-v3'); await ready('idle', 'strawberry-bunny-v3')
   await selector.selectOption(selectedPetId); await ready('idle', selectedPetId)
-  report.checks.push('all four installed characters animate all seven actions, Teng Huan uses v1.0.2, Teng Junlong uses v1.0.1, and a real storage failure preserves the current choice until a successful retry')
+  report.checks.push('all four installed characters animate all seven actions, Chou Chou Wang uses v1.0.2, Zhu Zhu uses v1.0.1, and a real storage failure preserves the current choice until a successful retry')
   await page.getByRole('button', { name: '返回清单', exact: true }).click()
   await ready('idle')
   report.checks.push('all seven actual app previews animate, and returning to the task list restores idle')
@@ -356,7 +363,7 @@ try {
   assert.deepEqual((await snapshot()).today.progress, saved.today.progress)
   assert.deepEqual(await screenPet(), savedPet)
   await page.screenshot({ path: join(directory, 'reopened.png'), omitBackground: true })
-  report.checks.push('a complete application restart restores Teng Junlong and preserves task progress')
+  report.checks.push('a complete application restart restores Zhu Zhu and preserves task progress')
   await app.evaluate(({ BrowserWindow }) => {
     const view = name => BrowserWindow.getAllWindows().find(window => new URL(window.webContents.getURL()).searchParams.get('view') === name)
     const pet = view('pet')

@@ -1,7 +1,7 @@
 {
   "startedAt": "2026-11-03T08:23:00.730Z",
-  "runDirectory": "/Users/tenghuan/programming/vjshi/studyDemo/tia-windows-plugins/.cache/m2-runs/development-1793694180728",
-  "executablePath": "/Users/tenghuan/programming/vjshi/studyDemo/tia-windows-plugins/node_modules/electron/dist/Electron.app/Contents/MacOS/Electron",
+  "runDirectory": ".cache/m2-runs/development-1793694180728",
+  "executablePath": "node_modules/electron/dist/Electron.app/Contents/MacOS/Electron",
   "checks": [
     "native window and tray created; SQLite opened",
     "expanded ↔ compact changes actual native window bounds",

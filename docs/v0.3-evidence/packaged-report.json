@@ -1,6 +1,6 @@
 {
-  "directory": "/Users/tenghuan/programming/vjshi/studyDemo/tia-windows-plugins/.cache/scheduling-packaged/1793697271418",
-  "executablePath": "/Users/tenghuan/programming/vjshi/studyDemo/tia-windows-plugins/release/mac-arm64/zaizai.app/Contents/MacOS/zaizai",
+  "directory": ".cache/scheduling-packaged/1793697271418",
+  "executablePath": "release/mac-arm64/zaizai.app/Contents/MacOS/zaizai",
   "checks": [
     "packaged app opens SQLite, tray and all sprite assets; urgent task and size preset work",
     "real macOS login service accepted enable and disable; original system preference restored",

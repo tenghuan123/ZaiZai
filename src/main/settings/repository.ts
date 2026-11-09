@@ -1,4 +1,5 @@
 import type Database from 'better-sqlite3'
+import { createHash } from 'node:crypto'
 import type { Settings } from '../../shared/contracts'
 import { BUILT_IN_PET_ID, isBuiltInPetId } from '../../shared/pet'
 import { AppError, checkVersion } from '../domain/errors'
@@ -10,6 +11,20 @@ export const defaultSettings: Settings = {
   version: 1, displayMode: 'expanded', alwaysOnTop: true, offworkTime: '18:00', defaultReminderEnabled: true,
   position: null, petId: BUILT_IN_PET_ID, petDisplay: {}, openAtLogin: false, reminderSoundEnabled: true, expandedSize: STANDARD_SIZE
 }
+
+// Released builds stored name-derived IDs. Match their digests so the old names
+// do not need to ship with the app. New settings writes persist the current IDs.
+const legacyPetIds = new Map([
+  ['e06f8169a271c1654c2515ba516d7168060232726df95393f60f3719d91450e1', 'xiang-xiang-mao'],
+  ['d6461ded371ada41b8223dfb2e23615314a75206ecb76f91ae752413f866fbb3', 'chou-chou-wang'],
+  ['afa27d71e48b33507abcd851516f9ac7b7459781c775dd6010d1932f88d27629', 'zhu-zhu']
+])
+function currentPetId(id: string): string {
+  if (id === 'builtin-cat') return BUILT_IN_PET_ID
+  if (isBuiltInPetId(id)) return id
+  return legacyPetIds.get(createHash('sha256').update(id).digest('hex')) ?? id
+}
+
 export function validateSettings(input: unknown): Settings {
   const value = object(input)
   fields(value, Object.keys(defaultSettings))
@@ -52,8 +67,14 @@ export class SettingsRepository {
     const row = this.db.prepare('SELECT value FROM app_settings WHERE id=1').get() as { value: string }
     try {
       const settings = validateSettings(JSON.parse(row.value))
-      // The old ID represented the only built-in placeholder, never a user-selected resource pack.
-      return settings.petId === 'builtin-cat' ? { ...settings, petId: BUILT_IN_PET_ID } : settings
+      const petDisplay = { ...settings.petDisplay }
+      for (const [id, display] of Object.entries(settings.petDisplay)) {
+        const currentId = currentPetId(id)
+        if (currentId === id) continue
+        petDisplay[currentId] ??= display
+        delete petDisplay[id]
+      }
+      return { ...settings, petId: currentPetId(settings.petId), petDisplay }
     }
     catch (error) { throw new Error('本地设置损坏，应用不会自动重置。', { cause: error }) }
   }

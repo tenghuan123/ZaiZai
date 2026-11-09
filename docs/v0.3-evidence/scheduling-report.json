@@ -1,5 +1,5 @@
 {
-  "directory": "/Users/tenghuan/programming/vjshi/studyDemo/tia-windows-plugins/.cache/scheduling-runs/1793697764379",
+  "directory": ".cache/scheduling-runs/1793697764379",
   "checks": [
     "quick urgent creation, urgent-first order, inline toggle and progress tags work through UI and SQLite",
     "weekly/monthly UI creates, edits, pauses and resumes actual plans; custom 31st and last-day choice persist",

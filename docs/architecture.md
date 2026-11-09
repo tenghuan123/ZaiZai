@@ -78,7 +78,7 @@ Electron 自身的主进程、渲染进程与 preload 分工参考 [进程模型
 
 ## 3 建议目录
 
-以下为目标目录。M1 已建立 database/connection、database/migrations、domain、tasks、settings/repository 和 reminders/repository；M2 已建立 renderer/src/features 下的 tasks、editor、plans、calendar。当前已补充 features/pet，接入 V3、胡娴雅、滕环与滕俊龙四套内置精灵图、持久化角色选择、动作优先级与预览；用户素材导入仍属于后续批次。设置由独立 repository 校验并持久化；任务服务负责业务事务，查询层保持只读。
+以下为目标目录。M1 已建立 database/connection、database/migrations、domain、tasks、settings/repository 和 reminders/repository；M2 已建立 renderer/src/features 下的 tasks、editor、plans、calendar。当前已补充 features/pet，接入 V3、香香猫、臭臭汪与猪猪四套内置精灵图、持久化角色选择、动作优先级与预览；用户素材导入仍属于后续批次。设置由独立 repository 校验并持久化；任务服务负责业务事务，查询层保持只读。
 
 ```text
 src/
@@ -313,7 +313,7 @@ sequenceDiagram
 
 状态沿用 `idle`、`react`、`celebrate`、`all_done`、`remind`；可选喝水、运动等场景动作。未指定场景的任务使用通用提醒，不仅凭标题包含某个字就决定动作。缺失可选动作回退为通用动作，`idle` 不可用时回退内置角色。
 
-当前内置包为 `resources/pets/strawberry-bunny-v3`、`resources/pets/hu-xianya`、`resources/pets/teng-huan` 和 `resources/pets/teng-junlong`。`pet-pack.ts` 静态登记四套包，仅引用各自七张精灵图与 manifest，由现有 `buddy-app://ui` 协议提供；预览页面、APNG、旧版本和生成资料不随应用打包。`settings.petId` 是所选角色的唯一来源，设置更新入口只接受已登记的内置 ID，并沿用版本校验和 SQLite 事务；保存失败不改变选择。保留历史未知资源 ID，显示时回退到默认内置包，不重置其他设置。Canvas 依据所选 manifest 的 320 × 320 帧尺寸、列数、帧数与帧率播放；切换角色会取消旧图像加载和时钟，父界面的时钟刷新不重置动作。隐藏与系统暂停只停止动画时钟，恢复时不累计隐藏期间的时间；系统减少动态效果偏好显示静态帧。
+当前内置包为 `resources/pets/strawberry-bunny-v3`、`resources/pets/xiang-xiang-mao`、`resources/pets/chou-chou-wang` 和 `resources/pets/zhu-zhu`。`pet-pack.ts` 静态登记四套包，仅引用各自七张精灵图与 manifest，由现有 `buddy-app://ui` 协议提供；预览页面、APNG、旧版本和生成资料不随应用打包。`settings.petId` 是所选角色的唯一来源，设置更新入口只接受已登记的内置 ID，并沿用版本校验和 SQLite 事务；保存失败不改变选择。保留历史未知资源 ID，显示时回退到默认内置包，不重置其他设置。Canvas 依据所选 manifest 的 320 × 320 帧尺寸、列数、帧数与帧率播放；切换角色会取消旧图像加载和时钟，父界面的时钟刷新不重置动作。隐藏与系统暂停只停止动画时钟，恢复时不累计隐藏期间的时间；系统减少动态效果偏好显示静态帧。
 
 点击与任务成功结果产生单次回应，播放完回到待机或当前动作预览；回应与完成台词来自所选包的 manifest。待处理提醒根据实例的 `scene` 选择摇铃、喝水或拉伸，压过普通互动并丢弃被打断的普通动作；切换角色不确认或清除提醒。编辑器允许明确选择提醒动作，顶栏动作面板提供角色选择和七组循环预览。旧 `builtin-cat` 是占位内置角色的别名，设置读取时仍对应 V3，后续正常设置写入持久化新 ID，不重置其他偏好。
 
