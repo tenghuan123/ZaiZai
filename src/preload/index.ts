@@ -32,6 +32,7 @@ const desktop: DesktopAPI = {
   acknowledgeReminder: value => invoke(channels.acknowledge, value), setMode: value => invoke(channels.mode, value),
   openPanel: target => invoke(channels.openPanel, target),
   presentPet: presentation => invoke(channels.presentPet, presentation),
+  getHumorContent: () => invoke(channels.humorContent),
   subscribePet: listener => {
     const handler = (_event: Electron.IpcRendererEvent, presentation: PetPresentation): void => listener(presentation)
     ipcRenderer.on(channels.petPresentation, handler)

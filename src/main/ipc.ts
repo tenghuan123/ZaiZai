@@ -13,6 +13,7 @@ import { fields, identifier, object } from './domain/validation'
 import type { UpdateService } from './updates/service'
 import { PET_ACTIONS } from '../shared/pet'
 import type { PetAction } from '../shared/pet'
+import type { HumorContent } from '../shared/humor'
 
 interface Context {
   desktop: DesktopWindow; tasks: TaskService; settings: SettingsService; reminders: ReminderService
@@ -21,6 +22,7 @@ interface Context {
   reportError: (error: unknown) => void
   showContextMenu: () => void
   updates: UpdateService
+  humorContent: HumorContent
 }
 export function registerIPC(context: Context): void {
   const { desktop, tasks, settings, reminders, records, notifications, changed } = context
@@ -58,6 +60,7 @@ export function registerIPC(context: Context): void {
     })
   }
   handle(channels.bootstrap, () => readCalendar(context.snapshot))
+  handle(channels.humorContent, () => context.humorContent)
   handle(channels.updateState, () => context.updates.getState())
   handle(channels.updateCheck, () => context.updates.check())
   handle(channels.updateInstall, () => context.updates.install())

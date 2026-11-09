@@ -1,0 +1,72 @@
+{
+  "formatVersion": 1,
+  "name": "仔仔的桌边休息站",
+  "version": "1.2.0",
+  "sources": {
+    "vivo-puns": {
+      "title": "vivo 社区·盘点冷笑话谐音梗",
+      "url": "https://bbs.vivo.com.cn/newbbs/thread/38333415",
+      "credit": "参考帖中的常见谐音，重新编写气泡文案。"
+    },
+    "fox-pun": {
+      "title": "小雪儿·狐狸脚滑",
+      "url": "https://www.xiaoxuer.net/archives/21965"
+    },
+    "banana-pun": {
+      "title": "杨浦区人民政府·不蕉绿集市",
+      "url": "https://www.shanghai.gov.cn/ypq/20260814/3cccb9e52fe54d1c96e4fdca01d3e0e3.html"
+    },
+    "garlic-pun": {
+      "title": "微博·陈仔看看车的食物谐音帖",
+      "url": "https://weibo.com/2/detail/5358461214785643"
+    },
+    "deer-pun": {
+      "title": "微博·麋鹿冷笑话",
+      "url": "https://weibo.com/2/detail/5343562637253819"
+    },
+    "superman-pun": {
+      "title": "哔哩哔哩·音觉衍静的超人冷笑话",
+      "url": "https://www.bilibili.com/video/BV1dK8KzqEYg/"
+    },
+    "work-vibes": {
+      "title": "数说故事·用数说聚合解释班味",
+      "url": "https://www.datastory.com.cn/details/1057",
+      "credit": "参考网络话题，段子为本包编写。"
+    },
+    "work-slacking": {
+      "title": "微博·工位摸鱼艺术家",
+      "url": "https://www.sina.cn/media/2302683070",
+      "credit": "参考网络话题，段子为本包编写。"
+    },
+    "work-holiday": {
+      "title": "劳动观察·招暑期工顶岗",
+      "url": "https://www.51ldb.com/shsldb/lbxw/content/3f11b930-3a14-4cc3-a69a-1696cef328e0.htm",
+      "credit": "参考报道中的网络话题，段子为本包编写。"
+    },
+    "zaizai": {
+      "title": "为仔仔编写的桌边短句"
+    }
+  },
+  "entries": [
+    { "kind": "joke", "text": "海豹拍了张照片贴在墙上。它挺满意，管这叫自己的海报。", "source": "vivo-puns", "reference": "海豹／海报" },
+    { "kind": "joke", "text": "小羊剪完毛，凌晨三点还在数羊。它说自己有点「失绵」。", "source": "vivo-puns", "reference": "失绵／失眠" },
+    { "kind": "joke", "text": "早餐摊只剩最后一个馒头。看它一个人怪孤单的，我就把这个「寂馍」带走了。", "source": "vivo-puns", "reference": "寂馍／寂寞" },
+    { "kind": "joke", "text": "狐狸刚进门就摔了一跤。原来它是只「脚滑」的狐狸。", "source": "fox-pun", "reference": "脚滑／狡猾" },
+    { "kind": "joke", "text": "同事说工位上得放点绿植减压。我放了一根香蕉，希望今天能「不蕉绿」。", "source": "banana-pun", "reference": "不蕉绿／不焦虑" },
+    { "kind": "joke", "text": "我问大蒜今晚还做不做饭。它说：「都几点了，蒜了吧。」", "source": "garlic-pun", "reference": "蒜了／算了" },
+    { "kind": "joke", "text": "麋鹿出门两分钟就打开了导航。它说：「我怕又麋路了。」", "source": "deer-pun", "reference": "麋鹿／迷路" },
+    { "kind": "joke", "text": "我问超人衣服能做宽松点吗？他说没办法，救人要紧。", "source": "superman-pun", "reference": "紧身／要紧" },
+    { "kind": "joke", "text": "我给文件起名叫「最终版」。电脑很贴心，帮它找了「最终版2」当室友。", "source": "zaizai" },
+    { "kind": "joke", "text": "我给猫买了张人体工学椅。现在猫坐得很健康，我坐纸箱。", "source": "zaizai" },
+    { "kind": "roast", "text": "周末洗了两天的班味，周日晚上工作群一响，又腌回去了。", "source": "work-vibes", "reference": "下班去班味" },
+    { "kind": "roast", "text": "同事说我在工位摸鱼。冤枉，我只是等脑子连上公司的 Wi-Fi。", "source": "work-slacking", "reference": "工位摸鱼" },
+    { "kind": "roast", "text": "网上说招个暑期工替自己上班。仔细一想，人家有暑假，凭什么来？", "source": "work-holiday", "reference": "招暑期工顶岗" },
+    { "kind": "roast", "text": "年假终于批了。我刚关掉闹钟，工作群已经约好了明早九点找我。", "source": "work-holiday", "reference": "休假时仍在线" },
+    { "kind": "roast", "text": "发工资那天，我和存款难得见了一面。房租推门进来，问我俩聊完了没。", "source": "zaizai" },
+    { "kind": "roast", "text": "我以为今天能准点下班，直到群里突然出现一句「大家都还在吧？」", "source": "zaizai" },
+    { "kind": "roast", "text": "我下班前把待办清空了。方法很简单，点「移到明天」。明天的我收到一份来自昨天的甩锅。", "source": "zaizai" },
+    { "kind": "roast", "text": "今天总算腾出半小时。日历见不得我闲，转手就送给了例会。", "source": "zaizai" },
+    { "kind": "roast", "text": "进度条卡在 99% 是有道理的。最后那 1%，叫等人回复。", "source": "zaizai" },
+    { "kind": "roast", "text": "「辛苦你最后确认一下。」这句话里最有想象力的词是「最后」。", "source": "zaizai" }
+  ]
+}

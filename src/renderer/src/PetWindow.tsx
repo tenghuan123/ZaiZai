@@ -3,11 +3,12 @@ import type { CSSProperties } from 'react'
 import type { DayItem } from '../../shared/tasks'
 import { selectPetPlayback } from '../../shared/pet'
 import type { PetAction, PetReaction } from '../../shared/pet'
+import type { HumorContent, HumorKind } from '../../shared/humor'
 import { PET_AREA } from '../../shared/window'
 import { useWorkspace } from './features/tasks/use-workspace'
 import { PetSprite } from './features/pet/PetSprite'
 import { getPetPack } from './features/pet/pet-pack'
-import { jokes, nextJoke } from './features/pet/jokes'
+import { drawHumorLine } from './features/pet/humor'
 import { playReminderBell } from './features/pet/reminder-sound'
 import { useUpdates } from './features/updates/use-updates'
 import { UpdateNotice } from './features/updates/UpdatePanel'
@@ -20,7 +21,7 @@ const petQuestions = [
   { type: 'progress', icon: '📊', label: '今日任务进度' }
 ] as const
 type PetQuestion = typeof petQuestions[number]['type']
-type PetBubble = { type: 'quick' | 'offwork' | 'progress' } | { type: 'joke'; index: number } | { type: 'feedback'; text: string }
+type PetBubble = { type: 'quick' | 'offwork' | 'progress' } | { type: 'humor'; kind: HumorKind; text: string } | { type: 'feedback'; text: string }
 
 function countdown(time: string | null, now: number): string {
   if (!time) return '点击设置下班时间'
@@ -43,6 +44,8 @@ export function PetWindow(): React.JSX.Element {
   const petPack = getPetPack(snapshot?.settings.petId)
   const [now, setNow] = useState(Date.now)
   const [petBubble, setPetBubble] = useState<PetBubble | null>(null)
+  const [humorContent, setHumorContent] = useState<HumorContent | null>(null)
+  const lastHumorLine = useRef<Partial<Record<HumorKind, string>>>({})
   const [petReaction, setPetReaction] = useState<PetReaction | null>(null)
   const [preview, setPreview] = useState<PetAction | null>(null)
   const [completing, setCompleting] = useState(false)
@@ -53,6 +56,15 @@ export function PetWindow(): React.JSX.Element {
   useEffect(() => api.subscribeSound(() => {
     void playReminderBell().catch(() => setError('提醒铃声播放失败，请重试试听。'))
   }), [setError])
+  useEffect(() => {
+    let active = true
+    void api.getHumorContent().then(result => {
+      if (!active) return
+      if (result.ok) setHumorContent(result.value)
+      else setError('笑话资源包暂时无法读取。')
+    }).catch(() => { if (active) setError('笑话资源包暂时无法读取。') })
+    return () => { active = false }
+  }, [setError])
   useEffect(() => api.subscribePet(presentation => {
     if (presentation.kind === 'preview') {
       setPreview(presentation.action)
@@ -76,7 +88,7 @@ export function PetWindow(): React.JSX.Element {
   }, [activeReminderId, cancelClick])
   useEffect(() => {
     if (!petBubble || petBubble.type === 'quick') return
-    const duration = petBubble.type === 'joke' ? 7000 : petBubble.type === 'feedback' ? 2800 : 5000
+    const duration = petBubble.type === 'humor' ? 7000 : petBubble.type === 'feedback' ? 2800 : 5000
     const timer = setTimeout(() => setPetBubble(current => current === petBubble ? null : current), duration)
     return () => clearTimeout(timer)
   }, [petBubble])
@@ -99,9 +111,14 @@ export function PetWindow(): React.JSX.Element {
   }
   function answerPetQuestion(type: PetQuestion): void {
     if (activeReminderId) return
-    if (type !== 'joke') { setPetBubble({ type }); return }
-    const draw = Math.random()
-    setPetBubble(bubble => ({ type, index: nextJoke(draw, bubble?.type === 'joke' ? bubble.index : undefined) }))
+    if (type === 'joke') answerHumor('joke')
+    else setPetBubble({ type })
+  }
+  function answerHumor(kind: HumorKind): void {
+    if (activeReminderId || !humorContent) return
+    const text = drawHumorLine(humorContent[kind], Math.random(), lastHumorLine.current[kind])
+    lastHumorLine.current[kind] = text
+    setPetBubble({ type: 'humor', kind, text })
   }
   async function completeReminder(item: DayItem): Promise<void> {
     if (completingRef.current) return
@@ -129,8 +146,7 @@ export function PetWindow(): React.JSX.Element {
   let answer = ''
   if (bubble?.type === 'offwork') answer = countdown(snapshot.settings.offworkTime, now)
   if (bubble?.type === 'progress') answer = `今日任务已完成 ${todayProgress.completed}/${todayProgress.total} 项（${todayProgress.percentage}%）`
-  if (bubble?.type === 'joke') answer = jokes[bubble.index]
-  if (bubble?.type === 'feedback') answer = bubble.text
+  if (bubble?.type === 'humor' || bubble?.type === 'feedback') answer = bubble.text
 
   return <main className={`widget pet-window ${compact ? 'compact' : ''} ${snapshot.window.animationsPaused ? 'paused' : ''}`}
     data-horizontal={horizontal} data-vertical={vertical}
@@ -160,7 +176,7 @@ export function PetWindow(): React.JSX.Element {
         <div className="bubble-actions"><button className="primary" disabled={!currentItem || completing} onClick={() => { if (currentItem) void completeReminder(currentItem) }}>完成了</button>
           <button onClick={() => { void command(() => api.openPanel({ kind: 'reminder', reminderId: current.id })) }}>查看清单</button></div>
       </div> : bubble?.type === 'quick' ? <div className="pet-questions" role="group" aria-label="桌宠快捷气泡">
-        {petQuestions.map(({ type, icon, label }) => <button key={type} type="button" onClick={() => answerPetQuestion(type)}>
+        {petQuestions.map(({ type, icon, label }) => <button key={type} type="button" disabled={type === 'joke' && !humorContent} onClick={() => answerPetQuestion(type)}>
           <span aria-hidden="true">{icon}</span>{label}
         </button>)}
       </div> : bubble && <div className="bubble answer-bubble" aria-live={bubble.type === 'offwork' ? 'off' : 'polite'}>
@@ -168,7 +184,10 @@ export function PetWindow(): React.JSX.Element {
         {bubble.type === 'offwork' && !snapshot.settings.offworkTime
           ? <button className="bubble-label" onClick={() => { setPetBubble(null); void command(() => api.openPanel({ kind: 'settings' })) }}>{answer}</button>
           : answer}
-        {bubble.type === 'joke' && <div className="bubble-actions"><button onClick={() => answerPetQuestion('joke')}>再讲一个 ↻</button></div>}
+        {bubble.type === 'humor' && <div className="bubble-actions">
+          <button onClick={() => answerHumor(bubble.kind)}>{bubble.kind === 'joke' ? '再讲一个 ↻' : '再来一碗 ↻'}</button>
+          <button onClick={() => answerHumor(bubble.kind === 'joke' ? 'roast' : 'joke')}>{bubble.kind === 'joke' ? '来碗毒鸡汤' : '换个笑话'}</button>
+        </div>}
       </div>}
     </section>
     <button className="mini-dock" aria-label="展开清单" aria-hidden={!compact} inert={!compact} onClick={() => { void command(() => api.setMode('expanded')) }}>

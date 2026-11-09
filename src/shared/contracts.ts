@@ -2,6 +2,7 @@ import type { CompletionResult, CreateOnceInput, CreatePlanInput, DayView, Occur
 import type { UpdateState } from './updates'
 import type { WindowDirection, WindowLayout } from './window'
 import type { PetAction } from './pet'
+import type { HumorContent } from './humor'
 export type DisplayMode = 'expanded' | 'compact'
 export type PanelTarget = { kind: 'settings' } | { kind: 'reminder'; reminderId: string }
 export type PetPresentation = { kind: 'preview'; action: PetAction | null }
@@ -70,6 +71,7 @@ export interface DesktopAPI {
   setMode(mode: DisplayMode): Promise<AppResult<void>>
   openPanel(target: PanelTarget): Promise<AppResult<void>>
   presentPet(presentation: PetPresentation): Promise<AppResult<void>>
+  getHumorContent(): Promise<AppResult<HumorContent>>
   subscribePet(listener: (presentation: PetPresentation) => void): () => void
   hide(): Promise<AppResult<void>>
   requestClose(): Promise<AppResult<void>>
@@ -92,6 +94,7 @@ export const channels = {
   plans: 'plans:list', createPlan: 'plans:create', updatePlan: 'plans:update', pausePlan: 'plans:set-paused', endPlan: 'plans:end',
   settings: 'settings:update', acknowledge: 'reminders:acknowledge', mode: 'window:mode',
   openPanel: 'window:open-panel', presentPet: 'window:present-pet', petPresentation: 'window:pet-presentation',
+  humorContent: 'pet:humor-content',
   hide: 'window:hide', close: 'window:request-close', quit: 'app:quit', dragStart: 'window:drag-start',
   dragMove: 'window:drag-move', dragEnd: 'window:drag-end', resizeStart: 'window:resize-start', resizeEnd: 'window:resize-end',
   previewSound: 'reminders:preview-sound', playSound: 'reminders:play-sound', contextMenu: 'window:context-menu', changed: 'app:changed'

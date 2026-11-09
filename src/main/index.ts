@@ -15,6 +15,7 @@ import { clockSnapshot } from './domain/time'
 import { DesktopWindow } from './desktop/window'
 import { DesktopTray, installApplicationMenu } from './desktop/tray'
 import { NativeNotifications } from './desktop/notifications'
+import { loadHumorContent } from './desktop/humor-pack'
 import { APP_URL, registerRendererProtocol } from './desktop/protocol'
 import { ReminderService } from './reminders/service'
 import { registerIPC } from './ipc'
@@ -153,7 +154,10 @@ if (!app.requestSingleInstanceLock()) {
           }
         } catch (error) { reportError(error) }
       }, log)
-    registerIPC({ desktop: window, tasks: taskService, settings: preferenceService, records: reminderRecords,
+    const humorContent = loadHumorContent(dataPath, error => {
+      log('humor-pack-invalid', { message: error instanceof Error ? error.message : String(error) })
+    })
+    registerIPC({ desktop: window, tasks: taskService, settings: preferenceService, records: reminderRecords, humorContent,
       reminders: scheduler, notifications: native, snapshot, metadata: () => ({ sessionId, revision }), changed, quit, reportError,
       showContextMenu: () => tray?.showContextMenu(), updates })
     powerMonitor.on('suspend', () => { log('system-suspend'); window.setSystemIdle(true) })
