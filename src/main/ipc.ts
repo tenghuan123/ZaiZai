@@ -27,19 +27,25 @@ export function registerIPC(context: Context): void {
   function sideEffect(action: () => void): void {
     try { action() } catch (error) { context.reportError(error) }
   }
-  function afterWrite<T>(action: () => T): T {
-    const result = action()
+  function publishChanges(): void {
     // Committed business data remains successful even if a native side effect fails.
     sideEffect(changed)
     sideEffect(() => reminders.arm())
+  }
+  function afterWrite<T>(action: () => T): T {
+    const result = action()
+    publishChanges()
     return result
+  }
+  function readCalendar<T>(read: () => T): T {
+    if (tasks.coordinateDay()) publishChanges()
+    return read()
   }
   function handle(name: string, action: (input: unknown, event: IpcMainInvokeEvent) => unknown): void {
     ipcMain.handle(name, async (event: IpcMainInvokeEvent, input: unknown): Promise<AppResult<unknown>> => {
       try {
         if (event.senderFrame !== event.sender.mainFrame ||
           !desktop.isTrustedRenderer(event.sender, event.senderFrame.url)) throw new AppError('UNAVAILABLE', '这个界面没有操作权限。')
-        if (tasks.coordinateDay()) afterWrite(() => {})
         const pending = action(input, event)
         // Synchronous reads and their revision must be captured before another command can run.
         const value = pending instanceof Promise ? await pending : pending
@@ -51,12 +57,12 @@ export function registerIPC(context: Context): void {
       }
     })
   }
-  handle(channels.bootstrap, context.snapshot)
+  handle(channels.bootstrap, () => readCalendar(context.snapshot))
   handle(channels.updateState, () => context.updates.getState())
   handle(channels.updateCheck, () => context.updates.check())
   handle(channels.updateInstall, () => context.updates.install())
-  handle(channels.day, input => tasks.getDay(input))
-  handle(channels.history, input => tasks.getHistoryDates(input))
+  handle(channels.day, input => readCalendar(() => tasks.getDay(input)))
+  handle(channels.history, input => readCalendar(() => tasks.getHistoryDates(input)))
   handle(channels.createOnce, input => afterWrite(() => tasks.createOnce(input)))
   handle(channels.updateOnce, input => afterWrite(() => tasks.updateOnce(input)))
   handle(channels.priority, input => {

@@ -54,12 +54,11 @@ function reportError(error: unknown): void {
 }
 function changed(): void {
   if (shuttingDown) return
-  revision++
+  const event: AppEvent = { sessionId, revision: ++revision, kind: 'data-changed' }
   try {
-    tray?.refresh()
-    const event: AppEvent = { sessionId, revision, kind: 'data-changed' }
     desktop?.broadcast(channels.changed, event)
   } catch (error) { reportError(error) }
+  try { tray?.refresh() } catch (error) { reportError(error) }
 }
 function snapshot(): Snapshot {
   if (!desktop || !connection || !settings || !tasks || !records) throw new Error('应用正在启动，请稍后。')
@@ -126,8 +125,11 @@ if (!app.requestSingleInstanceLock()) {
     }, log)
     const native = notifications
     reminders = new ReminderService(reminderRecords, taskService, async (items, reason) => {
-      log('reminders-claimed', { ids: items.map(item => item.id), count: items.length, reason, windowVisible: window.state.visible })
-      if (preferences.getSettings().reminderSoundEnabled) window.playReminderSound()
+      const windowVisible = !window.window.isDestroyed() && window.window.isVisible()
+      log('reminders-claimed', { ids: items.map(item => item.id), count: items.length, reason, windowVisible })
+      try {
+        if (preferences.getSettings().reminderSoundEnabled) window.playReminderSound()
+      } catch (error) { reportError(error) }
       return native.submit(items, reason)
     }, changed, reportError)
     const scheduler = reminders

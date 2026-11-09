@@ -6,6 +6,7 @@ import { mkdir, readFile, writeFile } from 'node:fs/promises'
 import { resolve, join } from 'node:path'
 import assert from 'node:assert/strict'
 import { runWorkspaceChecks } from './workspace-smoke.mjs'
+import { runFailureIsolationChecks } from './failure-isolation-smoke.mjs'
 
 const require = createRequire(import.meta.url)
 const executableArgument = process.argv.find(value => value.startsWith('--executable='))?.slice('--executable='.length)
@@ -186,19 +187,21 @@ try {
   assert.equal(state.window.panel.visible, false)
   assert.equal(state.activeReminderIds.length, 0)
   report.checks.push('explicit quit exits process; restart restores SQLite data and compact preference without repeating old reminder')
-  const workspaceChecks = await runWorkspaceChecks({ page, pet, snapshot, waitUntil, runDirectory, databaseSQL,
-    withMainClock: async (now, action) => {
-      await application.evaluate((_electron, time) => {
-        globalThis.__m2OriginalNow = Date.now
-        Date.now = () => time
-      }, now)
-      try { await action() } finally {
-        await application.evaluate(() => { Date.now = globalThis.__m2OriginalNow; delete globalThis.__m2OriginalNow })
-        await snapshot(page)
-      }
-    },
+  async function withMainClock(now, action) {
+    await application.evaluate((_electron, time) => {
+      globalThis.smokeOriginalNow = Date.now
+      Date.now = () => time
+    }, now)
+    try { await action() } finally {
+      await application.evaluate(() => { Date.now = globalThis.smokeOriginalNow; delete globalThis.smokeOriginalNow })
+      await snapshot(page)
+    }
+  }
+  const workspaceChecks = await runWorkspaceChecks({ page, pet, snapshot, waitUntil, runDirectory, databaseSQL, withMainClock,
     restart: async () => { await quit(page); ({ page, pet } = await launch()); return { page, pet } } })
   report.checks.push(...workspaceChecks)
+  const failureChecks = await runFailureIsolationChecks({ application, page, pet, snapshot, waitUntil, databaseSQL, withMainClock })
+  report.checks.push(...failureChecks)
   await quit(page)
   assert.deepEqual(report.errors, [])
   report.status = 'passed'
