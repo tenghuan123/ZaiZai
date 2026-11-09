@@ -4,14 +4,18 @@ import { resolve } from 'node:path'
 
 // macOS native tools only convert sizes/formats; the approved artwork stays in the master PNG.
 const destination = resolve('resources/branding')
+const tray = resolve('resources/tray')
 const iconset = resolve('.cache/branding/zaizai.iconset')
 await mkdir(iconset, { recursive: true })
 const normalized = resolve(destination, 'zaizai.png')
-execFileSync('sips', ['-z', '1024', '1024', resolve(destination, 'zaizai-master.png'), '--out', normalized], { stdio: 'ignore' })
+function resize(source, size, output) {
+  execFileSync('sips', ['-z', String(size), String(size), source, '--out', output], { stdio: 'ignore' })
+}
+resize(resolve(destination, 'zaizai-master.png'), 1024, normalized)
 const sizes = new Map()
 for (const size of [16, 24, 32, 48, 64, 128, 256, 512, 1024]) {
   const file = resolve('.cache/branding', `${size}.png`)
-  execFileSync('sips', ['-z', String(size), String(size), normalized, '--out', file], { stdio: 'ignore' })
+  resize(normalized, size, file)
   sizes.set(size, file)
 }
 for (const size of [16, 32, 128, 256, 512]) {
@@ -45,6 +49,7 @@ for (const scale of [1, 2]) {
   const dpi = String(72 * scale)
   const name = scale === 1 ? 'trayTemplate.png' : 'trayTemplate@2x.png'
   execFileSync('sips', ['-s', 'format', 'png', '-z', size, size, '-s', 'dpiWidth', dpi, '-s', 'dpiHeight', dpi,
-    menuBarArtwork, '--out', resolve('resources/tray', name)], { stdio: 'ignore' })
+    menuBarArtwork, '--out', resolve(tray, name)], { stdio: 'ignore' })
 }
-console.log('Generated zaizai app and macOS menu bar icons')
+await copyFile(sizes.get(32), resolve(tray, 'trayColor.png'))
+console.log('Generated zaizai app and tray icons')

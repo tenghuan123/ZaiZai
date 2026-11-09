@@ -21,6 +21,8 @@ import { ReminderService } from './reminders/service'
 import { registerIPC } from './ipc'
 import electronUpdater from 'electron-updater'
 import { UpdateService } from './updates/service'
+import { InstalledRelease } from './updates/installed-release'
+import releaseNotes from '../../docs/releases/latest.md?raw'
 
 app.setName('zaizai')
 app.setAppUserModelId(app.isPackaged ? 'com.desktopbuddy.m0' : 'com.desktopbuddy.m0.dev')
@@ -91,7 +93,9 @@ if (!app.requestSingleInstanceLock()) {
     connection?.close()
   })
   void app.whenReady().then(async () => {
-    const database = new Connection(join(dataPath, 'm0.sqlite3'))
+    const databasePath = join(dataPath, 'm0.sqlite3')
+    const existingInstall = existsSync(databasePath)
+    const database = new Connection(databasePath)
     connection = database
     const preferences = new SettingsRepository(database.db)
     settings = preferences
@@ -141,19 +145,23 @@ if (!app.requestSingleInstanceLock()) {
     const updatesEnabled = app.isPackaged && ['win32', 'darwin'].includes(process.platform)
       && existsSync(join(process.resourcesPath, 'app-update.yml'))
     if (updatesEnabled) nativeUpdater.on('before-quit-for-update', () => window.prepareToQuit())
-    updates = new UpdateService(updatesEnabled ? electronUpdater.autoUpdater : null, app.getVersion(),
+    const currentVersion = app.getVersion()
+    const release = app.isPackaged
+      ? new InstalledRelease(join(dataPath, 'last-seen-version'), currentVersion, releaseNotes.trim(), existingInstall, reportError)
+      : undefined
+    updates = new UpdateService(updatesEnabled ? electronUpdater.autoUpdater : null, currentVersion,
       app.isPackaged ? '此安装包未配置自动更新，请安装支持更新的正式版本。' : '开发模式不检查更新。', state => {
         try {
           window.broadcast(channels.updateChanged, state)
           if (state.status.phase === 'ready' && !window.state.visible && Notification.isSupported()) {
             updateNotification?.close()
             updateNotification = new Notification({ title: 'zaizai 更新已就绪', body: `版本 ${state.status.version} 已下载，点击查看并重启更新。`, silent: true })
-            updateNotification.on('click', () => window.show())
+            updateNotification.on('click', () => window.openPanel({ kind: 'settings' }))
             updateNotification.on('failed', (_event, message) => log('update-notification-failed', { message }))
             updateNotification.show()
           }
         } catch (error) { reportError(error) }
-      }, log)
+      }, log, release)
     const humorContent = loadHumorContent(dataPath, error => {
       log('humor-pack-invalid', { message: error instanceof Error ? error.message : String(error) })
     })
@@ -166,7 +174,7 @@ if (!app.requestSingleInstanceLock()) {
     powerMonitor.on('unlock-screen', () => { window.setSystemIdle(false); void scheduler.checkNow('resume') })
     screen.on('display-removed', () => window.keepOnScreen())
     screen.on('display-metrics-changed', () => window.keepOnScreen())
-    await window.load()
+    await window.load(release?.whatsNew?.pending)
     log('app-ready', { platform: process.platform, arch: process.arch, electron: process.versions.electron, database: database.path })
     void scheduler.checkNow('startup')
     updates.start()

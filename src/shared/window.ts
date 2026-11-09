@@ -6,12 +6,18 @@ export const MAX_SIZE = { width: 520, height: 780 }
 // The pet keeps the same position within this area when the window grows around it.
 export const PET_AREA = { width: 154, height: 138 }
 export const PET_WINDOW_SIZE = { width: 356, height: 184 }
+export const PET_BUTTON = { top: 4, height: 126 }
+export const PANEL_FRAME_INSET = 8
 // Saved presets include the space originally reserved for the pet above the card.
 export const PANEL_HEIGHT_OFFSET = 102
 
 export interface WindowDirection {
   horizontal: 'left' | 'right'
   vertical: 'up' | 'down'
+}
+
+export interface HitRegion {
+  x: number; y: number; width: number; height: number; radius: number
 }
 
 export interface WindowLayout extends WindowDirection {

@@ -10,6 +10,7 @@ const desktop: DesktopAPI = {
   bootstrap: () => invoke(channels.bootstrap),
   updates: {
     getState: () => invoke(channels.updateState), check: () => invoke(channels.updateCheck), install: () => invoke(channels.updateInstall),
+    acknowledgeWhatsNew: () => invoke(channels.updateAcknowledge),
     subscribe: listener => {
       const handler = (_event: Electron.IpcRendererEvent, state: UpdateState): void => listener(state)
       ipcRenderer.on(channels.updateChanged, handler)
@@ -42,6 +43,7 @@ const desktop: DesktopAPI = {
   hide: () => invoke(channels.hide), requestClose: () => invoke(channels.close), quit: () => invoke(channels.quit),
   beginDrag: () => invoke(channels.dragStart), moveDrag: () => invoke(channels.dragMove), endDrag: () => invoke(channels.dragEnd),
   beginResize: () => invoke(channels.resizeStart), endResize: () => invoke(channels.resizeEnd),
+  setHitRegions: regions => ipcRenderer.send(channels.hitRegions, regions),
   previewReminderSound: () => invoke(channels.previewSound), showContextMenu: () => invoke(channels.contextMenu),
   subscribeSound: listener => {
     const handler = (): void => listener()

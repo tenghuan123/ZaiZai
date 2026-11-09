@@ -20,6 +20,7 @@ export function useUpdates() {
     try { const result = await action(); if (!result.ok) setError(result.error.message) }
     catch { setError('更新操作未确认，请稍后重试。') }
   }
-  return { state, error, check: () => run(() => api.check()), install: () => run(() => api.install()) }
+  return { state, error, check: () => run(() => api.check()), install: () => run(() => api.install()),
+    acknowledgeWhatsNew: () => run(() => api.acknowledgeWhatsNew()) }
 }
 export type Updates = ReturnType<typeof useUpdates>

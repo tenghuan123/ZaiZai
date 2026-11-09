@@ -4,15 +4,14 @@ import type { DayItem } from '../../shared/tasks'
 import { selectPetPlayback } from '../../shared/pet'
 import type { PetAction, PetReaction } from '../../shared/pet'
 import type { HumorContent, HumorKind } from '../../shared/humor'
-import { PET_AREA } from '../../shared/window'
+import { PET_AREA, PET_BUTTON } from '../../shared/window'
 import { useWorkspace } from './features/tasks/use-workspace'
 import { PetSprite } from './features/pet/PetSprite'
 import { getPetPack } from './features/pet/pet-pack'
 import { drawHumorLine } from './features/pet/humor'
 import { playReminderBell } from './features/pet/reminder-sound'
-import { useUpdates } from './features/updates/use-updates'
-import { UpdateNotice } from './features/updates/UpdatePanel'
 import { useWindowDrag } from './use-window-drag'
+import { useWindowHitRegions } from './use-window-hit-regions'
 
 const api = window.desktop
 const petQuestions = [
@@ -34,7 +33,7 @@ function countdown(time: string | null, now: number): string {
 }
 export function PetWindow(): React.JSX.Element {
   const { workspace, error, setError, refresh, command } = useWorkspace(null, false)
-  const updates = useUpdates()
+  useWindowHitRegions()
   const snapshot = workspace?.snapshot
   const mode = snapshot?.window.mode
   const compact = mode === 'compact'
@@ -133,7 +132,7 @@ export function PetWindow(): React.JSX.Element {
     } finally { completingRef.current = false; setCompleting(false) }
   }
 
-  if (!snapshot) return <main className="loading">{error || '桌面伙伴正在醒来…'}{error && <button onClick={() => { void refresh() }}>重新读取</button>}</main>
+  if (!snapshot) return <main className="loading">{error || '桌面伙伴正在醒来…'}{error && <button data-window-hit onClick={() => { void refresh() }}>重新读取</button>}</main>
   const { horizontal, vertical, room } = snapshot.window.layout
   const active = snapshot.activeReminderIds.map(id => snapshot.reminders.find(item => item.id === id)).filter(item => !!item)
   const current = active[0]
@@ -151,6 +150,7 @@ export function PetWindow(): React.JSX.Element {
   return <main className={`widget pet-window ${compact ? 'compact' : ''} ${snapshot.window.animationsPaused ? 'paused' : ''}`}
     data-horizontal={horizontal} data-vertical={vertical}
     style={{ '--pet-area-width': `${PET_AREA.width}px`, '--pet-area-height': `${PET_AREA.height}px`,
+      '--pet-button-top': `${PET_BUTTON.top}px`, '--pet-button-height': `${PET_BUTTON.height}px`,
       '--pet-room-x': `${room.width}px`, '--pet-room-y': `${room.height}px` } as CSSProperties}
     onPointerDownCapture={event => {
       if ((event.target as Element).closest('.pet, .bubble, .pet-questions')) return
@@ -159,7 +159,7 @@ export function PetWindow(): React.JSX.Element {
     }}
     onKeyDown={event => { if (event.key === 'Escape') { cancelClick(); setPetBubble(null) } }}>
     <section className="pet-scene">
-      <button className="pet" aria-label="互动桌宠，双击展开或收起" title="单击打开快捷气泡，拖动移动，双击切换清单"
+      <button className="pet" data-window-hit aria-label="互动桌宠，双击展开或收起" title="单击打开快捷气泡，拖动移动，双击切换清单"
         aria-expanded={bubble?.type === 'quick'}
         onContextMenu={event => { event.preventDefault(); void command(() => api.showContextMenu()) }}
         {...drag.handlers}
@@ -169,17 +169,17 @@ export function PetWindow(): React.JSX.Element {
           setPetReaction(reaction => reaction && `reaction:${reaction.id}` === key ? null : reaction)
         }} />
       </button>
-      {current ? <div className="bubble reminder-bubble" aria-live="polite">
+      {current ? <div className="bubble reminder-bubble" data-window-hit aria-live="polite">
         <button className="bubble-dismiss" aria-label="收起这次提醒" onClick={() => { void command(() => api.acknowledgeReminder(current.id)) }}>×</button>
         <strong>{current.title}</strong>{active.length > 1 && <small>还有 {active.length - 1} 项到点事项</small>}
         {['failed', 'unavailable'].includes(current.dispatchState) && <small className="notification-error">系统通知未提交，可在这里处理</small>}
         <div className="bubble-actions"><button className="primary" disabled={!currentItem || completing} onClick={() => { if (currentItem) void completeReminder(currentItem) }}>完成了</button>
           <button onClick={() => { void command(() => api.openPanel({ kind: 'reminder', reminderId: current.id })) }}>查看清单</button></div>
       </div> : bubble?.type === 'quick' ? <div className="pet-questions" role="group" aria-label="桌宠快捷气泡">
-        {petQuestions.map(({ type, icon, label }) => <button key={type} type="button" disabled={type === 'joke' && !humorContent} onClick={() => answerPetQuestion(type)}>
+        {petQuestions.map(({ type, icon, label }) => <button key={type} type="button" data-window-hit disabled={type === 'joke' && !humorContent} onClick={() => answerPetQuestion(type)}>
           <span aria-hidden="true">{icon}</span>{label}
         </button>)}
-      </div> : bubble && <div className="bubble answer-bubble" aria-live={bubble.type === 'offwork' ? 'off' : 'polite'}>
+      </div> : bubble && <div className="bubble answer-bubble" data-window-hit aria-live={bubble.type === 'offwork' ? 'off' : 'polite'}>
         <button className="bubble-dismiss" aria-label="收起回答" onClick={() => setPetBubble(null)}>×</button>
         {bubble.type === 'offwork' && !snapshot.settings.offworkTime
           ? <button className="bubble-label" onClick={() => { setPetBubble(null); void command(() => api.openPanel({ kind: 'settings' })) }}>{answer}</button>
@@ -190,10 +190,9 @@ export function PetWindow(): React.JSX.Element {
         </div>}
       </div>}
     </section>
-    <button className="mini-dock" aria-label="展开清单" aria-hidden={!compact} inert={!compact} onClick={() => { void command(() => api.setMode('expanded')) }}>
+    <button className="mini-dock" data-window-hit aria-label="展开清单" aria-hidden={!compact} inert={!compact} onClick={() => { void command(() => api.setMode('expanded')) }}>
       <span className="status-dot" /> 今天 {snapshot.today.progress.completed}/{snapshot.today.progress.total}<span>展开清单 ▾</span>
     </button>
-    <UpdateNotice visible={compact} updates={updates} onDetails={() => { void command(() => api.openPanel({ kind: 'settings' })) }} />
-    {error && <div className="error-toast" role="alert">{error}<button aria-label="关闭错误提示" onClick={() => setError('')}>×</button></div>}
+    {error && <div className="error-toast" role="alert">{error}<button data-window-hit aria-label="关闭错误提示" onClick={() => setError('')}>×</button></div>}
   </main>
 }

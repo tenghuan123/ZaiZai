@@ -14,6 +14,14 @@ import type { UpdateService } from './updates/service'
 import { PET_ACTIONS } from '../shared/pet'
 import type { PetAction } from '../shared/pet'
 import type { HumorContent } from '../shared/humor'
+import type { HitRegion } from '../shared/window'
+
+function isHitRegion(value: unknown): value is HitRegion {
+  if (!value || typeof value !== 'object') return false
+  const { x, y, width, height, radius } = value as HitRegion
+  return [x, y, width, height, radius].every(number => Number.isFinite(number) && Math.abs(number) <= 4096)
+    && width > 0 && height > 0 && radius >= 0
+}
 
 interface Context {
   desktop: DesktopWindow; tasks: TaskService; settings: SettingsService; reminders: ReminderService
@@ -64,8 +72,19 @@ export function registerIPC(context: Context): void {
   handle(channels.updateState, () => context.updates.getState())
   handle(channels.updateCheck, () => context.updates.check())
   handle(channels.updateInstall, () => context.updates.install())
+  handle(channels.updateAcknowledge, (_input, event) => {
+    if (event.sender !== desktop.panel.webContents) throw new AppError('UNAVAILABLE', '请在清单中确认新功能。')
+    context.updates.acknowledgeWhatsNew()
+    desktop.finishWhatsNew()
+  })
+  ipcMain.on(channels.hitRegions, (event, input: unknown) => {
+    const frame = event.senderFrame
+    if (!frame || frame !== event.sender.mainFrame || !desktop.isTrustedRenderer(event.sender, frame.url)) return
+    if (!Array.isArray(input) || input.length > 16 || !input.every(isHitRegion)) return
+    sideEffect(() => desktop.setHitRegions(event.sender, input))
+  })
   handle(channels.day, input => readCalendar(() => tasks.getDay(input)))
-  handle(channels.dailyReport, () => readCalendar(() => tasks.getDailyReport()))
+  handle(channels.dailyReport, () => tasks.getDailyReport())
   handle(channels.history, input => readCalendar(() => tasks.getHistoryDates(input)))
   handle(channels.createOnce, input => afterWrite(() => tasks.createOnce(input)))
   handle(channels.updateOnce, input => afterWrite(() => tasks.updateOnce(input)))

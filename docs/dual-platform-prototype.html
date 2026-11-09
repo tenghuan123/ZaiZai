@@ -101,31 +101,88 @@
     .anim-note-float { animation: noteFloat 1.2s ease-out infinite; }
     .task-highlight { animation: highlightTask 1.8s ease-in-out 2; }
 
-    /* Collapsible Main Task Card (Hide/Expand Menu) */
-    .main-card-collapsible {
-      max-height: 760px;
-      opacity: 1;
-      transform: translateY(0) scale(1);
-      transform-origin: top left;
-      transition:
-        max-height 0.34s cubic-bezier(0.22, 1, 0.36, 1),
-        opacity 0.26s ease,
-        transform 0.32s cubic-bezier(0.22, 1, 0.36, 1),
-        padding 0.3s ease,
-        margin 0.3s ease,
-        border-width 0.3s ease;
+    #desktop-widget { pointer-events: none; }
+    #desktop-widget [data-hit-region] { pointer-events: auto; }
+    #desktop-widget.pointer-events-none [data-hit-region] { pointer-events: none; }
+    #desktop-widget.show-hit-regions [data-hit-region]:not(.is-menu-hidden) {
+      outline: 1px dashed #4786a6;
+      outline-offset: 3px;
     }
-    .main-card-collapsible.is-menu-hidden {
-      max-height: 0px !important;
-      opacity: 0 !important;
-      transform: translateY(-16px) scale(0.92) !important;
-      padding-top: 0px !important;
-      padding-bottom: 0px !important;
-      margin-top: 0px !important;
-      border-width: 0px !important;
-      overflow: hidden !important;
+
+    .list-heading { display: flex; align-items: center; justify-content: space-between; gap: 8px; padding: 0 4px 4px; color: #64748b; font-size: 12px; }
+    .list-heading > span { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+    .list-heading > button { flex-shrink: 0; padding: 4px 12px; border-radius: 999px; background: #6f9bb6; color: white; font-size: 11px; font-weight: 500; white-space: nowrap; cursor: pointer; }
+    .list-heading > button:hover { opacity: .9; }
+
+    #main-task-card {
+      position: absolute;
+      display: flex;
+      flex-direction: column;
+      width: 356px;
+      left: var(--panel-x, 0px);
+      top: var(--panel-y, 112px);
+      max-height: var(--panel-room, none);
+      opacity: 1;
+      transform-origin: var(--panel-origin, top left);
+      transition: opacity .26s ease, transform .32s cubic-bezier(.22, 1, .36, 1);
+    }
+    #main-task-card > :not(#task-list-container) { flex-shrink: 0; }
+    #main-task-card #task-list-container { min-height: 0; }
+    #main-task-card.is-menu-hidden {
+      opacity: 0;
+      transform: translateY(var(--panel-fold-y, -16px)) scale(.92);
       pointer-events: none !important;
     }
+    #desktop-widget[data-panel-vertical="up"] #main-task-card {
+      top: auto;
+      bottom: var(--panel-y);
+    }
+
+    #quick-bubbles-container, #speech-bubble-wrapper, #pet-context-menu {
+      left: var(--bubble-x);
+      right: auto;
+      max-width: var(--bubble-room);
+    }
+    #quick-bubbles-container, #speech-bubble-wrapper { width: max-content; }
+    #desktop-widget[data-bubble-side="left"] :is(#quick-bubbles-container, #speech-bubble-wrapper, #pet-context-menu) {
+      left: auto;
+      right: var(--bubble-x);
+    }
+    #desktop-widget[data-bubble-side="left"] #pet-mini-dock {
+      left: auto;
+      right: var(--dock-right);
+    }
+    #desktop-widget[data-bubble-side="left"] #quick-bubbles-container { align-items: flex-end; }
+    #quick-bubbles-container button {
+      max-width: 100%;
+      white-space: normal;
+    }
+    #quick-bubbles-container button > span:first-child { flex-shrink: 0; }
+    #pet-bubble {
+      width: max-content;
+      max-width: var(--bubble-room);
+      overflow-wrap: anywhere;
+    }
+
+    /* 3 Quick Bubbles Popping Animation (Right & Left) */
+    @keyframes bubblePopRight {
+      0% { opacity: 0; transform: scale(0.15) translate(-36px, 0); }
+      65% { opacity: 1; transform: scale(1.12) translate(4px, 0); }
+      85% { transform: scale(0.96) translate(-1px, 0); }
+      100% { opacity: 1; transform: scale(1) translate(0, 0); }
+    }
+    @keyframes bubblePopLeft {
+      0% { opacity: 0; transform: scale(0.15) translate(36px, 0); }
+      65% { opacity: 1; transform: scale(1.12) translate(-4px, 0); }
+      85% { transform: scale(0.96) translate(1px, 0); }
+      100% { opacity: 1; transform: scale(1) translate(0, 0); }
+    }
+    .bubble-pop-r-1 { animation: bubblePopRight 0.34s 0ms cubic-bezier(0.34, 1.56, 0.64, 1) both; }
+    .bubble-pop-r-2 { animation: bubblePopRight 0.34s 70ms cubic-bezier(0.34, 1.56, 0.64, 1) both; }
+    .bubble-pop-r-3 { animation: bubblePopRight 0.34s 140ms cubic-bezier(0.34, 1.56, 0.64, 1) both; }
+    .bubble-pop-l-1 { animation: bubblePopLeft 0.34s 0ms cubic-bezier(0.34, 1.56, 0.64, 1) both; }
+    .bubble-pop-l-2 { animation: bubblePopLeft 0.34s 70ms cubic-bezier(0.34, 1.56, 0.64, 1) both; }
+    .bubble-pop-l-3 { animation: bubblePopLeft 0.34s 140ms cubic-bezier(0.34, 1.56, 0.64, 1) both; }
     .check-pop { animation: checkPop 0.36s cubic-bezier(0.34, 1.56, 0.64, 1) forwards; }
     .check-stroke {
       stroke-dasharray: 24;
@@ -157,7 +214,6 @@
 
     /* Smooth row exit transition without triggering horizontal overflow */
     .task-row-item {
-      max-height: 64px;
       opacity: 1;
       overflow: hidden;
       transform: translateY(0) scale(1);
@@ -232,7 +288,18 @@
 
     <!-- Quick Acceptance Scenario Bar -->
     <div class="mt-3 pt-3 border-t border-[var(--border)] flex flex-wrap items-center gap-2">
-      <span class="text-xs font-semibold text-[var(--foreground)]">🌟 新增反馈演练：</span>
+      <span class="text-xs font-semibold text-sky-600">✨ v4.1 最新演练：</span>
+      <button onclick="toggleQuickBubbles()" class="px-2.5 py-1 rounded-md text-xs bg-sky-600 text-white hover:bg-sky-500 transition font-semibold shadow-2xs">
+        🫧 点击弹出三个小气泡 (A21)
+      </button>
+      <button onclick="demoQuadrantTopLeft()" class="px-2.5 py-1 rounded-md text-xs bg-rose-600 text-white hover:bg-rose-500 transition font-semibold shadow-2xs" title="模拟小人在右下角时，菜单向左上方弹出">
+        ↖ 演练右下角向左上方展开 (A22)
+      </button>
+      <button onclick="demoSampleJokeBubble()" class="px-2.5 py-1 rounded-md text-xs bg-amber-600 text-white hover:bg-amber-500 transition font-medium shadow-2xs">
+        😂 讲个笑话 (自适应文本)
+      </button>
+      <span class="text-slate-300">|</span>
+      <span class="text-xs font-semibold text-[var(--foreground)]">🌟 常规演练：</span>
       <button onclick="simulateBellReminderWithSound()" class="px-2.5 py-1 rounded-md text-xs bg-amber-500 text-white hover:bg-amber-600 transition font-medium shadow-2xs">
         🔔 模拟「摇铃有声提醒」 (A19)
       </button>
@@ -268,7 +335,7 @@
   <div class="max-w-6xl mx-auto grid grid-cols-1 lg:grid-cols-12 gap-4">
 
     <!-- Simulated OS Desktop Canvas (8 cols) -->
-    <div id="desktop-canvas" class="lg:col-span-8 relative rounded-2xl overflow-hidden border border-[var(--border)] shadow-lg" style="min-height: 740px; background: linear-gradient(145deg, #d4eaef 0%, #c3e0e8 50%, #bad8e3 100%);">
+    <div id="desktop-canvas" class="lg:col-span-8 relative rounded-2xl overflow-clip border border-[var(--border)] shadow-lg" style="height: 740px; background: linear-gradient(145deg, #d4eaef 0%, #c3e0e8 50%, #bad8e3 100%);">
 
       <!-- Simulated Desktop Icons (Bottom-left wallpaper layer, z-0) -->
       <div class="absolute left-5 top-12 z-0 flex flex-col gap-4 select-none pointer-events-none opacity-85">
@@ -341,7 +408,7 @@
           </button>
           <!-- App Menu Bar Icon -->
           <button onclick="toggleSystemMenu()" class="flex items-center gap-1 px-2 py-0.5 rounded bg-sky-600/15 text-sky-900 font-medium hover:bg-sky-600/25 transition" title="点击展开 macOS 菜单栏入口">
-            <span>🐱</span>
+            <img src="../resources/tray/trayTemplate.png" srcset="../resources/tray/trayTemplate@2x.png 2x" alt="" class="h-[18px] w-[18px] opacity-85">
             <span id="menubar-progress-text">1/6</span>
           </button>
           <span>🔋 92%</span>
@@ -419,17 +486,7 @@
       <!-- ========================================================= -->
       <!-- THE TRANSPARENT DESKTOP WIDGET (Resizable container)      -->
       <!-- ========================================================= -->
-      <div id="desktop-widget" class="relative mx-auto my-5 w-[356px] z-30 transition-[opacity,transform] duration-200">
-
-        <!-- Live Resize Dimensions Pill (Shown while dragging resize handle or hovering) -->
-        <div id="resize-dimensions-badge" class="hidden absolute -top-6 right-1 z-40 px-2.5 py-0.5 rounded-full bg-slate-900/85 text-white text-[11px] font-medium shadow-md whitespace-nowrap">
-          📐 窗口尺寸：356 × 560 px (已自动记忆)
-        </div>
-
-        <!-- Transparent Bounds Indicator (Toggleable for Dev Inspection) -->
-        <div id="wireframe-box" class="hidden absolute -inset-2 border border-dashed border-sky-700/50 rounded-3xl pointer-events-none z-30">
-          <span id="wireframe-label" class="absolute -top-5 left-2 text-xs text-sky-900 bg-sky-100/90 px-1.5 rounded">透明无边框窗口边界 (356 × 560 px)</span>
-        </div>
+      <div id="desktop-widget" class="relative mx-auto my-5 w-[min(356px,100%)] z-30 transition-[opacity,transform] duration-200">
 
         <!-- 1. TOP PET & SPEECH BUBBLE LAYER (Overlapping top of white card) -->
         <div class="relative h-[112px] select-none z-20">
@@ -437,8 +494,9 @@
           <!-- Interactive Pet Character (Top-Left: Supports 60fps Dragging + Click Interaction + Double-Click Menu Toggle) -->
           <div
             id="pet-container"
+            data-hit-region
             onpointerdown="startWidgetDrag(event, 'pet')"
-            ondblclick="event.stopPropagation(); toggleTaskMenuCard()"
+            ondblclick="event.stopPropagation(); clearTimeout(petClickTimer); toggleTaskMenuCard()"
             oncontextmenu="openPetContextMenu(event)"
             class="absolute left-3 -bottom-5 w-[132px] h-[126px] cursor-grab active:cursor-grabbing group touch-none"
             title="按住可自由拖动宠物与窗口 · 单击互动 · 双击收起/展开菜单 · 右键快捷菜单"
@@ -551,7 +609,7 @@
           </div>
 
           <!-- Pet Right-Click Context Menu (For quick hide/expand menu & actions) -->
-          <div id="pet-context-menu" class="hidden absolute left-28 top-2 z-50 w-48 rounded-2xl bg-white/95 backdrop-blur-md shadow-xl border border-slate-200/90 p-1.5 text-xs text-slate-700">
+          <div id="pet-context-menu" data-hit-region class="hidden absolute top-2 z-50 w-48 rounded-2xl bg-white/95 backdrop-blur-md shadow-xl border border-slate-200/90 p-1.5 text-xs text-slate-700">
             <button onclick="toggleTaskMenuCard(); closePetContextMenu()" class="w-full text-left px-2.5 py-1.5 rounded-xl hover:bg-sky-50 hover:text-sky-700 flex items-center justify-between font-medium">
               <span id="ctx-menu-toggle-label">🔼 隐藏下方菜单</span>
               <span class="text-slate-400">双击</span>
@@ -579,21 +637,55 @@
           </div>
 
           <!-- Pet-Only Mode Floating Mini Dock (Positioned directly below the pet with a clean 16px gap, never covering its feet!) -->
-          <div id="pet-mini-dock" class="hidden absolute left-2 -bottom-14 z-30 flex items-center gap-1.5 bg-white/95 hover:bg-white backdrop-blur-md px-3.5 py-1.5 rounded-full shadow-md border border-white/90 transition-all cursor-pointer whitespace-nowrap" onclick="toggleTaskMenuCard()">
+          <div id="pet-mini-dock" data-hit-region class="hidden absolute left-2 -bottom-14 z-30 flex items-center gap-1.5 bg-white/95 hover:bg-white backdrop-blur-md px-3.5 py-1.5 rounded-full shadow-md border border-white/90 transition-all cursor-pointer whitespace-nowrap" onclick="toggleTaskMenuCard()">
             <span class="w-2 h-2 rounded-full bg-emerald-400 shrink-0"></span>
             <span id="mini-dock-progress" class="text-xs font-semibold text-slate-700">待办 1/6</span>
             <span class="text-slate-300">|</span>
             <span class="text-xs font-medium text-sky-700 flex items-center gap-0.5">展开菜单 ▾</span>
           </div>
 
+          <!-- 3 Quick Prompts Bubbles (A21: Popping on click pet, Left/Right Adaptive) -->
+          <div id="quick-bubbles-container" class="hidden absolute top-1 z-40 flex flex-col gap-2 items-start">
+            <button id="bubble-item-1" data-hit-region onclick="event.stopPropagation(); handleBubbleItemClick('offwork')"
+                    class="group flex items-center gap-2 px-3.5 py-1.5 rounded-full bg-white/95 hover:bg-white text-slate-700 shadow-lg border border-sky-100 hover:border-sky-300 hover:scale-105 active:scale-95 transition cursor-pointer whitespace-nowrap bubble-pop-r-1">
+              <span class="w-5 h-5 rounded-full bg-sky-100 group-hover:bg-sky-200 flex items-center justify-center text-[11px]">⏰</span>
+              <span class="text-xs font-medium">离下班还有多久？</span>
+            </button>
+            <button id="bubble-item-2" data-hit-region onclick="event.stopPropagation(); handleBubbleItemClick('joke')"
+                    class="group flex items-center gap-2 px-3.5 py-1.5 rounded-full bg-white/95 hover:bg-white text-slate-700 shadow-lg border border-amber-100 hover:border-amber-300 hover:scale-105 active:scale-95 transition cursor-pointer whitespace-nowrap bubble-pop-r-2">
+              <span class="w-5 h-5 rounded-full bg-amber-100 group-hover:bg-amber-200 flex items-center justify-center text-[11px]">😂</span>
+              <span class="text-xs font-medium">讲一个笑话</span>
+            </button>
+            <button id="bubble-item-3" data-hit-region onclick="event.stopPropagation(); handleBubbleItemClick('progress')"
+                    class="group flex items-center gap-2 px-3.5 py-1.5 rounded-full bg-white/95 hover:bg-white text-slate-700 shadow-lg border border-emerald-100 hover:border-emerald-300 hover:scale-105 active:scale-95 transition cursor-pointer whitespace-nowrap bubble-pop-r-3">
+              <span class="w-5 h-5 rounded-full bg-emerald-100 group-hover:bg-emerald-200 flex items-center justify-center text-[11px]">📊</span>
+              <span class="text-xs font-medium">今日任务进度</span>
+            </button>
+          </div>
+
           <!-- Right Speech Bubble (Off-work Countdown / Pet-Voiced Reminder / Pet Feedback) -->
-          <div class="absolute right-1 top-3 z-30 flex flex-col items-end">
-            <div id="pet-bubble" onclick="handleBubbleClick()" class="relative bg-white/95 rounded-2xl px-3.5 py-2.5 shadow-md border border-white/90 cursor-pointer transition-all hover:scale-[1.01]" style="min-width: 188px; max-width: 224px;">
+          <div id="speech-bubble-wrapper" class="hidden absolute top-3 z-30 flex flex-col items-end">
+            <div id="pet-bubble" data-hit-region onclick="handleBubbleClick()" class="relative bg-white/95 rounded-2xl px-3.5 py-2.5 shadow-md border border-white/90 cursor-pointer transition-all">
               <!-- Left pointer triangle -->
-              <div class="absolute -left-2 top-5 w-0 h-0 border-t-[6px] border-t-transparent border-r-[8px] border-r-white/95 border-b-[6px] border-b-transparent"></div>
-              <div id="bubble-text" class="text-xs font-medium text-slate-700 text-center tracking-wide leading-relaxed">
+              <div id="bubble-triangle-left" class="absolute -left-2 top-5 w-0 h-0 border-t-[6px] border-t-transparent border-r-[8px] border-r-white/95 border-b-[6px] border-b-transparent"></div>
+              <!-- Right pointer triangle (for left-popping) -->
+              <div id="bubble-triangle-right" class="hidden absolute -right-2 top-5 w-0 h-0 border-t-[6px] border-t-transparent border-l-[8px] border-l-white/95 border-b-[6px] border-b-transparent"></div>
+
+              <div class="flex items-center justify-between gap-2 border-b border-slate-100 pb-1 mb-1">
+                <span id="bubble-title-tag" class="text-[10px] text-sky-600 font-medium">✨ 互动助手</span>
+                <button onclick="event.stopPropagation(); hidePetBubbleDirectly()" class="text-slate-300 hover:text-slate-500 text-[11px] font-bold px-1" title="关闭气泡">✕</button>
+              </div>
+
+              <div id="bubble-text" class="text-xs font-medium text-slate-700 tracking-wide leading-relaxed break-words">
                 离下班还有 <span id="countdown-timer" class="font-semibold text-slate-800">06:16:28</span>
               </div>
+
+              <!-- Joke Next Button -->
+              <div id="bubble-joke-footer" class="hidden mt-1.5 pt-1 border-t border-slate-100 flex items-center justify-between text-[10px] text-slate-400">
+                <span>趣味笑话</span>
+                <button onclick="event.stopPropagation(); handleBubbleItemClick('joke')" class="text-sky-600 hover:text-sky-700 font-semibold cursor-pointer">再讲一个 ↻</button>
+              </div>
+
               <!-- Inline Reminder Action Buttons inside Bubble (Shown during Pet-Voiced Reminder) -->
               <div id="bubble-actions" class="hidden mt-2 pt-1.5 border-t border-slate-100 flex items-center justify-center gap-1.5">
                 <button onclick="event.stopPropagation(); completeActiveReminderFromBubble()" class="px-2.5 py-1 rounded-lg bg-[#6f9bb6] text-white text-xs font-medium hover:opacity-90 transition whitespace-nowrap">
@@ -611,7 +703,11 @@
         </div>
 
         <!-- 2. MAIN WHITE ROUNDED WIDGET CARD (Collapsible & Resizable) -->
-        <div id="main-task-card" class="main-card-collapsible relative rounded-[28px] p-5 pt-4 shadow-xl border border-white/90" style="background-color: #f4f6f9;">
+        <div id="main-task-card" data-hit-region class="rounded-[28px] p-5 pt-4 shadow-xl border border-white/90" style="background-color: #f4f6f9;">
+
+          <div id="resize-dimensions-badge" class="hidden pointer-events-none absolute bottom-2 left-1/2 -translate-x-1/2 z-40 rounded-full bg-slate-900/85 px-2.5 py-0.5 text-[11px] font-medium text-white shadow-md whitespace-nowrap">
+            📐 窗口尺寸：356 × 480 px
+          </div>
 
           <!-- Notification Disabled Warning Strip (A14, hidden by default) -->
           <div id="notif-disabled-strip" class="hidden mb-2.5 px-3 py-1.5 rounded-xl bg-amber-50 border border-amber-200/80 flex items-center justify-between text-xs text-amber-800">
@@ -649,8 +745,9 @@
                 <button onclick="openModal('pets')" class="w-6 h-6 rounded-full bg-slate-200/70 hover:bg-slate-300/75 flex items-center justify-center text-xs text-slate-600 transition cursor-pointer focus:outline-none" title="宠物资源库与配置">
                   🐾
                 </button>
-                <button onclick="openModal('settings')" class="w-6 h-6 rounded-full bg-slate-200/70 hover:bg-slate-300/75 flex items-center justify-center text-xs text-slate-600 transition cursor-pointer focus:outline-none" title="组件偏好设置">
-                  ⚙
+                <button id="btn-header-settings" type="button" onclick="openModal('settings')" class="relative w-6 h-6 rounded-full bg-slate-200/70 hover:bg-slate-300/75 flex items-center justify-center text-xs text-slate-600 transition cursor-pointer" title="组件偏好设置" aria-label="组件偏好设置">
+                  <span aria-hidden="true">⚙</span>
+                  <span id="software-update-badge" aria-hidden="true" class="hidden absolute -right-0.5 -top-0.5 h-2 w-2 rounded-full bg-[#df746e] ring-1 ring-[#f4f6f9]"></span>
                 </button>
               </div>
             </div>
@@ -738,13 +835,13 @@
             </button>
           </div>
 
-          <!-- Bottom-Right Custom Resize Handle (Subtle corner grip, never overlapping the + button) -->
+          <!-- Keep the resize grip at the bottom right in every placement. -->
           <div
             id="widget-resize-handle"
             onpointerdown="startWidgetResize(event)"
             ondblclick="event.stopPropagation(); toggleWidgetPresetSize()"
-            class="absolute bottom-1 right-1.5 w-5 h-5 flex items-end justify-end p-0.5 cursor-nwse-resize text-slate-400/60 hover:text-[#6f9bb6] transition select-none touch-none"
-            title="按住右下角拖拽可自由拉大框框 · 双击切换大尺寸/标准尺寸"
+            class="absolute bottom-1 right-1.5 w-5 h-5 flex items-end justify-end p-0.5 cursor-nwse-resize text-slate-500/80 hover:text-[#426e88] transition select-none touch-none"
+            title="拖拽右下角可调整清单尺寸 · 双击切换大尺寸和标准尺寸"
           >
             <svg viewBox="0 0 12 12" class="w-3 h-3 stroke-current" stroke-width="1.8" stroke-linecap="round">
               <line x1="10" y1="4" x2="4" y2="10"></line>
@@ -800,6 +897,15 @@
             <div>
               <label class="block text-slate-600 mb-1 font-medium">任务 / 计划名称</label>
               <input id="editor-title" type="text" placeholder="例如：提交周报 / 信用卡还款 / 起身运动" class="w-full px-3 py-1.5 rounded-lg border border-slate-200 focus:outline-none focus:border-sky-500"/>
+            </div>
+
+            <div class="flex items-center justify-between gap-2">
+              <label for="editor-category" class="font-medium text-slate-600">分类 <span class="font-normal text-slate-500">（可选）</span></label>
+              <select id="editor-category" class="min-w-[110px] rounded-lg border border-slate-200 bg-white px-2.5 py-1.5 text-slate-700">
+                <option value="">未分类</option>
+                <option value="work">工作</option>
+                <option value="life">生活</option>
+              </select>
             </div>
 
             <!-- Priority Selector -->
@@ -919,6 +1025,19 @@
           </div>
 
           <div class="space-y-2.5 text-xs">
+            <section class="rounded-2xl border border-slate-200/70 bg-slate-50/90 p-3" aria-labelledby="settings-update-title">
+              <div class="flex items-center justify-between gap-2">
+                <div>
+                  <h4 id="settings-update-title" class="font-semibold text-slate-800">软件更新</h4>
+                  <p class="mt-0.5 text-[11px] text-slate-500">当前版本 <span id="settings-app-version"></span></p>
+                </div>
+                <button type="button" id="software-update-action" onclick="advanceSoftwareUpdate()" class="hidden shrink-0 rounded-lg bg-[#426e88] px-3 py-1.5 font-semibold text-white hover:bg-[#355c74]"></button>
+                <button type="button" id="settings-whats-new" onclick="showWhatsNew()" class="hidden shrink-0 rounded-lg bg-sky-100 px-2.5 py-1.5 font-medium text-sky-900 hover:bg-sky-200">本版本新功能</button>
+              </div>
+              <p id="software-update-status" role="status" class="mt-2 text-[11px] text-slate-600"></p>
+              <progress id="software-update-progress" aria-label="更新下载进度" max="100" value="0" class="hidden mt-1.5 h-1.5 w-full overflow-hidden rounded-full accent-[#426e88]"></progress>
+            </section>
+
             <!-- Group 1: Startup & Bell Sound -->
             <div class="p-3 rounded-2xl bg-slate-50/90 border border-slate-200/70 space-y-2.5">
               <label class="flex items-center justify-between gap-3 cursor-pointer">
@@ -975,7 +1094,7 @@
                   </div>
                 </div>
                 <div id="setting-size-label" class="text-[11px] text-slate-400 mt-1">
-                  当前：356 × 480 px（也可直接按住主面板右下角 ↘ 自由拖拽缩放）
+                  当前：356 × 480 px（也可拖动清单右下角调整尺寸）
                 </div>
               </div>
             </div>
@@ -997,8 +1116,8 @@
             </div>
 
             <label class="flex items-center justify-between px-1 py-0.5 cursor-pointer">
-              <span class="text-slate-600 font-medium">显示透明窗口边界辅助线（开发视图）</span>
-              <input type="checkbox" onchange="document.getElementById('wireframe-box').classList.toggle('hidden', !this.checked)" class="rounded text-sky-600 w-4 h-4 shrink-0 cursor-pointer"/>
+              <span class="text-slate-600 font-medium">显示可交互区域（开发视图）</span>
+              <input type="checkbox" onchange="document.getElementById('desktop-widget').classList.toggle('show-hit-regions', this.checked)" class="rounded text-sky-600 w-4 h-4 shrink-0 cursor-pointer"/>
             </label>
           </div>
 
@@ -1092,6 +1211,66 @@
 
       </div>
 
+      <dialog id="version-whats-new" aria-labelledby="whats-new-title" class="m-auto w-[min(356px,calc(100%-2rem))] max-h-[calc(100%-2rem)] overflow-y-auto rounded-3xl bg-white p-0 text-slate-800 shadow-2xl backdrop:bg-slate-900/35">
+        <header class="border-b border-sky-100 bg-sky-50 px-5 py-4">
+          <p id="whats-new-version" class="mb-1.5 text-xs font-semibold text-sky-800"></p>
+          <h3 id="whats-new-title" class="text-lg font-semibold text-slate-900">本版本新功能</h3>
+        </header>
+        <ul class="space-y-3 px-5 py-4">
+          <li class="flex items-start gap-3">
+            <span aria-hidden="true" class="flex h-8 w-8 shrink-0 items-center justify-center rounded-xl bg-sky-50">💬</span>
+            <div>
+              <h4 class="text-sm font-semibold">桌宠快捷气泡</h4>
+              <p class="mt-0.5 text-xs leading-relaxed text-slate-600">单击仔仔，看下班倒计时、查今日进度，或听个笑话。</p>
+            </div>
+          </li>
+          <li class="flex items-start gap-3">
+            <span aria-hidden="true" class="flex h-8 w-8 shrink-0 items-center justify-center rounded-xl bg-sky-50">↗</span>
+            <div>
+              <h4 class="text-sm font-semibold">清单贴着桌宠展开</h4>
+              <p class="mt-0.5 text-xs leading-relaxed text-slate-600">双击仔仔试试。清单会朝有空间的一侧展开，仔仔会留在原位。</p>
+            </div>
+          </li>
+          <li class="flex items-start gap-3">
+            <span aria-hidden="true" class="flex h-8 w-8 shrink-0 items-center justify-center rounded-xl bg-sky-50">✋</span>
+            <div>
+              <h4 class="text-sm font-semibold">拖动松手即停</h4>
+              <p class="mt-0.5 text-xs leading-relaxed text-slate-600">把仔仔拖到喜欢的位置，松开鼠标就结束拖动。</p>
+            </div>
+          </li>
+        </ul>
+        <form method="dialog" class="flex justify-end border-t border-slate-100 px-5 py-3">
+          <button autofocus class="rounded-xl bg-[#426e88] px-4 py-2 text-xs font-semibold text-white hover:bg-[#355c74]">知道了</button>
+        </form>
+      </dialog>
+
+      <dialog id="daily-report" aria-labelledby="report-title" class="m-auto w-[min(400px,calc(100%-2rem))] max-h-[calc(100%-2rem)] overflow-y-auto rounded-2xl bg-white p-5 text-slate-800 shadow-2xl backdrop:bg-slate-900/35">
+        <header class="mb-4 flex items-start justify-between gap-3">
+          <div>
+            <h3 id="report-title" class="text-base font-semibold">今日日报</h3>
+            <p id="report-date" class="mt-0.5 text-xs text-slate-500"></p>
+          </div>
+          <button type="button" aria-label="关闭日报" onclick="this.closest('dialog').close()" class="h-7 w-7 shrink-0 rounded-full bg-slate-100 text-xs text-slate-600 hover:bg-slate-200">✕</button>
+        </header>
+        <section id="report-selection">
+          <p class="mb-3 text-xs text-slate-600">选择要写进日报的事项。工作任务已为你勾选。</p>
+          <div id="report-groups" class="widget-scroll max-h-64 space-y-3 overflow-y-auto pr-1" onchange="updateReportSelection()"></div>
+          <footer class="mt-4 flex items-center justify-between gap-2 border-t border-slate-100 pt-3">
+            <span id="report-count" aria-live="polite" class="text-xs text-slate-600"></span>
+            <button type="button" id="report-generate" onclick="generateReportDraft()" class="rounded-xl bg-[#426e88] px-4 py-2 text-xs font-semibold text-white hover:bg-[#355c74] disabled:cursor-not-allowed disabled:opacity-50">生成草稿</button>
+          </footer>
+        </section>
+        <section id="report-draft" class="hidden">
+          <label for="report-text" class="mb-2 block text-xs font-medium text-slate-600">日报草稿 <span class="font-normal">· 可修改或补充</span></label>
+          <textarea id="report-text" rows="7" oninput="updateReportCopy()" class="block w-full resize-y rounded-xl border border-slate-200 bg-slate-50 p-3 text-sm leading-relaxed text-slate-800 focus:border-sky-600"></textarea>
+          <p id="report-copy-status" role="status" class="mt-1.5 min-h-[1rem] text-xs text-slate-600"></p>
+          <footer class="mt-3 flex items-center justify-between gap-2 border-t border-slate-100 pt-3">
+            <button type="button" onclick="showReportSelection()" class="rounded-xl bg-slate-100 px-3 py-2 text-xs font-medium text-slate-700 hover:bg-slate-200">返回选择</button>
+            <button type="button" id="report-copy" onclick="copyReportDraft()" class="rounded-xl bg-[#426e88] px-4 py-2 text-xs font-semibold text-white hover:bg-[#355c74] disabled:cursor-not-allowed disabled:opacity-50">复制日报</button>
+          </footer>
+        </section>
+      </dialog>
+
       <!-- Windows 11 Bottom Taskbar (Hidden in macOS mode) -->
       <div id="win-taskbar" class="hidden absolute bottom-0 inset-x-0 h-10 px-4 bg-slate-900/85 backdrop-blur-md border-t border-white/10 items-center justify-between text-xs text-white z-30">
         <div class="flex items-center gap-2">
@@ -1105,7 +1284,7 @@
         <div class="flex items-center gap-2.5">
           <!-- Windows System Tray Icon -->
           <button onclick="toggleSystemMenu()" class="flex items-center gap-1 px-2 py-1 rounded bg-sky-500/25 border border-sky-400/40 text-sky-200 hover:bg-sky-500/40 transition" title="点击展开 Windows 系统托盘菜单">
-            <span>🐱</span>
+            <img src="../resources/tray/trayColor.png" alt="" class="h-4 w-4">
             <span>托盘</span>
           </button>
           <span>🔊</span>
@@ -1132,7 +1311,7 @@
         <div class="mt-3 space-y-2 text-xs text-[var(--muted-foreground)]">
           <div class="p-2.5 rounded-lg bg-[var(--background)] border border-[var(--border)]">
             <div class="font-medium text-[var(--foreground)]">1. 框框自由拉大 + 仅显示在桌面 (A17/A18)</div>
-            <p class="mt-0.5">支持拖拽右下角 <code class="text-[var(--foreground)]">↘</code> 自由调整宽高并记忆尺寸；顶栏一键切换 <code class="text-[var(--foreground)]">📌 置顶 / 🖥 贴桌面</code>，贴桌面时打开其他软件自动遮挡桌宠。</p>
+            <p class="mt-0.5">拖拽清单右下角可调整宽高并记忆尺寸；顶栏一键切换 <code class="text-[var(--foreground)]">📌 置顶 / 🖥 贴桌面</code>，贴桌面时打开其他软件自动遮挡桌宠。</p>
           </div>
 
           <div class="p-2.5 rounded-lg bg-[var(--background)] border border-[var(--border)]">
@@ -1204,6 +1383,15 @@
     // STATE DATA (Aligned with docs/requirements.md v0.3 & docs/prototype-design.md)
     // =========================================================================
     const TODAY_DATE = '2026-11-02'; // 2026-11-02 is Monday (周一) & 2nd day of month (2号)
+    const DEMO_INSTALLED_VERSION = '0.1.0';
+    const DEMO_NEW_VERSION = '0.1.1';
+    let updatePhase = 'available';
+    let updateProgress = 0;
+    const TASK_CATEGORIES = [
+      { value: 'work', label: '工作', style: 'bg-sky-100 text-sky-800' },
+      { value: 'life', label: '生活', style: 'bg-emerald-100 text-emerald-800' },
+      { value: '', label: '未分类', style: 'bg-slate-100 text-slate-600' }
+    ];
     let selectedDate = '2026-11-02';
     let dateBarVisible = false;
     let currentPlatform = 'mac'; // 'mac' | 'win'
@@ -1238,26 +1426,32 @@
     // All task occurrences across dates (keyed by scheduledDate, supporting Priority & Repeat Cycles)
     let allTasks = [
       // Today (2026-11-02): Urgent tasks automatically sort to the top!
-      { id: 't_urg_1', scheduledDate: '2026-11-02', title: '确认客户合同终稿并盖章', time: '14:00', priority: 'urgent', remind: true, done: false, doneAt: null, isRepeat: false, planId: null, originDate: null, scene: 'bell' },
+      { id: 't_urg_1', scheduledDate: '2026-11-02', title: '确认客户合同终稿并盖章', category: 'work', time: '14:00', priority: 'urgent', remind: true, done: false, doneAt: null, isRepeat: false, planId: null, originDate: null, scene: 'bell' },
       { id: 't1', scheduledDate: '2026-11-02', title: '回一下上午那条消息', time: '10:30', priority: 'normal', remind: true, done: false, doneAt: null, isRepeat: false, planId: null, originDate: null, scene: 'bell' },
       { id: 't2', scheduledDate: '2026-11-02', title: '整理素材文件夹', time: null, priority: 'normal', remind: true, done: false, doneAt: null, isRepeat: false, planId: null, originDate: null },
       { id: 't3', scheduledDate: '2026-11-02', title: '喝一杯温水补充水分', time: '15:00', priority: 'normal', remind: true, done: false, doneAt: null, isRepeat: true, planId: 'p1', originDate: null, scene: 'water', petVoice: '咕嘟咕嘟～主人今天要喝水啦！快端起杯子陪我喝口温水吧 💧' },
       { id: 't4', scheduledDate: '2026-11-02', title: '下班前发日报', time: '17:30', priority: 'urgent', remind: true, done: false, doneAt: null, isRepeat: false, planId: null, originDate: null, scene: 'bell' },
-      { id: 't6', scheduledDate: '2026-11-02', title: '起身运动拉伸 5 分钟', time: '10:00', priority: 'normal', remind: true, done: true, doneAt: '10:05', isRepeat: true, planId: 'p1', originDate: null, scene: 'stretch' },
+      { id: 't6', scheduledDate: '2026-11-02', title: '起身运动拉伸 5 分钟', time: '10:00', priority: 'normal', remind: true, done: true, doneDate: TODAY_DATE, doneAt: '10:05', isRepeat: true, planId: 'p1', originDate: null, scene: 'stretch' },
+      { id: 't_report_work', scheduledDate: TODAY_DATE, title: '修改中庭审核图纸', category: 'work', time: null, priority: 'normal', remind: false, done: true, doneDate: TODAY_DATE, doneAt: '10:32', isRepeat: false, planId: null, originDate: null },
+      { id: 't_report_other', scheduledDate: TODAY_DATE, title: '整理评审资料', time: null, priority: 'normal', remind: false, done: true, doneDate: TODAY_DATE, doneAt: '11:15', isRepeat: false, planId: null, originDate: null },
 
       // Yesterday (2026-11-01): For F05 / A04 / A05 verification
       { id: 'y1', scheduledDate: '2026-11-01', title: '核对上周报销单据', time: '16:00', priority: 'urgent', remind: true, done: false, doneAt: null, isRepeat: false, planId: null, originDate: '11-01', movedToToday: false },
-      { id: 'y2', scheduledDate: '2026-11-01', title: '准备早饭与维生素', time: '08:30', priority: 'normal', remind: true, done: true, doneAt: '08:35', isRepeat: true, planId: 'p2', originDate: '11-01', movedToToday: false },
-      { id: 'y3', scheduledDate: '2026-11-01', title: '起身运动拉伸 5 分钟', time: '15:00', priority: 'normal', remind: true, done: true, doneAt: '15:10', isRepeat: true, planId: 'p1', originDate: '11-01', movedToToday: false }
+      { id: 'y2', scheduledDate: '2026-11-01', title: '准备早饭与维生素', time: '08:30', priority: 'normal', remind: true, done: true, doneDate: '2026-11-01', doneAt: '08:35', isRepeat: true, planId: 'p2', originDate: '11-01', movedToToday: false },
+      { id: 'y3', scheduledDate: '2026-11-01', title: '起身运动拉伸 5 分钟', time: '15:00', priority: 'normal', remind: true, done: true, doneDate: '2026-11-01', doneAt: '15:10', isRepeat: true, planId: 'p1', originDate: '11-01', movedToToday: false },
+      { id: 'y_report_work', scheduledDate: '2026-11-01', title: '核对送审清单', category: 'work', time: null, priority: 'normal', remind: false, done: true, doneDate: TODAY_DATE, doneAt: '09:20', isRepeat: false, planId: null, originDate: null }
     ];
 
     // Repeating Plans (F02 / F03 / A16: Supports daily, weekly, and monthly plans!)
     let repeatPlans = [
-      { id: 'p1', title: '起身运动拉伸 5 分钟', repeatType: 'daily', daysOfWeek: [], daysOfMonth: [], priority: 'normal', slots: ['10:00', '15:00'], status: 'active', startDate: '2026-10-20', endDate: null, remind: true },
-      { id: 'p_week_1', title: '每周周报汇总与任务盘点', repeatType: 'weekly', daysOfWeek: [1, 5], daysOfMonth: [], priority: 'urgent', slots: ['16:30'], status: 'active', startDate: '2026-10-01', endDate: null, remind: true },
-      { id: 'p_month_1', title: '信用卡账单核对与月度复盘', repeatType: 'monthly', daysOfWeek: [], daysOfMonth: [2, 15], priority: 'normal', slots: ['11:30'], status: 'active', startDate: '2026-10-01', endDate: null, remind: true },
-      { id: 'p2', title: '准备早饭与饭后维生素', repeatType: 'daily', daysOfWeek: [], daysOfMonth: [], priority: 'normal', slots: ['08:30'], status: 'active', startDate: '2026-10-15', endDate: '2026-11-01', remind: true }
+      { id: 'p1', title: '起身运动拉伸 5 分钟', category: 'life', repeatType: 'daily', daysOfWeek: [], daysOfMonth: [], priority: 'normal', slots: ['10:00', '15:00'], status: 'active', startDate: '2026-10-20', endDate: null, remind: true },
+      { id: 'p_week_1', title: '每周周报汇总与任务盘点', category: 'work', repeatType: 'weekly', daysOfWeek: [1, 5], daysOfMonth: [], priority: 'urgent', slots: ['16:30'], status: 'active', startDate: '2026-10-01', endDate: null, remind: true },
+      { id: 'p_month_1', title: '信用卡账单核对与月度复盘', category: 'life', repeatType: 'monthly', daysOfWeek: [], daysOfMonth: [2, 15], priority: 'normal', slots: ['11:30'], status: 'active', startDate: '2026-10-01', endDate: null, remind: true },
+      { id: 'p2', title: '准备早饭与饭后维生素', category: 'life', repeatType: 'daily', daysOfWeek: [], daysOfMonth: [], priority: 'normal', slots: ['08:30'], status: 'active', startDate: '2026-10-15', endDate: '2026-11-01', remind: true }
     ];
+    for (const task of allTasks) {
+      if (task.planId) task.category = repeatPlans.find(plan => plan.id === task.planId)?.category;
+    }
 
     const WEEKDAY_NAMES = { 1: '一', 2: '二', 3: '三', 4: '四', 5: '五', 6: '六', 7: '日' };
 
@@ -1284,6 +1478,87 @@
         return `🗓 每月${days || '1日'}`;
       }
       return '↻ 重复';
+    }
+
+    function categoryBadge(value = '') {
+      const category = TASK_CATEGORIES.find(category => category.value === value);
+      return `<span class="shrink-0 whitespace-nowrap rounded-md px-1.5 py-0.5 text-[10px] font-medium leading-none ${category.style}">${category.label}</span>`;
+    }
+
+    function openDailyReport() {
+      const tasks = allTasks
+        .filter(task => task.done && task.doneDate === TODAY_DATE && !task.removedOccurrence && !task.movedToToday)
+        .sort((a, b) => a.doneAt.localeCompare(b.doneAt));
+      document.getElementById('report-date').textContent = formatShortDateLabel(TODAY_DATE);
+      document.getElementById('report-groups').innerHTML = tasks.length
+        ? TASK_CATEGORIES.map(category => {
+          const items = tasks.filter(task => (task.category ?? '') === category.value);
+          if (!items.length) return '';
+          return `
+            <fieldset>
+              <legend class="mb-1.5 flex items-center gap-1.5 text-xs text-slate-500">${categoryBadge(category.value)} <span>${items.length} 项</span></legend>
+              <div class="divide-y divide-slate-100 rounded-xl border border-slate-200">
+                ${items.map(item => `
+                  <label class="flex cursor-pointer items-start gap-2.5 px-3 py-2.5 hover:bg-slate-50">
+                    <input type="checkbox" value="${escapeHtml(item.title)}" ${category.value === 'work' ? 'checked' : ''} class="mt-0.5 h-4 w-4 shrink-0 accent-[#426e88]">
+                    <span class="min-w-0 flex-1 break-words text-xs leading-5">${escapeHtml(item.title)}</span>
+                    <span class="shrink-0 text-[11px] leading-5 text-slate-500">${item.doneAt}</span>
+                  </label>`).join('')}
+              </div>
+            </fieldset>`;
+        }).join('')
+        : '<p class="rounded-xl bg-slate-50 p-4 text-center text-xs text-slate-600">今天还没有已完成的任务</p>';
+      document.getElementById('report-text').value = '';
+      document.getElementById('report-generate').textContent = '生成草稿';
+      updateReportSelection();
+      document.getElementById('daily-report').showModal();
+      showReportSelection();
+    }
+
+    function selectedReportTasks() {
+      return Array.from(document.querySelectorAll('#report-groups input:checked'), input => input.value);
+    }
+
+    function updateReportSelection() {
+      const count = selectedReportTasks().length;
+      document.getElementById('report-count').textContent = `已选 ${count} 项`;
+      document.getElementById('report-generate').disabled = count === 0;
+    }
+
+    function showReportSelection() {
+      document.getElementById('report-selection').classList.remove('hidden');
+      document.getElementById('report-draft').classList.add('hidden');
+      document.querySelector('#report-groups input, #report-generate:not(:disabled)')?.focus();
+    }
+
+    function generateReportDraft() {
+      const titles = selectedReportTasks();
+      if (titles.length === 0) return;
+      const draft = document.getElementById('report-text');
+      draft.value = '今日完成：\n' + titles.map((title, index) => `${index + 1}. ${title}`).join('\n');
+      document.getElementById('report-selection').classList.add('hidden');
+      document.getElementById('report-draft').classList.remove('hidden');
+      document.getElementById('report-generate').textContent = '重新生成草稿';
+      updateReportCopy();
+      draft.focus();
+    }
+
+    function updateReportCopy() {
+      document.getElementById('report-copy').disabled = !document.getElementById('report-text').value.trim();
+      document.getElementById('report-copy-status').textContent = '';
+    }
+
+    async function copyReportDraft() {
+      const draft = document.getElementById('report-text');
+      const status = document.getElementById('report-copy-status');
+      try {
+        await navigator.clipboard.writeText(draft.value);
+        status.textContent = '已复制到剪贴板';
+      } catch {
+        draft.focus();
+        draft.select();
+        status.textContent = '已选中草稿，请使用系统复制快捷键';
+      }
     }
 
     // Ensure repeating plan instances are generated for a date if within [startDate, endDate] AND matching cycle (Rule 4.1 & A16)
@@ -1318,6 +1593,7 @@
                 id: `rep_${plan.id}_${dateStr}_${slot.replace(':', '')}`,
                 scheduledDate: dateStr,
                 title: plan.title,
+                category: plan.category,
                 time: slot,
                 priority: plan.priority || 'normal',
                 remind: plan.remind !== false,
@@ -1478,10 +1754,9 @@
             ? 'bg-amber-50 text-amber-700 border border-amber-200/60'
             : 'bg-sky-50 text-sky-600 border border-sky-200/60';
 
-          const hasMetaRow = isUrgent || item.time || item.isRepeat || item.originDate;
           const row = document.createElement('div');
           row.id = 'task-row-' + item.id;
-          row.className = `task-row-item rounded-2xl px-3.5 py-2.5 flex items-center justify-between shadow-2xs border transition group ${
+          row.className = `task-row-item rounded-2xl px-3.5 py-2.5 flex items-center justify-between shadow-2xs border group ${
             isUrgent
               ? 'bg-white border-rose-200/80 hover:border-rose-300'
               : 'bg-white border-slate-100 hover:border-slate-200'
@@ -1499,14 +1774,13 @@
                 <div class="flex items-center min-w-0">
                   <span id="title-span-${item.id}" class="strike-line text-[12.5px] ${isUrgent ? 'font-semibold text-slate-800' : 'font-medium text-slate-700'} truncate leading-snug transition-colors duration-200">${escapeHtml(item.title)}</span>
                 </div>
-                ${hasMetaRow ? `
-                  <div class="flex items-center gap-1.5 mt-1 flex-nowrap overflow-hidden">
+                  <div class="flex items-center gap-1.5 mt-1 flex-wrap">
+                    ${categoryBadge(item.category)}
                     ${isUrgent ? `<span class="inline-flex items-center gap-0.5 text-[10px] leading-none px-1.5 py-0.5 rounded-md bg-rose-50 text-rose-500 border border-rose-200/70 font-medium shrink-0 whitespace-nowrap">🔥 紧急</span>` : ''}
                     ${item.time ? `<span class="inline-flex items-center text-[10.5px] leading-none px-1.5 py-0.5 rounded-md bg-slate-100/90 text-slate-500 shrink-0 whitespace-nowrap">${item.time}</span>` : ''}
                     ${item.isRepeat ? `<span class="inline-flex items-center text-[10px] leading-none px-1.5 py-0.5 rounded-md ${repeatBadgeColor} shrink-0 whitespace-nowrap" title="周期重复计划生成的实例">${repeatBadgeText}</span>` : ''}
                     ${item.originDate ? `<span class="inline-flex items-center text-[10px] leading-none px-1.5 py-0.5 rounded-md bg-amber-50 text-amber-700 shrink-0 whitespace-nowrap" title="从历史未完成迁移至今天">原 ${item.originDate}</span>` : ''}
                   </div>
-                ` : ''}
               </div>
             </div>
             <div class="flex items-center gap-0.5 shrink-0 ml-2">
@@ -1527,11 +1801,18 @@
           container.appendChild(row);
         });
       } else if (currentTab === 'done') {
-        if (doneItems.length === 0) {
+        if (selectedDate === TODAY_DATE) {
           container.innerHTML = `
-            <div class="h-full flex flex-col items-center justify-center text-slate-400 text-xs py-10">
-              <div>还没有已完成的任务</div>
+            <div class="list-heading sticky top-0 z-10 bg-[#f4f6f9]">
+              <span>整理今天完成的事项</span>
+              <button type="button" onclick="openDailyReport()">生成今日日报</button>
             </div>`;
+        }
+        if (doneItems.length === 0) {
+          container.insertAdjacentHTML('beforeend', `
+            <div class="flex flex-col items-center justify-center text-slate-400 text-xs py-10">
+              <div>还没有已完成的任务</div>
+            </div>`);
           return;
         }
         doneItems.forEach(item => {
@@ -1541,10 +1822,13 @@
           row.innerHTML = `
             <div class="flex items-center gap-2.5 min-w-0 flex-1">
               <button onclick="toggleTaskDone('${item.id}', event)" class="w-[18px] h-[18px] rounded-full flex items-center justify-center text-white text-xs shrink-0 hover:opacity-85 transition cursor-pointer" style="background-color: #6f9bb6;" title="点击撤销完成">✓</button>
-              <div class="min-w-0 flex-1 flex items-center gap-1.5">
-                ${item.priority === 'urgent' ? `<span class="text-[10px] leading-none px-1.5 py-0.5 rounded bg-rose-50 text-rose-500 shrink-0 whitespace-nowrap">🔥紧急</span>` : ''}
-                <span class="text-xs text-slate-400 line-through truncate">${escapeHtml(item.title)}</span>
-                ${item.doneAt ? `<span class="text-[11px] text-slate-400 shrink-0 whitespace-nowrap">${item.doneAt}</span>` : ''}
+              <div class="min-w-0 flex-1">
+                <div class="truncate text-xs text-slate-500 line-through" title="${escapeHtml(item.title)}">${escapeHtml(item.title)}</div>
+                <div class="mt-1 flex flex-wrap items-center gap-1.5">
+                  ${categoryBadge(item.category)}
+                  ${item.priority === 'urgent' ? `<span class="text-[10px] leading-none px-1.5 py-0.5 rounded bg-rose-50 text-rose-500 shrink-0 whitespace-nowrap">🔥紧急</span>` : ''}
+                  ${item.doneAt ? `<span class="text-[11px] text-slate-500 shrink-0 whitespace-nowrap">${item.doneAt}</span>` : ''}
+                </div>
               </div>
             </div>
             <button onclick="toggleTaskDone('${item.id}', event)" class="text-xs text-slate-400 hover:text-sky-700 ml-2 shrink-0 whitespace-nowrap cursor-pointer">撤销</button>
@@ -1554,10 +1838,10 @@
       } else if (currentTab === 'plans') {
         // Subheader bar: clean single-line text + sleek '+ 新建计划' button (zero wrapping!)
         const topBar = document.createElement('div');
-        topBar.className = 'flex items-center justify-between gap-2 px-1 pb-1 text-xs';
+        topBar.className = 'list-heading';
         topBar.innerHTML = `
-          <span class="text-slate-500 whitespace-nowrap truncate">支持 <strong class="text-slate-600 font-medium">每日 / 每周 / 每月</strong> 自动生成</span>
-          <button onclick="demoWeeklyMonthlyPlanModal()" class="px-3 py-1 rounded-full text-white hover:opacity-90 font-medium text-[11px] shadow-2xs whitespace-nowrap shrink-0 transition cursor-pointer focus:outline-none" style="background-color: #6f9bb6;">+ 新建计划</button>
+          <span>支持 <strong class="text-slate-600 font-medium">每日 / 每周 / 每月</strong> 自动生成</span>
+          <button type="button" onclick="demoWeeklyMonthlyPlanModal()">＋ 新建计划</button>
         `;
         container.appendChild(topBar);
 
@@ -1583,6 +1867,7 @@
             <!-- Line 2: Compact Cycle/Priority/Slots Tags (Left) + Action Links (Right) -->
             <div class="flex items-center justify-between gap-2 text-xs">
               <div class="flex items-center gap-1.5 min-w-0 overflow-hidden">
+                ${categoryBadge(plan.category)}
                 <span class="text-[10px] leading-none px-1.5 py-0.5 rounded-md font-medium shrink-0 whitespace-nowrap ${cycleClass}">${cycleBadge}</span>
                 ${plan.priority === 'urgent' ? `<span class="text-[10px] leading-none px-1.5 py-0.5 rounded-md bg-rose-50 text-rose-500 border border-rose-200/70 font-medium shrink-0 whitespace-nowrap">🔥 紧急</span>` : ''}
                 <span class="text-[11px] text-slate-400 truncate whitespace-nowrap">🕒 ${plan.slots.join(' / ')}</span>
@@ -1757,7 +2042,10 @@
         const editBtn = document.getElementById('edit-btn-' + taskId);
         const delBtn = document.getElementById('del-btn-' + taskId);
 
-        if (row) row.classList.remove('is-completing', 'is-collapsing');
+        if (row) {
+          row.style.removeProperty('max-height');
+          row.classList.remove('is-completing', 'is-collapsing');
+        }
         if (btn) {
           btn.style.backgroundColor = 'transparent';
           btn.style.borderColor = '';
@@ -1820,7 +2108,7 @@
 
         // Stage 4 (620ms): Collapse row smoothly so user clearly saw the checkmark & strikethrough
         const t3 = setTimeout(() => {
-          if (row) row.classList.add('is-collapsing');
+          collapseTaskRow(row);
 
           // Bounce the "已完成" tab badge
           const doneTabBtn = document.getElementById('tab-done');
@@ -1835,8 +2123,7 @@
         const t4 = setTimeout(() => {
           pendingCompleteTimers.delete(taskId);
           const wasAllDone = list.length > 0 && list.every(t => t.done);
-          item.done = true;
-          item.doneAt = formatClockHHMM();
+          setTaskCompletion(item, true);
           const updatedList = getTasksForDate(item.scheduledDate);
           const isNowAllDone = updatedList.length > 0 && updatedList.every(t => t.done);
 
@@ -1862,26 +2149,33 @@
       }
 
       // Case 3: Undoing a completed task from the Done tab
-      const row = document.getElementById('task-row-' + taskId);
-      if (row) {
-        row.classList.add('is-collapsing');
-      }
+      collapseTaskRow(document.getElementById('task-row-' + taskId));
       setTimeout(() => {
-        item.done = false;
-        item.doneAt = null;
+        setTaskCompletion(item, false);
         renderAll();
         appendLog(`撤销任务「${item.title}」完成状态（已提醒过的实例不重复提醒）`);
       }, 240);
+    }
+
+    function setTaskCompletion(item, done) {
+      item.done = done;
+      item.doneAt = done ? formatClockHHMM() : null;
+      item.doneDate = done ? TODAY_DATE : null;
+    }
+
+    function collapseTaskRow(row) {
+      if (!row || row.classList.contains('is-collapsing')) return;
+      row.style.maxHeight = `${row.offsetHeight}px`;
+      // Commit the measured height before transitioning to zero.
+      void row.offsetHeight;
+      row.classList.add('is-collapsing');
     }
 
     function deleteTaskInstance(taskId) {
       const idx = allTasks.findIndex(t => t.id === taskId);
       if (idx === -1) return;
       const removed = allTasks[idx];
-      const row = document.getElementById('task-row-' + taskId);
-      if (row) {
-        row.classList.add('is-collapsing');
-      }
+      collapseTaskRow(document.getElementById('task-row-' + taskId));
       setTimeout(() => {
         if (activeReminderTaskId === taskId) {
           clearActiveReminder();
@@ -2167,6 +2461,7 @@
 
       const quickInputVal = document.getElementById('quick-task-input').value.trim();
       document.getElementById('editor-title').value = quickInputVal;
+      document.getElementById('editor-category').value = '';
       document.getElementById('editor-date').value = selectedDate < TODAY_DATE ? TODAY_DATE : selectedDate;
       document.getElementById('editor-time').value = '16:00';
       document.getElementById('editor-start-date').value = TODAY_DATE;
@@ -2187,6 +2482,7 @@
       editingTargetId = null;
       document.getElementById('plan-modal-title').textContent = '新增周计划 / 月计划 (A16)';
       document.getElementById('editor-title').value = '每周五团队周会与复盘';
+      document.getElementById('editor-category').value = 'work';
       document.getElementById('editor-start-date').value = TODAY_DATE;
       document.getElementById('editor-end-date').value = '';
       document.getElementById('editor-remind').checked = true;
@@ -2215,6 +2511,7 @@
       setEditorPriority(item.priority || 'normal');
       setEditorTaskType('once');
       document.getElementById('editor-title').value = item.title;
+      document.getElementById('editor-category').value = item.category ?? '';
       document.getElementById('editor-date').value = item.scheduledDate || TODAY_DATE;
       document.getElementById('editor-time').value = item.time || '';
       document.getElementById('editor-remind').checked = item.remind !== false;
@@ -2234,6 +2531,7 @@
       setEditorPriority(plan.priority || 'normal');
       setEditorTaskType('repeat');
       document.getElementById('editor-title').value = plan.title;
+      document.getElementById('editor-category').value = plan.category ?? '';
       document.getElementById('editor-start-date').value = plan.startDate || TODAY_DATE;
       document.getElementById('editor-end-date').value = plan.endDate || '';
       document.getElementById('editor-remind').checked = plan.remind !== false;
@@ -2244,6 +2542,7 @@
     function saveTaskFromModal() {
       const titleInput = document.getElementById('editor-title');
       const title = titleInput.value.trim() || (editorTaskType === 'repeat' ? '每周固定复盘计划' : '下午茶休息');
+      const category = document.getElementById('editor-category').value;
       const remind = document.getElementById('editor-remind').checked;
 
       if (editorTaskType === 'once') {
@@ -2254,6 +2553,7 @@
           const existing = allTasks.find(t => t.id === editingTargetId);
           if (existing) {
             existing.title = title;
+            existing.category = category;
             existing.priority = editorPriority;
             existing.scheduledDate = scheduledDate;
             existing.time = time;
@@ -2265,6 +2565,7 @@
             id: 't_' + Date.now(),
             scheduledDate,
             title,
+            category,
             time,
             priority: editorPriority,
             remind,
@@ -2301,6 +2602,10 @@
         if (editingTargetId && repeatPlans.some(p => p.id === editingTargetId)) {
           const plan = repeatPlans.find(p => p.id === editingTargetId);
           plan.title = title;
+          plan.category = category;
+          for (const task of allTasks) {
+            if (task.planId === plan.id) task.category = category;
+          }
           plan.repeatType = editorRepeatCycle;
           plan.daysOfWeek = [...editorDaysOfWeek];
           plan.daysOfMonth = [...editorDaysOfMonth];
@@ -2317,6 +2622,7 @@
           const newPlan = {
             id: planId,
             title,
+            category,
             repeatType: editorRepeatCycle,
             daysOfWeek: [...editorDaysOfWeek],
             daysOfMonth: [...editorDaysOfMonth],
@@ -2445,6 +2751,9 @@
     function restoreActiveReminderUI() {
       if (!activeReminderState) return;
       showSceneGifProp(activeReminderState.sceneType, activeReminderState.badgeText);
+      const bubbleWrapper = document.getElementById('speech-bubble-wrapper');
+      if (bubbleWrapper) bubbleWrapper.classList.remove('hidden');
+      hideQuickBubbles();
 
       const sprite = document.getElementById('pet-sprite');
       const bubbleText = document.getElementById('bubble-text');
@@ -2470,6 +2779,8 @@
       showSceneGifProp(null);
       const actionsEl = document.getElementById('bubble-actions');
       if (actionsEl) actionsEl.classList.add('hidden');
+      const bubbleWrapper = document.getElementById('speech-bubble-wrapper');
+      if (bubbleWrapper) bubbleWrapper.classList.add('hidden');
       document.getElementById('os-notification').classList.add('hidden');
     }
 
@@ -2589,8 +2900,7 @@
             return;
           }
           // If menu card is currently hidden (Pet-Only Mode), complete directly and celebrate!
-          item.done = true;
-          item.doneAt = formatClockHHMM();
+          setTaskCompletion(item, true);
           renderAll();
           setPetState('happy', '真乖！补充水分超棒的，继续保持哦 ✨');
           appendLog(`在气泡上直接完成提醒任务「${item.title}」（无需展开大面板即可一键打卡完成）`);
@@ -2637,6 +2947,9 @@
       } else {
         isMenuCardHidden = !isMenuCardHidden;
       }
+      hideQuickBubbles();
+      if (!activeReminderTaskId) hidePetBubbleDirectly();
+      card.inert = isMenuCardHidden;
 
       if (isMenuCardHidden) {
         card.classList.add('is-menu-hidden');
@@ -2646,12 +2959,13 @@
         if (secBtnText) secBtnText.textContent = '展开清单 ▾';
         appendLog('已收起下方任务卡片 -> 进入【仅桌宠模式】（可通过宠物脚下胶囊、双击宠物或右键菜单重新展开）');
       } else {
+        updateAdaptiveDirections();
         card.classList.remove('is-menu-hidden');
         if (miniDock) miniDock.classList.add('hidden');
         if (simBtn) simBtn.textContent = '🔼 隐藏下方菜单 (仅留桌宠)';
         if (ctxLabel) ctxLabel.textContent = '🔼 隐藏下方菜单';
         if (secBtnText) secBtnText.textContent = '定位任务 ▾';
-        appendLog('已展开下方任务卡片 -> 恢复完整清单模式');
+        appendLog('已展开任务卡片 -> 恢复完整清单模式（若在屏幕右下角已自适应向左上方弹出）');
       }
     }
 
@@ -2672,6 +2986,7 @@
     // =========================================================================
     let widgetOffsetX = 0;
     let widgetOffsetY = 0;
+    let petClickTimer;
     let dragState = null;
     let resizeState = null;
     let otherAppOffsetX = 0;
@@ -2684,6 +2999,7 @@
       // Ignore interactive child buttons when dragging from header
       if (source === 'header' && e.target.closest('button')) return;
 
+      clearTimeout(petClickTimer);
       closePetContextMenu();
       const widget = document.getElementById('desktop-widget');
       if (!widget) return;
@@ -2715,7 +3031,9 @@
         startX: e.clientX,
         startY: e.clientY,
         initialWidth: widgetWidth,
-        initialListHeight: taskListHeight
+        initialListHeight: taskListHeight,
+        horizontal: widget.dataset.panelHorizontal,
+        vertical: widget.dataset.panelVertical
       };
 
       widget.style.transition = 'none';
@@ -2726,17 +3044,16 @@
       widgetWidth = Math.max(340, Math.min(520, Math.round(newWidth)));
       taskListHeight = Math.max(220, Math.min(500, Math.round(newListHeight)));
 
-      const widget = document.getElementById('desktop-widget');
       const taskList = document.getElementById('task-list-container');
       const badge = document.getElementById('resize-dimensions-badge');
       const settingSizeLabel = document.getElementById('setting-size-label');
       const totalApproxH = Math.round(taskListHeight + 250);
 
-      if (widget) widget.style.width = `${widgetWidth}px`;
       if (taskList) taskList.style.height = `${taskListHeight}px`;
+      updateAdaptiveDirections();
       if (badge) badge.textContent = `${widgetWidth} × ${totalApproxH}`;
       if (settingSizeLabel) {
-        settingSizeLabel.textContent = `当前：${widgetWidth} × ${totalApproxH} px（也可按住主面板右下角 ↘ 自由拖拽缩放）`;
+        settingSizeLabel.textContent = `当前：${widgetWidth} × ${totalApproxH} px（也可拖动清单右下角调整尺寸）`;
       }
 
       const isLarge = widgetWidth >= 410 || taskListHeight >= 320;
@@ -2821,13 +3138,7 @@
       }
 
       if (dragState.hasMoved) {
-        // Clamp within desktop canvas bounds so widget is never lost
-        widgetOffsetX = Math.max(-180, Math.min(180, dragState.initialX + dx));
-        widgetOffsetY = Math.max(-24, Math.min(240, dragState.initialY + dy));
-        const widget = document.getElementById('desktop-widget');
-        if (widget) {
-          widget.style.transform = `translate(${widgetOffsetX}px, ${widgetOffsetY}px)`;
-        }
+        moveWidgetTo(dragState.initialX + dx, dragState.initialY + dy);
       }
     });
 
@@ -2857,14 +3168,18 @@
       }
 
       if (hasMoved) {
+        updateAdaptiveDirections();
         appendLog(`窗口拖动释放：已保存窗口坐标偏移 (${Math.round(widgetOffsetX)}, ${Math.round(widgetOffsetY)})，不触发额外点击 (Rule 6 / A10)`);
       } else if (source === 'pet') {
-        interactWithPet();
+        petClickTimer = setTimeout(interactWithPet, 250);
       }
     });
 
-    document.addEventListener('click', () => {
+    document.addEventListener('click', (e) => {
       closePetContextMenu();
+      if (!e.target.closest('#pet-container') && !e.target.closest('#quick-bubbles-container')) {
+        hideQuickBubbles();
+      }
     });
 
     function simulateResumeBatchReminder() {
@@ -3196,6 +3511,193 @@
       appendLog(`更新宠物「${pack.name}」待机动画帧率为 ${pack.idleFps} FPS`);
     }
 
+    // =========================================================================
+    // 3 QUICK BUBBLES & ADAPTIVE JOKES / SCREEN EDGES (v4.1)
+    // =========================================================================
+    const jokesDatabase = [
+      "为什么程序员分不清万圣节和圣诞节？因为 Oct 31 == Dec 25！🎃🎄",
+      "程序员去超市，妻子说：买一斤包子，如果有卖西瓜的买一个。程序员买了一个包子回家。😂",
+      "猫咪为什么不想当程序员？因为一遇到 Bug，它就忍不住一爪子扑上去吃掉了…🐱",
+      "产品经理：这个需求很小，改一行代码就行！程序员：好，我把你的需求给删了。🙂",
+      "键盘上的 F5 键今天请假了，因为它被按得太“刷新”了！⌨️",
+      "为什么电脑总感冒？因为它的 Windows 窗户天天开着吹风！💨",
+      "小狗为什么不做数学题？因为每次算到二，它就忍不住‘汪！汪！’🐶",
+      "世界上有 10 种人，一种是懂二进制的，一种是不懂二进制的。",
+      "大师我怎样摆脱内卷？大师递来煎饼果子：趁热吃了，别卷了。🌯",
+      "咖啡对打工人说：你以为你在喝我提神？其实是我借你的心跳在蹦迪！☕",
+      "手机电量剩 1% 时最坚强，就像下班前最后一分钟的我！🔋",
+      "代码能跑就千万别碰，哪怕你完全不知道它为什么能跑！✨",
+      "什么是真正的默契？同事看了一眼表，我也看了一眼表，然后同时背上了包！🎒"
+    ];
+
+    let isQuickBubblesOpen = false;
+
+    function toggleQuickBubbles() {
+      // P0 Reminder protection
+      if (activeReminderTaskId && activeReminderState) {
+        interactWithPet();
+        return;
+      }
+      isQuickBubblesOpen = !isQuickBubblesOpen;
+      const container = document.getElementById('quick-bubbles-container');
+      const bubbleWrapper = document.getElementById('speech-bubble-wrapper');
+
+      if (!container) return;
+
+      if (isQuickBubblesOpen) {
+        // Hide answer bubble if opened
+        if (bubbleWrapper) bubbleWrapper.classList.add('hidden');
+        updateAdaptiveDirections();
+        container.classList.remove('hidden');
+
+        // Trigger pet happy anim
+        const sprite = document.getElementById('pet-sprite');
+        if (sprite) {
+          sprite.classList.remove('anim-idle');
+          sprite.classList.add('anim-happy');
+          setTimeout(() => {
+            sprite.classList.remove('anim-happy');
+            sprite.classList.add('anim-idle');
+          }, 700);
+        }
+        appendLog('单击小人：以交错冒泡动画弹出 3 个快捷小气泡（离下班多久 / 讲个笑话 / 今日进度）');
+      } else {
+        container.classList.add('hidden');
+      }
+    }
+
+    function hideQuickBubbles() {
+      isQuickBubblesOpen = false;
+      const container = document.getElementById('quick-bubbles-container');
+      if (container) container.classList.add('hidden');
+    }
+
+    function hidePetBubbleDirectly() {
+      const bubbleWrapper = document.getElementById('speech-bubble-wrapper');
+      if (bubbleWrapper) bubbleWrapper.classList.add('hidden');
+      if (bubbleResetTimer) clearTimeout(bubbleResetTimer);
+    }
+
+    function handleBubbleItemClick(type) {
+      hideQuickBubbles();
+      const bubbleWrapper = document.getElementById('speech-bubble-wrapper');
+      const titleTag = document.getElementById('bubble-title-tag');
+      const jokeFooter = document.getElementById('bubble-joke-footer');
+      if (bubbleWrapper) bubbleWrapper.classList.remove('hidden');
+
+      if (type === 'offwork') {
+        if (titleTag) titleTag.textContent = '⏰ 离下班时间';
+        if (jokeFooter) jokeFooter.classList.add('hidden');
+        const state = computeOffworkState();
+        let text = `离下班还有 <span class="font-semibold text-slate-800">${state.countdownStr}</span>，坚持就是胜利 🎒`;
+        if (state.mode === 'offwork') text = '已到下班时间，辛苦啦！快收拾回家 🎉';
+        else if (state.mode === 'unconfigured') text = '尚未设置固定下班时间，可去设置面板设定 ⚙';
+        setPetState('happy', text, true);
+        appendLog(`点击气泡「离下班多久」：计算显示 ${state.countdownStr}`);
+      } else if (type === 'joke') {
+        if (titleTag) titleTag.textContent = '😂 开心一刻';
+        if (jokeFooter) jokeFooter.classList.remove('hidden');
+        const joke = jokesDatabase[Math.floor(Math.random() * jokesDatabase.length)];
+        setPetState('happy', joke, false); // don't auto-reset immediately so user can read
+        appendLog(`点击气泡「讲个笑话」：从开心语料库随机抽取一条幽默段子`);
+      } else if (type === 'progress') {
+        if (titleTag) titleTag.textContent = '📊 今日任务进度';
+        if (jokeFooter) jokeFooter.classList.add('hidden');
+        const tasks = getTasksForDate(TODAY_DATE);
+        const done = tasks.filter(task => task.done).length;
+        const total = tasks.length;
+        const pct = total ? Math.round((done / total) * 100) : 0;
+        setPetState('happy', `今日待办完成 ${done}/${total} 项 (${pct}%)，继续加油！💪`, true);
+        appendLog(`点击气泡「今日进度」：汇报进度 ${done}/${total} (${pct}%)`);
+      }
+    }
+
+    function desktopWorkArea() {
+      const canvas = document.getElementById('desktop-canvas').getBoundingClientRect();
+      return {
+        left: canvas.left + 8,
+        top: canvas.top + document.getElementById('mac-menubar').offsetHeight + 8,
+        right: canvas.right - 8,
+        bottom: canvas.bottom - document.getElementById('win-taskbar').offsetHeight - 8
+      };
+    }
+
+    function moveWidgetTo(x, y) {
+      const widget = document.getElementById('desktop-widget');
+      const pet = document.getElementById('pet-container').getBoundingClientRect();
+      const area = desktopWorkArea();
+      // Keep the dock reachable when the user folds the panel at the bottom edge.
+      const dockRoom = 40;
+      widgetOffsetX = Math.max(widgetOffsetX + area.left - pet.left, Math.min(x, widgetOffsetX + area.right - pet.right));
+      widgetOffsetY = Math.max(widgetOffsetY + area.top - pet.top, Math.min(y, widgetOffsetY + area.bottom - pet.bottom - dockRoom));
+      widget.style.translate = `${widgetOffsetX}px ${widgetOffsetY}px`;
+      updateAdaptiveDirections();
+    }
+
+    function updateAdaptiveDirections() {
+      const widget = document.getElementById('desktop-widget');
+      const origin = widget.getBoundingClientRect();
+      const pet = document.getElementById('pet-container').getBoundingClientRect();
+      const area = desktopWorkArea();
+      const card = document.getElementById('main-task-card');
+      const list = document.getElementById('task-list-container');
+      const gap = 4;
+
+      const width = Math.min(widgetWidth, area.right - area.left);
+      card.style.width = `${width}px`;
+      const desiredHeight = card.offsetHeight - list.offsetHeight + taskListHeight;
+      const above = pet.top - gap - area.top;
+      const below = area.bottom - pet.bottom - gap;
+      const right = area.right - origin.left;
+      const left = pet.right - area.left;
+      // Defer placement changes until the drag ends so the panel doesn't flip mid-gesture.
+      const horizontal = resizeState?.horizontal ?? (right < width && left > right ? 'left' : 'right');
+      const vertical = resizeState?.vertical ?? (below < desiredHeight && above > below ? 'up' : 'down');
+      const opensLeft = horizontal === 'left';
+      const opensUp = vertical === 'up';
+      const panelLeft = Math.max(area.left, Math.min(opensLeft ? pet.right - width : origin.left, area.right - width));
+
+      widget.dataset.panelHorizontal = horizontal;
+      widget.dataset.panelVertical = vertical;
+      widget.style.setProperty('--panel-x', `${panelLeft - origin.left}px`);
+      widget.style.setProperty('--panel-y', `${opensUp ? origin.bottom - pet.top + gap : pet.bottom - origin.top + gap}px`);
+      widget.style.setProperty('--panel-room', `${Math.max(0, opensUp ? above : below)}px`);
+      widget.style.setProperty('--panel-origin', `${opensUp ? 'bottom' : 'top'} ${opensLeft ? 'right' : 'left'}`);
+      widget.style.setProperty('--panel-fold-y', opensUp ? '16px' : '-16px');
+
+      const bubbleGap = 12;
+      const bubbleLeft = pet.left - area.left - bubbleGap;
+      const bubbleRight = area.right - pet.right - bubbleGap;
+      const bubblesOnLeft = bubbleRight < 240 && bubbleLeft > bubbleRight;
+      const side = bubblesOnLeft ? 'left' : 'right';
+      widget.style.setProperty('--bubble-x', `${bubblesOnLeft ? origin.right - pet.left + bubbleGap : pet.right - origin.left + bubbleGap}px`);
+      widget.style.setProperty('--bubble-room', `${Math.min(240, Math.max(0, bubblesOnLeft ? bubbleLeft : bubbleRight))}px`);
+      widget.style.setProperty('--dock-right', `${origin.right - pet.right}px`);
+      if (widget.dataset.bubbleSide !== side) {
+        widget.dataset.bubbleSide = side;
+        const from = bubblesOnLeft ? 'r' : 'l';
+        const to = bubblesOnLeft ? 'l' : 'r';
+        for (let i = 1; i <= 3; i++) {
+          document.getElementById(`bubble-item-${i}`).classList.replace(`bubble-pop-${from}-${i}`, `bubble-pop-${to}-${i}`);
+        }
+        document.getElementById('bubble-triangle-left').classList.toggle('hidden', bubblesOnLeft);
+        document.getElementById('bubble-triangle-right').classList.toggle('hidden', !bubblesOnLeft);
+      }
+    }
+
+    function demoQuadrantTopLeft() {
+      const area = desktopWorkArea();
+      const pet = document.getElementById('pet-container').getBoundingClientRect();
+      moveWidgetTo(widgetOffsetX + area.right - pet.right, widgetOffsetY + area.bottom - pet.bottom);
+      if (isMenuCardHidden) toggleTaskMenuCard(true);
+      appendLog('【痛点演练】已将小人摆放至屏幕右下角：检测到右下方空间不足，任务清单自动向【左上方】整洁弹出！');
+    }
+
+    function demoSampleJokeBubble() {
+      updateAdaptiveDirections();
+      handleBubbleItemClick('joke');
+    }
+
     function interactWithPet() {
       // P0 Priority Lock (Rule 3.1 / 5.4): Active due reminder cannot be overwritten by ordinary pet clicks!
       if (activeReminderTaskId && activeReminderState) {
@@ -3209,11 +3711,8 @@
         return;
       }
 
-      const pack = getCurrentPetPack();
-      const quote = pack.quotes[quoteIdx % pack.quotes.length];
-      quoteIdx++;
-      setPetState('happy', quote);
-      appendLog(`点击互动宠物 (${pack.id})：播放 react 动作与专属台词「${quote}」 (A10)`);
+      // v4.1: Click pet to toggle 3 quick bubbles
+      toggleQuickBubbles();
     }
 
     function setPetState(state, bubbleMessage, autoReset = true) {
@@ -3238,7 +3737,9 @@
         sprite.classList.add('anim-idle');
       }
 
+      const bubbleWrapper = document.getElementById('speech-bubble-wrapper');
       if (bubbleMessage) {
+        if (bubbleWrapper) bubbleWrapper.classList.remove('hidden');
         bubbleText.innerHTML = bubbleMessage;
       } else if (state === 'idle' && !activeReminderTaskId) {
         updateCountdownDisplay();
@@ -3258,8 +3759,10 @@
           }
           sprite.classList.remove('anim-happy', 'anim-alert');
           sprite.classList.add('anim-idle');
-          updateCountdownDisplay();
-        }, 2800);
+          if (bubbleWrapper && !activeReminderTaskId) {
+            bubbleWrapper.classList.add('hidden');
+          }
+        }, 4500);
       }
     }
 
@@ -3315,6 +3818,12 @@
 
     function updateCountdownDisplay() {
       if (activeReminderTaskId) return;
+      const bubbleWrapper = document.getElementById('speech-bubble-wrapper');
+      if (!bubbleWrapper || bubbleWrapper.classList.contains('hidden')) return;
+
+      const titleTag = document.getElementById('bubble-title-tag');
+      if (titleTag && titleTag.textContent.includes('开心一刻')) return; // 不要覆盖正在看的笑话
+
       const bubbleText = document.getElementById('bubble-text');
       if (!bubbleText) return;
 
@@ -3407,6 +3916,7 @@
         document.getElementById('platform-diff-desc').innerHTML = '驻留右下角系统托盘（System Tray）；覆盖窗口 <code>Alt+F4</code> 关闭路径展示选择框；使用带 AppUserModelID 的原生 Toast 通知点击定位。';
         appendLog('切换至 Windows 11 桌面视图（右下角系统托盘菜单 + 右下角 Toast 通知）');
       }
+      moveWidgetTo(widgetOffsetX, widgetOffsetY);
     }
 
     function toggleSystemMenu(forceState) {
@@ -3580,6 +4090,64 @@
       appendLog(`开机自启动设置变更为：${openAtLogin ? '已开启' : '已关闭'} -> 调用 app.setLoginItemSettings({ openAtLogin: ${openAtLogin} }) 并持久化到 SQLite (A20)`);
     }
 
+    function renderSoftwareUpdate() {
+      const installed = updatePhase === 'installed';
+      document.getElementById('settings-app-version').textContent = `v${installed ? DEMO_NEW_VERSION : DEMO_INSTALLED_VERSION}`;
+      document.getElementById('settings-whats-new').classList.toggle('hidden', !installed);
+      document.getElementById('software-update-badge').classList.toggle('hidden', installed);
+
+      const messages = {
+        available: [`发现新版本 v${DEMO_NEW_VERSION}`, '更新'],
+        downloading: [`正在后台下载 v${DEMO_NEW_VERSION}`],
+        ready: [`v${DEMO_NEW_VERSION} 已下载`, '重启更新'],
+        restarting: ['正在重启仔仔…'],
+        installed: ['']
+      };
+      const [status, action] = messages[updatePhase];
+      const settings = document.getElementById('btn-header-settings');
+      settings.title = status ? `组件偏好设置 · ${status}` : '组件偏好设置';
+      settings.setAttribute('aria-label', settings.title);
+      const statusText = document.getElementById('software-update-status');
+      statusText.textContent = updatePhase === 'downloading' ? `${status} · ${updateProgress}%` : status;
+      statusText.classList.toggle('hidden', installed);
+      const button = document.getElementById('software-update-action');
+      button.classList.toggle('hidden', !action);
+      button.textContent = action ?? '';
+      const progress = document.getElementById('software-update-progress');
+      progress.classList.toggle('hidden', updatePhase !== 'downloading');
+      progress.value = updateProgress;
+    }
+
+    function advanceSoftwareUpdate() {
+      if (updatePhase === 'available') {
+        updatePhase = 'downloading';
+        renderSoftwareUpdate();
+        const download = setInterval(() => {
+          updateProgress += 20;
+          if (updateProgress === 100) {
+            clearInterval(download);
+            updatePhase = 'ready';
+          }
+          renderSoftwareUpdate();
+        }, 280);
+      } else if (updatePhase === 'ready') {
+        updatePhase = 'restarting';
+        renderSoftwareUpdate();
+        setTimeout(() => {
+          updatePhase = 'installed';
+          renderSoftwareUpdate();
+          if (!document.getElementById('modal-settings').classList.contains('hidden')) closeModal();
+          showWhatsNew(true);
+        }, 700);
+      }
+    }
+
+    function showWhatsNew(afterUpdate = false) {
+      const label = afterUpdate ? '已更新到' : '当前版本';
+      document.getElementById('whats-new-version').textContent = `${label} v${DEMO_NEW_VERSION}`;
+      document.getElementById('version-whats-new').showModal();
+    }
+
     function switchTab(tab) {
       currentTab = tab;
       renderAll();
@@ -3620,9 +4188,12 @@
     }
 
     // Initial render
+    renderSoftwareUpdate();
     renderEditorTimeSlots();
     updateCountdownDisplay();
     renderAll();
+    updateAdaptiveDirections();
+    window.addEventListener('resize', () => moveWidgetTo(widgetOffsetX, widgetOffsetY));
   </script>
 </body>
 </html>

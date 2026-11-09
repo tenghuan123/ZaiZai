@@ -2,6 +2,7 @@ import type { AppUpdater, UpdateInfo } from 'electron-updater'
 import type { EventEmitter } from 'node:events'
 import type { UpdateState, UpdateStatus } from '../../shared/updates'
 import { AppError } from '../domain/errors'
+import type { InstalledRelease } from './installed-release'
 
 export type UpdateDriver = Pick<AppUpdater, 'checkForUpdates' | 'downloadUpdate' | 'quitAndInstall'
   | 'autoDownload' | 'autoInstallOnAppQuit' | 'allowDowngrade' | 'allowPrerelease'> & Pick<EventEmitter, 'on' | 'removeListener'>
@@ -17,7 +18,7 @@ export class UpdateService {
 
   constructor(private readonly driver: UpdateDriver | null, private readonly currentVersion: string,
     disabledReason: string, private readonly changed: (state: UpdateState) => void,
-    private readonly log: (event: string, details?: object) => void) {
+    private readonly log: (event: string, details?: object) => void, private readonly release?: InstalledRelease) {
     this.status = driver ? { phase: 'idle' } : { phase: 'disabled', reason: disabledReason }
     if (!driver) return
     driver.autoDownload = false
@@ -32,7 +33,14 @@ export class UpdateService {
     driver.on('error', this.failed)
   }
 
-  getState(): UpdateState { return { currentVersion: this.currentVersion, status: this.status } }
+  getState(): UpdateState {
+    return { currentVersion: this.currentVersion, status: this.status, whatsNew: this.release?.whatsNew ?? null }
+  }
+
+  acknowledgeWhatsNew(): void {
+    this.release?.acknowledge()
+    this.changed(this.getState())
+  }
 
   start(): void {
     if (!this.driver || this.disposed || this.startupTimer || this.interval) return

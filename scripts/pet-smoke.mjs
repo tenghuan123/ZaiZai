@@ -319,7 +319,7 @@ try {
     const panelTop = panel.bounds.y + cardBox.y
     const panelBottom = panelTop + cardBox.height
     const gap = vertical === 'up' ? petTop - panelBottom : panelTop - petTop - petBox.height
-    assert.ok(gap >= 16 && gap <= 24, `visible card-to-pet gap: ${gap}px`)
+    assert.ok(gap >= 3 && gap <= 5, `visible card-to-pet gap: ${gap}px`)
     assert.ok(vertical === 'up' ? panel.bounds.y + panel.bounds.height > bounds.y : panel.bounds.y < bounds.y + bounds.height)
   }
   report.checks.push('drag stops on release outside the window, even when pointerup is lost; all four corners still expand around the pet')

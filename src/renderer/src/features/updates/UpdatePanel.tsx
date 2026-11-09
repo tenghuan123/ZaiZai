@@ -1,7 +1,9 @@
 import { useEffect, useRef, useState } from 'react'
 import type { Updates } from './use-updates'
 
-export function UpdatePanel({ updates, onInstall, busy }: { updates: Updates; onInstall: () => Promise<void>; busy: boolean }): React.JSX.Element {
+export function UpdatePanel({ updates, onInstall, onWhatsNew, busy }: {
+  updates: Updates; onInstall: () => Promise<void>; onWhatsNew: () => void; busy: boolean
+}): React.JSX.Element {
   const status = updates.state?.status
   const canCheck = status && ['idle', 'up-to-date', 'error'].includes(status.phase)
   return <section className="preference-group update-panel" aria-label="软件更新">
@@ -17,29 +19,36 @@ export function UpdatePanel({ updates, onInstall, busy }: { updates: Updates; on
       {status && 'progress' in status && status.phase === 'downloading' && <progress aria-label="更新下载进度" max={100} value={status.progress} />}
       {status && 'notes' in status && status.notes && <details><summary>更新内容</summary><p className="update-notes">{status.notes}</p></details>}
     </div>
+    {updates.state?.whatsNew && <div className="preference-tools"><button disabled={busy} onClick={onWhatsNew}>本版本新功能</button></div>}
     {updates.error && <p className="editor-error" role="alert">{updates.error}</p>}
   </section>
 }
 
-export function UpdateNotice({ updates, onDetails, visible = true }: { updates: Updates; onDetails: () => void; visible?: boolean }): React.JSX.Element | null {
-  const [dismissed, setDismissed] = useState('')
-  const channel = useRef<BroadcastChannel | null>(null)
+export function WhatsNewDialog({ version, notes, automatic, onClose, error }: {
+  version: string; notes: string; automatic: boolean; onClose: () => void | Promise<void>; error: string
+}): React.JSX.Element {
+  const dialog = useRef<HTMLDialogElement>(null)
+  const [busy, setBusy] = useState(false)
   useEffect(() => {
-    const notices = new BroadcastChannel('update-notice-dismissal')
-    channel.current = notices
-    notices.onmessage = event => { if (typeof event.data === 'string') setDismissed(event.data) }
-    return () => { notices.close(); channel.current = null }
+    const element = dialog.current
+    element?.showModal()
+    return () => element?.close()
   }, [])
-  const status = updates.state?.status
-  if (!visible || !status || (status.phase !== 'downloading' && status.phase !== 'ready')) return null
-  const key = `${status.version}/${status.phase}`
-  if (dismissed === key) return null
-  return <aside className="update-notice" aria-label="新版本提示" role="status">
-    <strong>{status.phase === 'ready' ? `版本 ${status.version} 已就绪` : `发现新版本 ${status.version}`}</strong>
-    <span>{status.phase === 'ready' ? '重启后完成更新' : `后台下载中 ${status.progress}%`}</span>
-    <div><button onClick={onDetails}>查看详情</button>
-      {status.phase === 'ready' && <button className="primary" onClick={() => { void updates.install() }}>重启更新</button>}
-      <button onClick={() => { setDismissed(key); channel.current?.postMessage(key) }}>稍后</button></div>
-    {updates.error && <p role="alert">{updates.error}</p>}
-  </aside>
+  async function close(): Promise<void> {
+    if (busy) return
+    setBusy(true)
+    try { await onClose() }
+    finally { setBusy(false) }
+  }
+  const items = notes.split(/\r?\n/).map(line => line.trim().replace(/^[-*]\s+/, '')).filter(Boolean)
+  return <dialog ref={dialog} className="task-editor whats-new-dialog" aria-labelledby="whats-new-heading"
+    onCancel={event => { event.preventDefault(); void close() }}>
+    <header>
+      <p>{automatic ? '已更新到' : '当前版本'} v{version}</p>
+      <h2 id="whats-new-heading">本版本新功能</h2>
+    </header>
+    <ul>{items.map((item, index) => <li key={index}>{item}</li>)}</ul>
+    {error && <p className="editor-error" role="alert">{error}</p>}
+    <footer className="editor-actions"><button className="primary" autoFocus disabled={busy} onClick={() => { void close() }}>知道了</button></footer>
+  </dialog>
 }

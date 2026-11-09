@@ -38,7 +38,7 @@ const wrapper = join(directory, 'launch.cjs')
 await writeFile(wrapper, `const { app } = require('electron');
 Object.defineProperty(app, 'isPackaged', { get: () => true });
 Object.defineProperty(process, 'resourcesPath', { value: ${JSON.stringify(resources)} });
-app.getVersion = () => '0.1.0';
+app.getVersion = () => process.env.TIA_TEST_APP_VERSION || '0.1.0';
 const { autoUpdater } = require(${JSON.stringify(require.resolve('electron-updater'))});
 Object.defineProperty(autoUpdater.app, 'baseCachePath', { get: () => ${JSON.stringify(join(directory, 'cache'))} });
 globalThis.__updateInstallCalls = [];
@@ -49,6 +49,8 @@ const env = { ...process.env, TIA_M0_DATA_DIR: join(directory, 'data') }
 delete env.ELECTRON_RUN_AS_NODE; delete env.ELECTRON_RENDERER_URL
 const report = { directory, checks: [], errors: [], status: 'running' }
 let app, page
+const launch = version => _electron.launch({ executablePath: require('electron'), args: [wrapper],
+  env: { ...env, TIA_TEST_APP_VERSION: version }, timeout: 30_000 })
 async function until(action, message) {
   const deadline = Date.now() + 20_000
   while (Date.now() < deadline) { if (await action()) return; await new Promise(resolve => setTimeout(resolve, 50)) }
@@ -57,11 +59,12 @@ async function until(action, message) {
 async function phase() { return page.evaluate(async () => (await window.desktop.updates.getState()).value.status.phase) }
 try {
   assert.equal(process.platform, 'darwin', 'This installed-updater harness currently targets macOS.')
-  app = await _electron.launch({ executablePath: require('electron'), args: [wrapper], env, timeout: 30_000 })
+  app = await launch('0.1.0')
   const { panel: panelPage, pet } = await desktopPages(app)
   page = panelPage; page.setDefaultTimeout(15_000)
   page.on('pageerror', error => report.errors.push(error.message))
   await page.waitForSelector('.widget')
+  assert.equal(await page.getByRole('dialog', { name: '本版本新功能', exact: true }).count(), 0)
   await page.getByLabel('新增待办', { exact: true }).fill('更新期间保留的任务')
   await page.getByRole('button', { name: '快捷新增任务', exact: true }).click()
   await page.getByRole('article', { name: '更新期间保留的任务', exact: true }).waitFor()
@@ -90,9 +93,8 @@ try {
   await panel.scrollIntoViewIfNeeded()
   await page.screenshot({ path: join(directory, 'settings-ready.png'), omitBackground: true })
   await page.getByRole('dialog').getByRole('button', { name: '完成', exact: true }).click()
-  await page.getByRole('status', { name: '新版本提示', exact: true }).waitFor()
+  await page.locator('.settings-update-dot').waitFor()
   await page.screenshot({ path: join(directory, 'update-ready.png'), omitBackground: true })
-  await page.getByRole('button', { name: '稍后', exact: true }).click()
   assert.equal(await page.getByRole('status', { name: '新版本提示', exact: true }).count(), 0)
   const after = await page.evaluate(async () => (await window.desktop.bootstrap()).value)
   assert.deepEqual(after.today.items, before.today.items)
@@ -102,7 +104,7 @@ try {
   await pet.getByRole('button', { name: '展开清单', exact: true }).waitFor()
   assert.equal(await pet.getByRole('status', { name: '新版本提示', exact: true }).count(), 0)
   await pet.getByRole('button', { name: '展开清单', exact: true }).click()
-  report.checks.push('verified background download, release notes, dismissible prompt and task preservation work without automatic installation')
+  report.checks.push('verified background download, release notes, settings red dot and task preservation work without automatic installation')
 
   await page.getByRole('button', { name: '组件偏好设置', exact: true }).click()
   await page.getByRole('dialog').getByLabel('固定下班时间', { exact: true }).fill('19:45')
@@ -111,6 +113,35 @@ try {
   assert.deepEqual(await app.evaluate(() => globalThis.__updateInstallCalls[0]), [false, true])
   assert.equal((await page.evaluate(async () => (await window.desktop.bootstrap()).value)).settings.offworkTime, '19:45')
   report.checks.push('restart-update dispatches exactly once through the real IPC/service; OS installation is stubbed and not claimed as verified')
+
+  await page.getByRole('button', { name: '关闭设置', exact: true }).click()
+  await page.getByRole('button', { name: '仅显示桌宠', exact: true }).click()
+  await pet.getByRole('button', { name: '展开清单', exact: true }).waitFor()
+  await app.close()
+  app = await launch('0.2.0')
+  page = (await desktopPages(app)).panel
+  page.on('pageerror', error => report.errors.push(error.message))
+  let whatsNew = page.getByRole('dialog', { name: '本版本新功能', exact: true })
+  await whatsNew.getByText('已更新到 v0.2.0', { exact: true }).waitFor()
+  await whatsNew.getByText(/透明留白可以点穿/).waitFor()
+  await page.screenshot({ path: join(directory, 'whats-new.png'), omitBackground: true })
+  await whatsNew.getByRole('button', { name: '知道了', exact: true }).click()
+  await until(() => page.evaluate(async () => {
+    const result = await window.desktop.bootstrap()
+    return result.ok && result.value.window.mode === 'compact' && !result.value.window.panel.visible
+  }), 'restoring compact mode after first-open notes')
+  await app.close()
+  app = await launch('0.2.0')
+  const reopened = await desktopPages(app)
+  page = reopened.panel
+  whatsNew = page.getByRole('dialog', { name: '本版本新功能', exact: true })
+  page.on('pageerror', error => report.errors.push(error.message))
+  await reopened.pet.getByRole('button', { name: '展开清单', exact: true }).click()
+  await page.getByRole('button', { name: '组件偏好设置', exact: true }).click()
+  await whatsNew.waitFor({ state: 'hidden' })
+  await page.getByRole('region', { name: '软件更新', exact: true }).getByRole('button', { name: '本版本新功能', exact: true }).click()
+  await whatsNew.getByText('当前版本 v0.2.0', { exact: true }).waitFor()
+  report.checks.push('first launch after a version change shows bundled notes once, restores compact mode, and keeps the notes available in settings')
   assert.deepEqual(report.errors, [])
   assert.ok(requests.some(path => path.includes('latest-mac.yml')))
   assert.ok(requests.some(path => path.includes('test-arm64.zip')))

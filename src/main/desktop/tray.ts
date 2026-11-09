@@ -13,9 +13,10 @@ export class DesktopTray {
   constructor(resources: string, private readonly desktop: DesktopWindow, private readonly tasks: TaskService,
     private readonly settings: SettingsRepository, private readonly preferences: SettingsService, private readonly changed: () => void,
     private readonly quit: () => void, private readonly reportError: (error: unknown) => void) {
-    const image = nativeImage.createFromPath(join(resources, process.platform === 'darwin' ? 'trayTemplate.png' : 'trayColor.png'))
+    const isMac = process.platform === 'darwin'
+    const image = nativeImage.createFromPath(join(resources, isMac ? 'trayTemplate.png' : 'trayColor.png'))
     if (image.isEmpty()) throw new Error('托盘图标未能加载。')
-    image.setTemplateImage(process.platform === 'darwin')
+    if (isMac) image.setTemplateImage(true)
     this.tray = new Tray(image)
     this.tray.setToolTip('zaizai')
     if (process.platform === 'win32') {

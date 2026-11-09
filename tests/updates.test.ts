@@ -1,8 +1,12 @@
 import { test } from 'node:test'
 import assert from 'node:assert/strict'
 import { EventEmitter } from 'node:events'
+import { mkdtempSync, rmSync } from 'node:fs'
+import { tmpdir } from 'node:os'
+import { join } from 'node:path'
 import type { UpdateCheckResult, UpdateInfo } from 'electron-updater'
 import { UpdateService } from '../src/main/updates/service'
+import { InstalledRelease } from '../src/main/updates/installed-release'
 import type { UpdateState } from '../src/shared/updates'
 
 const info: UpdateInfo = { version: '0.2.0', files: [], path: '', sha512: '', releaseDate: '2026-11-04', releaseNotes: '新增更新功能' }
@@ -42,10 +46,24 @@ function fixture(driver: FakeUpdater | null = new FakeUpdater()) {
 test('unconfigured builds cannot contact a server or install an update', () => {
   const f = fixture(null)
   f.service.start()
-  assert.deepEqual(f.service.getState(), { currentVersion: '0.1.0', status: { phase: 'disabled', reason: '此安装包未配置更新。' } })
+  assert.deepEqual(f.service.getState(), { currentVersion: '0.1.0', status: { phase: 'disabled', reason: '此安装包未配置更新。' }, whatsNew: null })
   assert.throws(() => f.service.check(), /未配置更新/)
   assert.throws(() => f.service.install(), /尚未下载完成/)
   f.service.dispose()
+})
+
+test('existing installs see release notes once and downgrading does not reset the seen version', () => {
+  const directory = mkdtempSync(join(tmpdir(), 'zaizai-release-'))
+  try {
+    const open = (version: string) => new InstalledRelease(join(directory, 'last-seen-version'), version, '有新功能', true,
+      error => { throw error })
+    const upgraded = open('0.10.0')
+    assert.equal(upgraded.whatsNew?.pending, true)
+    upgraded.acknowledge()
+    assert.equal(open('0.9.9').whatsNew?.pending, false)
+    assert.equal(open('0.10.0').whatsNew?.pending, false)
+    assert.equal(open('0.10.1').whatsNew?.pending, true)
+  } finally { rmSync(directory, { recursive: true, force: true }) }
 })
 
 test('startup and periodic checks run once per interval and stop on shutdown', async context => {

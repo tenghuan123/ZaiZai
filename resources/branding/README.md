@@ -11,6 +11,6 @@
 - `zaizai.icns`：macOS 多尺寸图标，包含 16–1024 px 表示。
 - `zaizai.ico`：Windows 图标，包含 16、24、32、48、64、128、256 px 表示；当前仅生成资源，Windows 应用未验收。
 
-在 macOS 运行 `npm run icons:mac` 可从底版重新生成 PNG / ICNS / ICO，使用系统 `sips` 与 `iconutil` 转换尺寸和格式。命令也会从 SVG 生成菜单栏的 18 px 和 36 px 模板，系统会根据背景着色。图标在浅色和深色背景的显示见 [验收预览](../../docs/branding-evidence/icon-preview.png)。
+在 macOS 运行 `npm run icons:mac` 可重新生成 PNG、ICNS、ICO 和[托盘图标](../tray)。macOS 菜单栏使用 18 px 和 36 px 的模板图标，系统根据背景着色。Windows 托盘使用 32 px 的彩色图标。应用图标在浅色和深色背景的显示见 [验收预览](../../docs/branding-evidence/icon-preview.png)。
 
 `electron-builder.yml` 指向以上正式图标。应用显示名与包名为 `zaizai`；原 bundle ID、通知身份和数据目录继续保留，以承接已有设置与任务。

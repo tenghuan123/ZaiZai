@@ -1,5 +1,6 @@
 import type { CompletionResult, CreateOnceInput, CreatePlanInput, DailyReport, DayView, Occurrence, OccurrenceRef, Priority, RepeatPlan, UpdateOnceInput, UpdatePlanInput } from './tasks'
 import type { UpdateState } from './updates'
+import type { HitRegion } from './window'
 import type { WindowDirection, WindowLayout } from './window'
 import type { PetAction } from './pet'
 import type { HumorContent } from './humor'
@@ -47,6 +48,7 @@ export interface DesktopAPI {
     getState(): Promise<AppResult<UpdateState>>
     check(): Promise<AppResult<void>>
     install(): Promise<AppResult<void>>
+    acknowledgeWhatsNew(): Promise<AppResult<void>>
     subscribe(listener: (state: UpdateState) => void): () => void
   }
   tasks: {
@@ -82,6 +84,7 @@ export interface DesktopAPI {
   endDrag(): Promise<AppResult<void>>
   beginResize(): Promise<AppResult<void>>
   endResize(): Promise<AppResult<void>>
+  setHitRegions(regions: HitRegion[]): void
   previewReminderSound(): Promise<AppResult<void>>
   showContextMenu(): Promise<AppResult<void>>
   subscribeSound(listener: () => void): () => void
@@ -89,6 +92,7 @@ export interface DesktopAPI {
 }
 export const channels = {
   updateState: 'updates:state', updateCheck: 'updates:check', updateInstall: 'updates:install', updateChanged: 'updates:changed',
+  updateAcknowledge: 'updates:acknowledge-whats-new',
   bootstrap: 'app:bootstrap', day: 'tasks:get-day', history: 'tasks:history-dates', createOnce: 'tasks:create-once',
   dailyReport: 'tasks:daily-report',
   updateOnce: 'tasks:update-once', complete: 'tasks:set-completed', remove: 'tasks:remove', move: 'tasks:move-today',
@@ -99,5 +103,6 @@ export const channels = {
   humorContent: 'pet:humor-content',
   hide: 'window:hide', close: 'window:request-close', quit: 'app:quit', dragStart: 'window:drag-start',
   dragMove: 'window:drag-move', dragEnd: 'window:drag-end', resizeStart: 'window:resize-start', resizeEnd: 'window:resize-end',
+  hitRegions: 'window:hit-regions',
   previewSound: 'reminders:preview-sound', playSound: 'reminders:play-sound', contextMenu: 'window:context-menu', changed: 'app:changed'
 } as const

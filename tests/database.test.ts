@@ -10,7 +10,7 @@ import { createTaskModel } from '../src/main/database/migrations/002-task-model'
 import { addSchedulingPreferences } from '../src/main/database/migrations/003-scheduling'
 import { fixture, saved } from './helpers'
 import { fitToWorkArea, petAnchor, placePetWindow, placeTaskPanel } from '../src/main/desktop/geometry'
-import { LARGE_SIZE, PET_AREA } from '../src/shared/window'
+import { LARGE_SIZE, PANEL_FRAME_INSET, PET_AREA, PET_BUTTON } from '../src/shared/window'
 import { AppError } from '../src/main/domain/errors'
 
 function m0(file: string): Database.Database {
@@ -179,8 +179,10 @@ test('the panel opens on the available sides of a separate pet window on a secon
       assert.deepEqual(fitToWorkArea(pet.bounds, area), pet.bounds)
       assert.deepEqual(fitToWorkArea(panel.bounds, area), panel.bounds)
       assert.deepEqual(panel.direction, { horizontal, vertical })
-      assert.equal(vertical === 'up' ? anchor.y - panel.bounds.y - panel.bounds.height
-        : panel.bounds.y - anchor.y - PET_AREA.height, 6)
+      const petTop = anchor.y + PET_BUTTON.top
+      const cardTop = panel.bounds.y + PANEL_FRAME_INSET
+      const cardBottom = panel.bounds.y + panel.bounds.height - PANEL_FRAME_INSET
+      assert.equal(vertical === 'up' ? petTop - cardBottom : cardTop - petTop - PET_BUTTON.height, 4)
     }
   }
 })
@@ -193,5 +195,6 @@ test('panel placement shrinks to the free space beside the pet without covering 
   assert.deepEqual(petAnchor(pet.bounds, pet.layout), anchor)
   assert.deepEqual(direction, { horizontal: 'left', vertical: 'up' })
   assert.deepEqual(fitToWorkArea(bounds, area), bounds)
-  assert.equal(bounds.height, anchor.y - area.y - 6)
+  assert.equal(bounds.y, area.y)
+  assert.equal(anchor.y + PET_BUTTON.top - (bounds.y + bounds.height - PANEL_FRAME_INSET), 4)
 })

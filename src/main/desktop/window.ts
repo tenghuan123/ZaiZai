@@ -2,11 +2,13 @@ import { BrowserWindow, dialog, screen } from 'electron'
 import type { DisplayMode, PanelTarget, PetPresentation, Settings, WindowState } from '../../shared/contracts'
 import { channels } from '../../shared/contracts'
 import { MIN_SIZE, MAX_SIZE, PANEL_HEIGHT_OFFSET, PET_AREA, PET_WINDOW_SIZE } from '../../shared/window'
-import type { WindowDirection, WindowLayout } from '../../shared/window'
+import type { HitRegion, WindowDirection, WindowLayout } from '../../shared/window'
 import type { SettingsRepository } from '../settings/repository'
-import { petAnchor, placePetWindow, placeTaskPanel } from './geometry'
+import { hitsRegion, petAnchor, placePetWindow, placeTaskPanel } from './geometry'
 import type { Point } from './geometry'
 import { MENU_TRANSITION_MS } from '../../shared/motion'
+
+const nativeHitTesting = process.platform === 'darwin' || process.platform === 'win32'
 
 interface WindowOptions {
   preload: string
@@ -30,7 +32,14 @@ export class DesktopWindow {
   private publishedVisibility = false
   private drag: { cursor: Point; anchor: Point; expandedSize: Settings['expandedSize'] } | undefined
   private compactTimer: ReturnType<typeof setTimeout> | undefined
-  private resize: { timer: ReturnType<typeof setInterval>; size: Settings['expandedSize'] } | undefined
+  private resize: {
+    timer: ReturnType<typeof setInterval>; cursor: Point; size: Settings['expandedSize']; initialSize: Settings['expandedSize']
+    bounds: Electron.Rectangle; direction: WindowDirection; moved: boolean
+  } | undefined
+  private returnToCompactAfterNotes = false
+  private hitRegions = new Map<BrowserWindow, HitRegion[]>()
+  private ignoringMouse = new Map<BrowserWindow, boolean>()
+  private hitTimer: ReturnType<typeof setInterval> | undefined
   private readonly expectedRenderer: URL
 
   constructor(private readonly store: SettingsRepository, private readonly options: WindowOptions) {
@@ -50,7 +59,7 @@ export class DesktopWindow {
       frame: false, transparent: true, resizable: false, maximizable: false,
       fullscreenable: false, alwaysOnTop: settings.alwaysOnTop, show: false,
       skipTaskbar: !settings.alwaysOnTop,
-      hasShadow: false, backgroundColor: '#00000000',
+      hasShadow: false, backgroundColor: '#00000000', acceptFirstMouse: true,
       webPreferences: { preload: options.preload, contextIsolation: true, nodeIntegration: false,
         sandbox: true, backgroundThrottling: true, autoplayPolicy: 'no-user-gesture-required' }
     }
@@ -88,6 +97,7 @@ export class DesktopWindow {
       if (!this.windowsAvailable) return
       this.endDrag()
       this.endResize()
+      this.hitRegions.delete(window)
       this.options.log('renderer-gone', { view, ...details })
       window.loadURL(this.rendererUrl(view)).catch(this.options.reportError)
     })
@@ -116,9 +126,40 @@ export class DesktopWindow {
     } catch { return false }
   }
 
-  async load(): Promise<void> {
+  async load(showWhatsNew = false): Promise<void> {
     await Promise.all([this.window.loadURL(this.rendererUrl('pet')), this.panel.loadURL(this.rendererUrl('panel'))])
+    if (showWhatsNew && this.mode === 'compact') {
+      this.returnToCompactAfterNotes = true
+      this.setMode('expanded', false)
+    }
     this.show()
+  }
+
+  finishWhatsNew(): void {
+    if (!this.returnToCompactAfterNotes) return
+    this.returnToCompactAfterNotes = false
+    this.setMode('compact', false)
+  }
+
+  setHitRegions(sender: Electron.WebContents, regions: HitRegion[]): void {
+    this.hitRegions.set(sender === this.window.webContents ? this.window : this.panel, regions)
+    this.refreshMouseInput()
+  }
+
+  private refreshMouseInput(): void {
+    if (!this.windowsAvailable || !nativeHitTesting) return
+    const cursor = screen.getCursorScreenPoint()
+    for (const window of [this.window, this.panel]) {
+      if (!window.isVisible()) continue
+      const { x, y } = window.getContentBounds()
+      const local = { x: cursor.x - x, y: cursor.y - y }
+      const capturing = this.drag || (window === this.panel && this.resize)
+      const folding = window === this.panel && this.mode === 'compact'
+      const ignore = folding || (!capturing && !this.hitRegions.get(window)?.some(region => hitsRegion(local, region)))
+      if (this.ignoringMouse.get(window) === ignore) continue
+      window.setIgnoreMouseEvents(ignore)
+      this.ignoringMouse.set(window, ignore)
+    }
   }
 
   get state(): WindowState {
@@ -132,21 +173,25 @@ export class DesktopWindow {
 
   setSystemIdle(idle: boolean): void { this.systemIdle = idle; this.options.changed() }
 
-  setMode(mode: DisplayMode): void {
-    if (this.mode === mode) return
+  setMode(mode: DisplayMode, persist = true): void {
+    if (this.mode === mode && !(persist && this.returnToCompactAfterNotes)) return
     this.endDrag()
     this.endResize()
-    this.store.updateSettings({ displayMode: mode })
+    if (persist) {
+      this.store.updateSettings({ displayMode: mode })
+      this.returnToCompactAfterNotes = false
+    }
+    if (this.mode === mode) return
     clearTimeout(this.compactTimer)
     this.compactTimer = undefined
     this.mode = mode
     if (mode === 'expanded') {
-      this.panel.setIgnoreMouseEvents(false)
+      if (!nativeHitTesting) this.panel.setIgnoreMouseEvents(false)
       this.placePanel(this.store.getSettings().expandedSize)
       if (this.window.isVisible()) this.panel.show()
     } else if (this.panel.isVisible()) {
       // Let the dock receive clicks as soon as it returns during the fold.
-      this.panel.setIgnoreMouseEvents(true)
+      if (!nativeHitTesting) this.panel.setIgnoreMouseEvents(true)
       this.compactTimer = setTimeout(() => {
         this.compactTimer = undefined
         if (!this.windowsAvailable) return
@@ -156,6 +201,7 @@ export class DesktopWindow {
         this.options.changed()
       }, MENU_TRANSITION_MS)
     }
+    this.refreshMouseInput()
     this.options.log('window-mode', this.state)
     this.options.changed()
   }
@@ -220,7 +266,14 @@ export class DesktopWindow {
     const visible = this.window.isVisible()
     if (visible === this.publishedVisibility) return
     this.publishedVisibility = visible
-    if (!visible) { this.endDrag(); this.endResize() }
+    if (visible && nativeHitTesting) {
+      this.refreshMouseInput()
+      this.hitTimer = setInterval(() => this.refreshMouseInput(), 16)
+    } else if (!visible) {
+      clearInterval(this.hitTimer)
+      this.hitTimer = undefined
+      this.endDrag(); this.endResize()
+    }
     this.options.log(visible ? 'window-shown' : 'window-hidden', this.state)
     this.options.changed()
   }
@@ -265,28 +318,45 @@ export class DesktopWindow {
   beginResize(): void {
     if (this.mode !== 'expanded' || this.resize || !this.panel.isVisible()) return
     this.endDrag()
-    const start = screen.getCursorScreenPoint(), bounds = this.panel.getBounds(), startedAt = Date.now()
-    const size = this.store.getSettings().expandedSize
+    const startedAt = Date.now()
     const timer = setInterval(() => {
-      if (!this.resize) return
       if (Date.now() - startedAt > 15_000) { this.endResize(); return }
-      const cursor = screen.getCursorScreenPoint()
-      const width = Math.min(MAX_SIZE.width, Math.max(MIN_SIZE.width, bounds.width + cursor.x - start.x))
-      const height = Math.min(MAX_SIZE.height, Math.max(MIN_SIZE.height, bounds.height + PANEL_HEIGHT_OFFSET + cursor.y - start.y))
-      this.resize.size = { width, height }
-      if (this.placePanel(this.resize.size)) this.options.changed()
+      this.sampleResize()
     }, 16)
-    this.resize = { timer, size }
+    const initialSize = this.store.getSettings().expandedSize
+    this.resize = { timer, cursor: screen.getCursorScreenPoint(), size: initialSize, initialSize,
+      bounds: this.panel.getBounds(), direction: this.panelDirection, moved: false }
+  }
+
+  private sampleResize(): void {
+    const resize = this.resize
+    if (!resize) return
+    const cursor = screen.getCursorScreenPoint()
+    // The grip stays at the lower right. Toward the free side is growth even at the screen edge.
+    const dx = (cursor.x - resize.cursor.x) * (resize.direction.horizontal === 'left' ? -1 : 1)
+    const dy = (cursor.y - resize.cursor.y) * (resize.direction.vertical === 'up' ? -1 : 1)
+    if (!resize.moved && Math.hypot(dx, dy) < 3) return
+    resize.moved = true
+    const width = dx === 0 ? resize.initialSize.width
+      : Math.min(MAX_SIZE.width, Math.max(MIN_SIZE.width, resize.bounds.width + dx))
+    const height = dy === 0 ? resize.initialSize.height
+      : Math.min(MAX_SIZE.height, Math.max(MIN_SIZE.height, resize.bounds.height + PANEL_HEIGHT_OFFSET + dy))
+    if (resize.size.width === width && resize.size.height === height) return
+    resize.size = { width, height }
+    this.placePanel(resize.size)
   }
 
   endResize(reportFailure = false): void {
     if (!this.resize) return
-    const { timer, size: expandedSize } = this.resize
+    if (reportFailure) this.sampleResize()
+    const { timer, size: expandedSize, moved } = this.resize
     clearInterval(timer)
     this.resize = undefined
+    if (!moved) return
     let failure: unknown
     try {
       this.store.updateSettings({ expandedSize })
+      this.placePanel(expandedSize)
     } catch (error) {
       failure = error
       this.options.reportError(error)
@@ -321,7 +391,7 @@ export class DesktopWindow {
     const petBounds = this.window.getBounds()
     const anchor = petAnchor(petBounds, this.layout)
     const placement = placeTaskPanel(anchor, expandedSize,
-      area ?? screen.getDisplayMatching({ ...anchor, ...PET_AREA }).workArea)
+      area ?? screen.getDisplayMatching({ ...anchor, ...PET_AREA }).workArea, this.resize?.direction)
     const previous = this.panelDirection
     this.panelDirection = placement.direction
     const bounds = this.panel.getBounds()
@@ -342,6 +412,7 @@ export class DesktopWindow {
 
   prepareToQuit(): void {
     clearTimeout(this.compactTimer)
+    clearInterval(this.hitTimer)
     this.endDrag()
     this.endResize()
     this.savePosition()

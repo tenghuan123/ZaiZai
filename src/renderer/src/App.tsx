@@ -15,10 +15,11 @@ import { useTaskCompletion } from './features/tasks/use-task-completion'
 import { CompletionEffects } from './features/tasks/CompletionEffects'
 import { MENU_TRANSITION_MS } from '../../shared/motion'
 import { SettingsDialog } from './features/settings/SettingsDialog'
-import { LARGE_SIZE, STANDARD_SIZE } from '../../shared/window'
+import { LARGE_SIZE, PANEL_FRAME_INSET, STANDARD_SIZE } from '../../shared/window'
 import { useUpdates } from './features/updates/use-updates'
-import { UpdateNotice } from './features/updates/UpdatePanel'
+import { WhatsNewDialog } from './features/updates/UpdatePanel'
 import { useWindowDrag } from './use-window-drag'
+import { useWindowHitRegions } from './use-window-hit-regions'
 
 const api = window.desktop
 function editorKey(target: EditorTarget): string {
@@ -28,6 +29,7 @@ function editorKey(target: EditorTarget): string {
 
 export function App(): React.JSX.Element {
   const updates = useUpdates()
+  useWindowHitRegions()
   const [selectedDate, setSelectedDate] = useState<string | null>(null)
   const { workspace, day, loading, error, setError, refresh, command } = useWorkspace(selectedDate)
   const [now, setNow] = useState(Date.now)
@@ -36,6 +38,7 @@ export function App(): React.JSX.Element {
   const [tab, setTab] = useState<'todo' | 'done' | 'plans'>('todo')
   const [showCalendar, setShowCalendar] = useState(false)
   const [showSettings, setShowSettings] = useState(false)
+  const [reviewWhatsNew, setReviewWhatsNew] = useState(false)
   const [showPet, setShowPet] = useState(false)
   const [showReport, setShowReport] = useState(false)
   const [petPreview, setPetPreview] = useState<PetAction>('idle')
@@ -47,7 +50,7 @@ export function App(): React.JSX.Element {
   const quickRequest = useRef(crypto.randomUUID())
   const busyRef = useRef(new Set<string>())
   const lastPanelRequest = useRef(0)
-  const resizeGesture = useRef<{ x: number; y: number; moved: boolean } | null>(null)
+  const resizePointer = useRef<number | null>(null)
   const snapshot = workspace?.snapshot
   const petPack = getPetPack(snapshot?.settings.petId)
   const activeReminderId = snapshot?.activeReminderIds[0] ?? null
@@ -185,19 +188,15 @@ export function App(): React.JSX.Element {
     })
   }
   function resizeStart(event: ReactPointerEvent<HTMLButtonElement>): void {
-    if (event.button !== 0) return
+    if (event.button !== 0 || !event.isPrimary) return
     event.preventDefault(); event.currentTarget.setPointerCapture(event.pointerId)
-    resizeGesture.current = { x: event.clientX, y: event.clientY, moved: false }
-  }
-  function resizeMove(event: ReactPointerEvent<HTMLButtonElement>): void {
-    const start = resizeGesture.current
-    if (!start || start.moved || Math.hypot(event.clientX - start.x, event.clientY - start.y) < 3) return
-    start.moved = true
+    resizePointer.current = event.pointerId
     void command(() => api.beginResize())
   }
-  function resizeEnd(): void {
-    const start = resizeGesture.current; resizeGesture.current = null
-    if (start?.moved) void command(() => api.endResize())
+  function resizeEnd(event: ReactPointerEvent<HTMLButtonElement>): void {
+    if (resizePointer.current !== event.pointerId) return
+    resizePointer.current = null
+    void command(() => api.endResize())
   }
   function toggleSize(): void {
     if (!snapshot) return
@@ -205,7 +204,11 @@ export function App(): React.JSX.Element {
     void command(() => api.settings.update({ expectedVersion: snapshot.settings.version,
       patch: { expandedSize: size.width >= 410 || size.height >= 580 ? STANDARD_SIZE : LARGE_SIZE } }))
   }
-  if (!workspace || !snapshot) return <main className="loading">{error || '桌面伙伴正在醒来…'}{error && <button onClick={() => { void refresh() }}>重新读取</button>}</main>
+  if (!workspace || !snapshot) return <main className="loading">{error || '桌面伙伴正在醒来…'}{error && <button data-window-hit onClick={() => { void refresh() }}>重新读取</button>}</main>
+  const updateStatus = updates.state?.status
+  const hasUpdate = updateStatus?.phase === 'downloading' || updateStatus?.phase === 'ready' || updateStatus?.phase === 'installing'
+  const whatsNew = updates.state?.whatsNew
+  const openWhatsNew = whatsNew?.pending && snapshot.window.visible && !compact
   const { horizontal, vertical } = snapshot.window.panel.direction
   const date = selectedDate ?? snapshot.today.date
   const past = date < snapshot.today.date
@@ -215,8 +218,8 @@ export function App(): React.JSX.Element {
   const urgentCount = day?.items.filter(item => { const value = item.kind === 'saved' ? item.occurrence : item; return value.priority === 'urgent' && !(item.kind === 'saved' && item.occurrence.status === 'completed') }).length ?? 0
   return <main className={`widget panel-window ${compact ? 'compact' : ''}`}
     data-horizontal={horizontal} data-vertical={vertical}
-    style={{ '--menu-duration': `${MENU_TRANSITION_MS}ms` } as CSSProperties}>
-    <section className="card" aria-hidden={compact} inert={compact}>
+    style={{ '--menu-duration': `${MENU_TRANSITION_MS}ms`, '--panel-inset': `${PANEL_FRAME_INSET}px` } as CSSProperties}>
+    <section className="card" data-window-hit aria-hidden={compact} inert={compact}>
       <header className="card-header" {...drag.handlers}
         onPointerDown={event => { if (!(event.target as Element).closest('button, input')) drag.handlers.onPointerDown(event) }}>
         <div className="window-controls">
@@ -231,7 +234,11 @@ export function App(): React.JSX.Element {
           <svg viewBox="0 0 16 16" fill="none" aria-hidden="true"><rect x="2" y="3.5" width="12" height="10.5" rx="2" /><path d="M5 2v3M11 2v3M2 7h12M5 10h2" /></svg></button>
         <button className={`layer-button ${snapshot.window.alwaysOnTop ? '' : 'desktop-layer'}`} aria-label="切换桌面层级" title={snapshot.window.alwaysOnTop ? '当前：始终置顶，点击切换为仅在桌面' : '当前：仅在桌面，点击恢复始终置顶'} onClick={() => { void command(() => api.settings.update({ expectedVersion: snapshot.settings.version, patch: { alwaysOnTop: !snapshot.settings.alwaysOnTop } })) }}>{snapshot.window.alwaysOnTop ? '📌 置顶' : '🖥 桌面'}</button>
         <button className={`settings-button ${showPet ? 'active' : ''}`} aria-label="桌宠动作" onClick={() => { setShowPet(value => !value); setShowSettings(false); setShowCalendar(false) }}>🐾</button>
-        <button className="settings-button" aria-label="组件偏好设置" onClick={() => { setShowSettings(value => !value); setShowPet(false) }}>⚙</button>
+        <button className="settings-button" aria-label="组件偏好设置" aria-description={hasUpdate ? '有新版本可用' : undefined}
+          title={hasUpdate ? `发现新版本 v${updateStatus.version}` : '组件偏好设置'}
+          onClick={() => { setShowSettings(value => !value); setShowPet(false) }}>⚙
+          {hasUpdate && <span className="settings-update-dot" aria-hidden="true" />}
+        </button>
       </div><div className="clock"><strong>{new Date(now).toLocaleTimeString('zh-CN', { hour: '2-digit', minute: '2-digit', hour12: false })}</strong>
         <span>{new Date(now).toLocaleDateString('zh-CN', { month: '2-digit', day: '2-digit', weekday: 'long' })}</span></div></header>
       {showPet ? <PetActions pack={petPack} selected={petPreview} blocked={!!activeReminderId} switching={busy.has('pet-selection')}
@@ -261,7 +268,9 @@ export function App(): React.JSX.Element {
           <button type="submit" className="add-button" aria-label="快捷新增任务" disabled={busy.has('quick')}>＋</button>
         </form>}
       </>}
-      <button className="resize-handle" aria-label="调整窗口尺寸" title="拖拽调整尺寸，双击切换标准与大尺寸" onPointerDown={resizeStart} onPointerMove={resizeMove} onPointerUp={resizeEnd} onPointerCancel={resizeEnd} onDoubleClick={toggleSize}>
+      <button className="resize-handle" aria-label="调整窗口尺寸"
+        title={`向${horizontal === 'left' ? '左' : '右'}${vertical === 'up' ? '上' : '下'}拖大清单，双击切换标准与大尺寸`}
+        onPointerDown={resizeStart} onPointerUp={resizeEnd} onPointerCancel={resizeEnd} onLostPointerCapture={resizeEnd} onDoubleClick={toggleSize}>
         <svg viewBox="0 0 12 12" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" aria-hidden="true" focusable="false">
           <line x1="10" y1="4" x2="4" y2="10" />
           <line x1="10" y1="8" x2="8" y2="10" />
@@ -269,8 +278,8 @@ export function App(): React.JSX.Element {
       </button>
     </section>
     <CompletionEffects pending={completion.pending} />
-    <UpdateNotice visible={!compact} updates={updates} onDetails={() => { setShowSettings(true); setShowPet(false) }} />
-    {showSettings && <SettingsDialog snapshot={snapshot} command={command} updates={updates} onClose={() => { setShowSettings(false); setError('') }} />}
+    {showSettings && <SettingsDialog snapshot={snapshot} command={command} updates={updates} onWhatsNew={() => setReviewWhatsNew(true)}
+      onClose={() => { setShowSettings(false); setError('') }} />}
     {showCalendar && <DateNavigator today={snapshot.today.date} selected={date} historyDates={workspace.historyDates} onSelect={selectDate} onClose={() => setShowCalendar(false)} />}
     {showReport && <DailyReportDialog onClose={() => setShowReport(false)} />}
     {editor && <TaskEditor key={editorKey(editor)} target={editor} now={now} command={command} onClose={() => { setEditor(null); setError('') }} onReload={reloadEditor}
@@ -282,6 +291,9 @@ export function App(): React.JSX.Element {
       }} />}
     {ending && <EndPlanDialog plan={ending} busy={busy.has(ending.id)} error={error} onClose={() => { setEnding(null); setError('') }}
       onConfirm={() => { void withBusy(ending.id, async () => { const result = await command(() => api.plans.end(ending.id)); if (result.ok) { setEnding(null); say('计划已结束，已有历史仍保留') } }) }} />}
-    {error && !editor && !ending && !showSettings && <div className="error-toast" role="alert">{error}<button aria-label="关闭错误提示" onClick={() => setError('')}>×</button></div>}
+    {updates.state && whatsNew && (openWhatsNew || reviewWhatsNew) && <WhatsNewDialog version={updates.state.currentVersion} notes={whatsNew.notes}
+      automatic={!!openWhatsNew} error={openWhatsNew ? updates.error : ''}
+      onClose={openWhatsNew ? updates.acknowledgeWhatsNew : () => setReviewWhatsNew(false)} />}
+    {error && !editor && !ending && !showSettings && <div className="error-toast" role="alert">{error}<button data-window-hit aria-label="关闭错误提示" onClick={() => setError('')}>×</button></div>}
   </main>
 }

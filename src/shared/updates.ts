@@ -4,4 +4,5 @@ export type UpdateStatus =
   | { phase: 'downloading' | 'ready' | 'installing'; version: string; notes: string; progress: number }
   | { phase: 'error'; message: string }
 
-export interface UpdateState { currentVersion: string; status: UpdateStatus }
+export interface WhatsNew { notes: string; pending: boolean }
+export interface UpdateState { currentVersion: string; status: UpdateStatus; whatsNew: WhatsNew | null }

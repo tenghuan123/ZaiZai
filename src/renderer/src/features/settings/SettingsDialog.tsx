@@ -4,9 +4,9 @@ import { LARGE_SIZE, STANDARD_SIZE } from '../../../../shared/window'
 import { UpdatePanel } from '../updates/UpdatePanel'
 import type { Updates } from '../updates/use-updates'
 
-export function SettingsDialog({ snapshot, command, onClose, updates }: {
+export function SettingsDialog({ snapshot, command, onClose, onWhatsNew, updates }: {
   snapshot: Snapshot; command: <T>(action: () => Promise<AppResult<T>>) => Promise<AppResult<T>>; onClose: () => void
-  updates: Updates
+  updates: Updates; onWhatsNew: () => void
 }): React.JSX.Element {
   const dialog = useRef<HTMLDialogElement>(null)
   const saving = useRef(false)
@@ -41,6 +41,7 @@ export function SettingsDialog({ snapshot, command, onClose, updates }: {
     <header className="editor-heading"><div><h2 id="settings-heading">⚙ 组件偏好设置</h2><p>管理自启动、铃声、桌面层级与窗口尺寸</p></div>
       <button aria-label="关闭设置" disabled={busy} onClick={close}>×</button></header>
     <fieldset disabled={busy} className="preference-groups">
+      <UpdatePanel updates={updates} onInstall={installUpdate} onWhatsNew={onWhatsNew} busy={busy} />
       <section className="preference-group">
         <label className="preference-row"><span><strong>🚀 开机自动启动</strong><small>登录系统后自动唤醒桌宠与提醒</small></span>
           <input aria-label="开机自动启动" type="checkbox" checked={settings.openAtLogin} onChange={event => { void update({ openAtLogin: event.target.checked }) }} /></label>
@@ -56,7 +57,7 @@ export function SettingsDialog({ snapshot, command, onClose, updates }: {
         <div><div className="preference-row"><strong>📐 框框尺寸预设</strong><div className="segmented">
           <button aria-pressed={settings.expandedSize.width === STANDARD_SIZE.width && settings.expandedSize.height === STANDARD_SIZE.height} onClick={() => { void update({ expandedSize: STANDARD_SIZE }) }}>标准尺寸</button>
           <button aria-pressed={settings.expandedSize.width === LARGE_SIZE.width && settings.expandedSize.height === LARGE_SIZE.height} onClick={() => { void update({ expandedSize: LARGE_SIZE }) }}>拉大框框</button></div></div>
-          <p className="preference-description">当前：{snapshot.window.panel.bounds.width} × {snapshot.window.panel.bounds.height} px，也可拖拽主面板右下角 ↘</p></div>
+          <p className="preference-description">当前：{snapshot.window.panel.bounds.width} × {snapshot.window.panel.bounds.height} px，也可拖拽主面板右下角</p></div>
       </section>
       <section className="preference-group"><div className="preference-row"><strong>🕒 固定下班时间</strong><div className="preference-tools">
         <button onClick={() => { void update({ offworkTime: '18:00' }) }}>18:00</button><button onClick={() => { void update({ offworkTime: null }) }}>清空</button></div></div>
@@ -64,7 +65,6 @@ export function SettingsDialog({ snapshot, command, onClose, updates }: {
       </section>
       <label className="preference-row default-reminder"><span>新任务默认开启提醒</span><input aria-label="新任务默认提醒" type="checkbox" checked={settings.defaultReminderEnabled} onChange={event => { void update({ defaultReminderEnabled: event.target.checked }) }} /></label>
     </fieldset>
-    <UpdatePanel updates={updates} onInstall={installUpdate} busy={busy} />
     {error && <p className="editor-error" role="alert">{error}</p>}
     <details className="settings-details"><summary>运行状态与本地数据</summary><p>菜单栏 / 托盘：{snapshot.diagnostics.trayReady ? '已创建' : '不可用'} · 系统通知：{snapshot.diagnostics.notificationSupported ? '系统支持' : '不可用'}</p>
       <p className="data-path">{snapshot.diagnostics.databasePath}</p></details>
