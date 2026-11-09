@@ -2,7 +2,7 @@ async (page) => {
   const context = await page.context().browser().newContext({ viewport: { width: 300, height: 400 }, deviceScaleFactor: 1 });
   const p = await context.newPage(), errors = [], results = [];
   p.on('pageerror', e => errors.push(e.message));
-  const dir = '/Users/tenghuan/programming/vjshi/studyDemo/tia-windows-plugins/demos/strawberry-live2d/evidence/gesture-visibility/';
+  const dir = 'demos/strawberry-live2d/evidence/gesture-visibility/';
   const state = () => p.evaluate(() => {
     const c = document.querySelector('#character'), stage = document.querySelector('#stage').getBoundingClientRect();
     return {

@@ -12,7 +12,7 @@ async (page) => {
       if (c) window.__samples.push({ eye: c.dataset.eye, leftEye: c.dataset.eyeLeftFrame, rightEye: c.dataset.eyeRightFrame, gesture: c.dataset.gesture, gestureProgress: c.dataset.gestureProgress, mouth: c.dataset.mouth, tilt: c.dataset.tilt, armLeft: c.dataset.armLeft, elbowLeft: c.dataset.elbowLeft, wristLeft: c.dataset.wristLeft, body: c.dataset.body, beat: document.querySelector('#stage')?.dataset.beat, audioTime: audio?.currentTime, audioPaused: audio?.paused });
     }, 30);
   });
-  const dir = '/Users/tenghuan/programming/vjshi/studyDemo/tia-windows-plugins/demos/strawberry-live2d/evidence/articulated-arms/';
+  const dir = 'demos/strawberry-live2d/evidence/articulated-arms/';
   try {
     await p.goto('http://127.0.0.1:5187/');
     await p.waitForFunction(() => document.body.dataset.ready === 'true');

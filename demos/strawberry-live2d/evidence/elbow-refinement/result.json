@@ -1,0 +1,80 @@
+{
+  "errors": [],
+  "poses": [
+    {
+      "name": "neutral",
+      "values": {}
+    },
+    {
+      "name": "quarter",
+      "values": {
+        "ParamArmL": 0.95,
+        "ParamElbowL": 0.25
+      }
+    },
+    {
+      "name": "half",
+      "values": {
+        "ParamArmL": 0.95,
+        "ParamElbowL": 0.5
+      }
+    },
+    {
+      "name": "three-quarter",
+      "values": {
+        "ParamArmL": 0.95,
+        "ParamElbowL": 0.75
+      }
+    },
+    {
+      "name": "full",
+      "values": {
+        "ParamArmL": 0.95,
+        "ParamElbowL": 1
+      }
+    },
+    {
+      "name": "right",
+      "values": {
+        "ParamArmR": 0.95,
+        "ParamElbowR": 1,
+        "ParamWristR": 0.65
+      }
+    },
+    {
+      "name": "both",
+      "values": {
+        "ParamArmR": 0.7,
+        "ParamElbowR": 0.8,
+        "ParamArmL": 0.7,
+        "ParamElbowL": 0.8,
+        "ParamBodyAngleZ": 1
+      }
+    },
+    {
+      "name": "returned",
+      "values": {}
+    }
+  ],
+  "playback": [
+    {
+      "id": "greet",
+      "pauseFrozen": true,
+      "returned": true
+    },
+    {
+      "id": "explain",
+      "pauseFrozen": true,
+      "returned": true
+    }
+  ],
+  "geometry": {
+    "samples": 90,
+    "flips": 0,
+    "flippedTriangles": [],
+    "finite": true,
+    "coreUnchanged": true,
+    "restExact": true,
+    "maximumDeltaPixels": 14.450891017913818
+  }
+}

@@ -27,14 +27,15 @@ export const gestures: Record<GestureId, Gesture> = {
     title: '挥手招呼', description: '抬臂、弯肘，手在脸旁轻摆两次，再慢慢放下。', durationMs: 4600,
     frames: [
       { at: 0, pose: {} },
-      { at: .1, pose: { ParamArmL: .4, ParamElbowL: .25, ParamAngleZ: -2, ParamMouthForm: .2 } },
-      { at: .24, pose: { ParamArmL: .95, ParamElbowL: 1, ParamAngleZ: -6, ParamMouthForm: .35 } },
-      { at: .34, pose: { ParamArmL: .95, ParamElbowL: 1, ParamWristL: -.65, ParamAngleZ: -6, ParamMouthForm: .35 } },
-      { at: .44, pose: { ParamArmL: .95, ParamElbowL: 1, ParamWristL: .65, ParamAngleZ: -5, ParamMouthForm: .35 } },
-      { at: .54, pose: { ParamArmL: .95, ParamElbowL: 1, ParamWristL: -.65, ParamAngleZ: -6, ParamMouthForm: .35 } },
-      { at: .64, pose: { ParamArmL: .95, ParamElbowL: 1, ParamWristL: .65, ParamAngleZ: -5, ParamMouthForm: .35 } },
-      { at: .72, pose: { ParamArmL: .9, ParamElbowL: .95, ParamAngleZ: -4, ParamMouthForm: .3 } },
-      { at: .86, pose: { ParamArmL: .35, ParamElbowL: .45, ParamAngleZ: -2, ParamMouthForm: .2 } },
+      { at: .1, pose: { ParamArmL: .32, ParamElbowL: .08, ParamAngleZ: -2, ParamMouthForm: .2 } },
+      { at: .22, pose: { ParamArmL: .78, ParamElbowL: .65, ParamAngleZ: -5, ParamMouthForm: .3 } },
+      { at: .3, pose: { ParamArmL: .92, ParamElbowL: .94, ParamAngleZ: -6, ParamMouthForm: .35 } },
+      { at: .38, pose: { ParamArmL: .91, ParamElbowL: .96, ParamWristL: -.5, ParamAngleZ: -6, ParamMouthForm: .35 } },
+      { at: .48, pose: { ParamArmL: .93, ParamElbowL: .93, ParamWristL: .5, ParamAngleZ: -5, ParamMouthForm: .35 } },
+      { at: .58, pose: { ParamArmL: .91, ParamElbowL: .96, ParamWristL: -.5, ParamAngleZ: -6, ParamMouthForm: .35 } },
+      { at: .68, pose: { ParamArmL: .93, ParamElbowL: .93, ParamWristL: .5, ParamAngleZ: -5, ParamMouthForm: .35 } },
+      { at: .76, pose: { ParamArmL: .8, ParamElbowL: .84, ParamAngleZ: -4, ParamMouthForm: .3 } },
+      { at: .9, pose: { ParamArmL: .24, ParamElbowL: .14, ParamAngleZ: -2, ParamMouthForm: .2 } },
       { at: 1, pose: {} }
     ]
   },

@@ -4,6 +4,7 @@ import { neutralPose, type ActingPose } from './scenes'
 import { ActingMotion } from './acting-motion'
 import { blinkOpenness, resolveEyeFrame } from './eye-motion'
 import { sampleGesture, type GestureId } from './gestures'
+import { ArmSkinning } from './arm-skinning'
 
 export interface CharacterPlayback {
   setPose(pose:Partial<ActingPose>,mouth?:()=>number):void
@@ -120,6 +121,10 @@ export class StrawberryViewer implements CharacterPlayback {
       if (jointError) { model.destroy(); throw new Error(jointError) }
       const unbound = bindings.filter(binding => !binding.drawables.length)
       if (unbound.length) { model.destroy(); throw new Error(`这些参数还没有实际改变模型：${unbound.map(binding => binding.id).join('、')}`) }
+      // The editable rig supplies rigid joint transforms. Blend only the rendered
+      // elbow vertices; Core's output stays intact for validation and future updates.
+      const skinning = new ArmSkinning(actual.drawables)
+      model.internalModel.coreModel.getDrawableVertices = index => skinning.vertices(index)
       app.stage.addChild(model)
       canvas.dataset.renderer = 'live2d-cubism'
       canvas.dataset.parameterCount = String(actual.parameters.count)

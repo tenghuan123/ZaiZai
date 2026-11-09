@@ -13,4 +13,4 @@
 
 `rig.json`、`preparation.json` 和 `pose-candidates.png` 是生成脚本的素材准备记录，不是编译模型验收结论。真实产物与验证见 `evidence/articulated-arms/editor-progress.json`、`core-final-export.json`、`result.json`。完整流程、已知范围和再导出要求见 demo 根目录 README。
 
-执行 `npm run prepare:arms` 可重建 PSD、PNG、分层预演清单和概念图；不会改变可编辑模型和已编译模型。原 16 层基线保留于 `assets/motion-ready/`，可由基线提交 `5a346c8` 对照。
+执行 `npm run prepare:arms` 可重建 PSD、PNG、分层预演清单和概念图；不会改变可编辑模型和已编译模型。对照用的 16 层基线在 `assets/motion-ready/` 和 `public/model/`。
