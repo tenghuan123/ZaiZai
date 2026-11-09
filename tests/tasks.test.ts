@@ -39,7 +39,66 @@ test('main-process validation rejects invalid dates, time, Unicode title length,
     assert.throws(() => f.plan({ times: [] }), AppError)
     assert.throws(() => f.plan({ startDate: '2026-11-03', endDate: '2026-11-02' }), AppError)
     assert.throws(() => f.tasks.createOnce({ title: 'x', path: '/tmp' }), AppError)
+    assert.throws(() => f.tasks.createOnce({ requestId: randomUUID(), title: '无效分类', category: 'other',
+      scheduledDate: f.clock().today, scheduledTime: null, reminderEnabled: false }), AppError)
     assert.throws(() => f.tasks.setCompleted({ id: randomUUID() }, 'false'), AppError)
+  } finally { f.close() }
+})
+
+test('daily report uses local completion dates across scheduled days and excludes undone or removed tasks', () => {
+  const f = fixture()
+  try {
+    const yesterday = '2026-11-01', today = '2026-11-02', tomorrow = '2026-11-03'
+    const previous = f.once({ scheduledDate: today })
+    const work = f.once({ scheduledDate: yesterday, category: 'work' })
+    const life = f.once({ category: 'life' })
+    const uncategorized = f.once()
+    f.setTime(yesterday, '23:59')
+    f.tasks.setCompleted({ id: previous.id }, true)
+    f.setTime(today, '00:00')
+    const first = f.tasks.setCompleted({ id: work.id }, true).occurrence
+    f.setTime(today, '09:00')
+    f.tasks.setCompleted({ id: life.id }, true)
+    f.tasks.setCompleted({ id: uncategorized.id }, true)
+    f.setTime(tomorrow, '00:00')
+    f.tasks.setCompleted({ id: f.once().id }, true)
+    f.setTime(today)
+    const report = f.tasks.getDailyReport()
+    assert.equal(report.date, today)
+    assert.equal(report.timeZone, 'Asia/Shanghai')
+    assert.deepEqual(report.items[0], { id: work.id, title: work.title, category: 'work', completedAtMs: first.completedAtMs })
+    assert.deepEqual(new Set(report.items.slice(1).map(item => item.category)), new Set(['life', null]))
+    f.tasks.setCompleted({ id: life.id }, false)
+    f.tasks.removeOccurrence({ id: uncategorized.id })
+    assert.deepEqual(f.tasks.getDailyReport().items.map(item => item.id), [work.id])
+    const fields = { id: first.id, title: first.title, scheduledDate: yesterday, scheduledTime: null, reminderEnabled: false }
+    const saved = f.tasks.updateOnce({ ...fields, expectedVersion: first.version })
+    assert.equal(saved.category, 'work')
+    f.tasks.updateOnce({ ...fields, expectedVersion: saved.version, category: null })
+    assert.equal(f.tasks.getDailyReport().items[0].category, null)
+  } finally { f.close() }
+})
+
+test('plan categories follow edits through previews, completed history and ending without rewriting completion', () => {
+  const f = fixture()
+  try {
+    const plan = f.plan({ category: 'life', times: ['10:00'] })
+    const today = f.clock().today, tomorrow = '2026-11-03'
+    const [item] = saved(f.tasks.getDay(today))
+    assert.equal(item.category, 'life')
+    const [preview] = f.tasks.getDay(tomorrow).items
+    assert.equal(preview.kind === 'preview' && preview.category, 'life')
+    const completed = f.tasks.setCompleted({ id: item.id }, true).occurrence
+    const fields = { id: plan.id, title: plan.title, startDate: plan.startDate, endDate: plan.endDate,
+      reminderEnabled: plan.reminderEnabled, slots: plan.slots.map(slot => ({ id: slot.id, localTime: slot.localTime })) }
+    const updated = f.tasks.updatePlan({ ...fields, expectedVersion: plan.version, category: 'work' })
+    assert.equal(f.tasks.updatePlan({ ...fields, expectedVersion: updated.version }).category, 'work')
+    const [updatedPreview] = f.tasks.getDay(tomorrow).items
+    assert.equal(updatedPreview.kind === 'preview' && updatedPreview.category, 'work')
+    f.tasks.endPlan(plan.id)
+    assert.equal(f.tasks.getDay(tomorrow).items.length, 0)
+    assert.deepEqual(saved(f.tasks.getDay(today))[0], { ...completed, category: 'work' })
+    assert.equal(f.tasks.getDailyReport().items[0].category, 'work')
   } finally { f.close() }
 })
 

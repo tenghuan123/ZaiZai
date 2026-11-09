@@ -1,6 +1,7 @@
 import type { DayItem, DayView, RepeatPlan } from '../../../../shared/tasks'
 import { formatRepeatRule } from '../../../../shared/recurrence'
 import type { TaskCompletion } from './use-task-completion'
+import { TaskCategoryBadge } from './TaskCategoryBadge'
 
 export function itemKey(item: DayItem): string {
   return item.kind === 'saved' ? item.occurrence.id : `${item.ref.planId}/${item.ref.sourceDate}/${item.ref.slotId}`
@@ -57,7 +58,7 @@ export function TaskList({ day, plans, tab, busy, pending, focusedId, onComplete
             <svg viewBox="0 0 16 16" fill="none" aria-hidden="true"><path d="m3 8 3.5 3.5L13 4.5" pathLength="1" /></svg>}</button>
         <div className="reminder-content" onDoubleClick={() => { if (!locked) onEdit(item) }}>
           <strong className={completed ? 'struck' : 'task-title'} title={value.title}><span>{value.title}</span></strong>
-          <div className="task-tags">{urgent && <span className="urgent-tag">🔥 紧急</span>}{!completed && value.scheduledTime && <span>{value.scheduledTime}</span>}{recurring && !completed && <span className={`cycle-tag ${sameRule ? plan.recurrence.type : 'daily'}`}>{cycleLabel}</span>}
+          <div className="task-tags"><TaskCategoryBadge category={value.category} />{urgent && <span className="urgent-tag">🔥 紧急</span>}{!completed && value.scheduledTime && <span>{value.scheduledTime}</span>}{recurring && !completed && <span className={`cycle-tag ${sameRule ? plan.recurrence.type : 'daily'}`} title={cycleLabel}>{cycleLabel}</span>}
             {item.kind === 'preview' && <span>计划预览</span>}
             {!completed && sourceDate !== value.scheduledDate && <span>原 {sourceDate.slice(5)}</span>}
             {!completed && !value.reminderEnabled && value.scheduledTime && <span>提醒关闭</span>}

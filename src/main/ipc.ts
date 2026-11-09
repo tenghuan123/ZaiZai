@@ -65,6 +65,7 @@ export function registerIPC(context: Context): void {
   handle(channels.updateCheck, () => context.updates.check())
   handle(channels.updateInstall, () => context.updates.install())
   handle(channels.day, input => readCalendar(() => tasks.getDay(input)))
+  handle(channels.dailyReport, () => readCalendar(() => tasks.getDailyReport()))
   handle(channels.history, input => readCalendar(() => tasks.getHistoryDates(input)))
   handle(channels.createOnce, input => afterWrite(() => tasks.createOnce(input)))
   handle(channels.updateOnce, input => afterWrite(() => tasks.updateOnce(input)))

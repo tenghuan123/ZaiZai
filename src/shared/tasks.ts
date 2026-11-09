@@ -1,5 +1,6 @@
 export type Scene = 'generic' | 'water' | 'stretch'
 export type Priority = 'normal' | 'urgent'
+export type TaskCategory = 'work' | 'life' | null
 export type RepeatRule = { type: 'daily' } | { type: 'weekly'; weekdays: number[] }
   | { type: 'monthly'; days: number[]; lastDay: boolean }
 export type PlanState = 'active' | 'paused' | 'ended'
@@ -9,7 +10,7 @@ export type CancelReason = 'user_removed' | 'plan_paused' | 'plan_changed' | 'pl
 export interface PlanSlot { id: string; planId: string; localTime: string; active: boolean; sortOrder: number }
 export interface RepeatPlan {
   id: string; creationKey: string; title: string; state: PlanState
-  priority: Priority; recurrence: RepeatRule
+  priority: Priority; recurrence: RepeatRule; category: TaskCategory
   startDate: string; endDate: string | null; reminderEnabled: boolean; scene: Scene
   effectiveFromMs: number; version: number; createdAtMs: number; updatedAtMs: number
   slots: PlanSlot[]
@@ -18,7 +19,7 @@ export interface Occurrence {
   id: string; creationKey: string | null; planId: string | null; slotId: string | null; planVersion: number | null
   sourceDate: string; sourceTime: string | null; sourceZone: string
   scheduledDate: string; scheduledTime: string | null; scheduleZone: string; dueAtMs: number | null
-  title: string; priority: Priority; priorityOverride: boolean; scene: Scene; status: OccurrenceStatus; cancelReason: CancelReason | null
+  title: string; category: TaskCategory; priority: Priority; priorityOverride: boolean; scene: Scene; status: OccurrenceStatus; cancelReason: CancelReason | null
   manualOverride: boolean; reminderEnabled: boolean; scheduleVersion: number; completedAtMs: number | null
   version: number; createdAtMs: number; updatedAtMs: number
 }
@@ -28,19 +29,24 @@ export type OccurrenceRef = { id: string } | {
 export type DayItem =
   | { kind: 'saved'; ref: { id: string }; occurrence: Occurrence }
   | { kind: 'preview'; ref: Exclude<OccurrenceRef, { id: string }>; title: string; scene: Scene;
-      priority: Priority; scheduledDate: string; scheduledTime: string; scheduleZone: string; dueAtMs: number; reminderEnabled: boolean }
+      category: TaskCategory; priority: Priority; scheduledDate: string; scheduledTime: string; scheduleZone: string; dueAtMs: number; reminderEnabled: boolean }
 export interface Progress { total: number; completed: number; percentage: number }
 export interface DayView {
   date: string; activated: boolean; kind: 'past' | 'today' | 'future'; items: DayItem[]; progress: Progress
 }
+export interface DailyReport {
+  date: string
+  timeZone: string
+  items: { id: string; title: string; category: TaskCategory; completedAtMs: number }[]
+}
 export interface OnceFields {
-  title: string; scheduledDate: string; scheduledTime: string | null; reminderEnabled: boolean; scene?: Scene; priority?: Priority
+  title: string; scheduledDate: string; scheduledTime: string | null; reminderEnabled: boolean; scene?: Scene; priority?: Priority; category?: TaskCategory
 }
 export interface CreateOnceInput extends OnceFields { requestId: string }
 export interface UpdateOnceInput extends OnceFields { id: string; expectedVersion: number }
 export interface PlanFields {
   title: string; startDate: string; endDate: string | null; reminderEnabled: boolean; scene?: Scene
-  priority?: Priority; recurrence?: RepeatRule
+  priority?: Priority; recurrence?: RepeatRule; category?: TaskCategory
 }
 export interface CreatePlanInput extends PlanFields { requestId: string; times: string[] }
 export interface UpdatePlanInput extends PlanFields {

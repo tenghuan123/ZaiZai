@@ -1,17 +1,17 @@
 import type Database from 'better-sqlite3'
-import type { Occurrence, PlanSlot, RepeatPlan } from '../../shared/tasks'
+import type { DailyReport, Occurrence, PlanSlot, RepeatPlan } from '../../shared/tasks'
 
 const occurrenceColumns = {
   id: 'id', creationKey: 'creation_key', planId: 'plan_id', slotId: 'slot_id', planVersion: 'plan_version',
   sourceDate: 'source_date', sourceTime: 'source_time', sourceZone: 'source_zone',
   scheduledDate: 'scheduled_date', scheduledTime: 'scheduled_time', scheduleZone: 'schedule_zone', dueAtMs: 'due_at_ms',
-  title: 'title', priority: 'priority', priorityOverride: 'priority_override', scene: 'scene', status: 'status', cancelReason: 'cancel_reason', manualOverride: 'manual_override',
+  title: 'title', category: 'category', priority: 'priority', priorityOverride: 'priority_override', scene: 'scene', status: 'status', cancelReason: 'cancel_reason', manualOverride: 'manual_override',
   reminderEnabled: 'reminder_enabled', scheduleVersion: 'schedule_version', completedAtMs: 'completed_at_ms',
   version: 'version', createdAtMs: 'created_at_ms', updatedAtMs: 'updated_at_ms'
 } as const
 const planColumns = {
   id: 'id', creationKey: 'creation_key', title: 'title', state: 'state', startDate: 'start_date', endDate: 'end_date',
-  priority: 'priority', recurrence: 'recurrence',
+  priority: 'priority', recurrence: 'recurrence', category: 'category',
   reminderEnabled: 'reminder_enabled', scene: 'scene', effectiveFromMs: 'effective_from_ms', version: 'version',
   createdAtMs: 'created_at_ms', updatedAtMs: 'updated_at_ms'
 } as const
@@ -21,7 +21,10 @@ function select(columns: Record<string, string>): string {
 function bindings(value: object): Record<string, unknown> {
   return Object.fromEntries(Object.entries(value).map(([key, entry]) => [key, typeof entry === 'boolean' ? Number(entry) : key === 'recurrence' ? JSON.stringify(entry) : entry]))
 }
-const occurrenceSelect = select(occurrenceColumns)
+// The plan owns the category for all of its occurrences, including completed history.
+const occurrenceCategory = `CASE WHEN plan_id IS NULL THEN category
+  ELSE (SELECT category FROM repeat_plans WHERE id=task_occurrences.plan_id) END`
+const occurrenceSelect = select({ ...occurrenceColumns, category: occurrenceCategory })
 const planSelect = select(planColumns)
 function occurrence(row: Occurrence | undefined): Occurrence | undefined {
   return row && { ...row, priorityOverride: !!row.priorityOverride, manualOverride: !!row.manualOverride, reminderEnabled: !!row.reminderEnabled }
@@ -43,6 +46,11 @@ export class TaskRepository {
     return (this.db.prepare(`SELECT ${occurrenceSelect} FROM task_occurrences WHERE scheduled_date=?`).all(date) as Occurrence[])
       .map(row => occurrence(row)!)
   }
+  completedBetween(startMs: number, endMs: number): DailyReport['items'] {
+    return this.db.prepare(`SELECT id,title,${occurrenceCategory} AS category,completed_at_ms AS completedAtMs
+      FROM task_occurrences WHERE status='completed' AND completed_at_ms>=? AND completed_at_ms<?
+      ORDER BY completed_at_ms,id`).all(startMs, endMs) as DailyReport['items']
+  }
   subsequent(planId: string, from: string): Occurrence[] {
     return (this.db.prepare(`SELECT ${occurrenceSelect} FROM task_occurrences WHERE plan_id=? AND source_date>=?`).all(planId, from) as Occurrence[])
       .map(row => occurrence(row)!)
@@ -53,11 +61,13 @@ export class TaskRepository {
   }
   insert(item: Occurrence): void {
     const entries = Object.entries(occurrenceColumns)
-    this.db.prepare(`INSERT INTO task_occurrences(${entries.map(([, col]) => col)}) VALUES(${entries.map(([key]) => `@${key}`)})`).run(bindings(item))
+    this.db.prepare(`INSERT INTO task_occurrences(${entries.map(([, col]) => col)}) VALUES(${entries.map(([key]) => `@${key}`)})`)
+      .run(bindings({ ...item, category: item.planId === null ? item.category : null }))
   }
   save(item: Occurrence): void {
     const entries = Object.entries(occurrenceColumns).filter(([key]) => key !== 'id')
-    this.db.prepare(`UPDATE task_occurrences SET ${entries.map(([key, col]) => `${col}=@${key}`)} WHERE id=@id`).run(bindings(item))
+    this.db.prepare(`UPDATE task_occurrences SET ${entries.map(([key, col]) => `${col}=@${key}`)} WHERE id=@id`)
+      .run(bindings({ ...item, category: item.planId === null ? item.category : null }))
   }
   plans(): RepeatPlan[] {
     return (this.db.prepare(`SELECT ${planSelect} FROM repeat_plans ORDER BY created_at_ms,id`).all() as (Omit<RepeatPlan, 'recurrence'> & { recurrence: string })[])

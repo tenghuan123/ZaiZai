@@ -18,6 +18,7 @@ const desktop: DesktopAPI = {
   },
   tasks: {
     getDay: date => invoke(channels.day, date), getHistoryDates: range => invoke(channels.history, range),
+    getDailyReport: () => invoke(channels.dailyReport),
     createOnce: input => invoke(channels.createOnce, input), updateOnce: input => invoke(channels.updateOnce, input),
     setPriority: (ref, priority) => invoke(channels.priority, { ref, priority }),
     setCompleted: (ref, completed) => invoke(channels.complete, { ref, completed }),

@@ -6,10 +6,10 @@
 
 已在 M1 正式数据基础上接入 M2 任务界面：一次性任务编辑、日/周/月多时间计划管理、日期历史、未来预览与移到今天。全部操作复用主进程任务服务和六张核心表。macOS Apple Silicon 已执行本机验证，尚未完成双平台验收。
 
-## 下载 v0.1.5
+## 下载 v0.1.6
 
-- [Windows x64 测试安装包](https://xuanxintest.oss-cn-beijing.aliyuncs.com/zaizai/updates/windows-x64/zaizai-0.1.5-win-x64.exe)
-- [macOS Apple Silicon 手动测试包](https://xuanxintest.oss-cn-beijing.aliyuncs.com/zaizai/updates/mac-arm64/zaizai-0.1.5-mac-arm64-test.zip)
+- [Windows x64 测试安装包](https://xuanxintest.oss-cn-beijing.aliyuncs.com/zaizai/updates/windows-x64/zaizai-0.1.6-win-x64.exe)
+- [macOS Apple Silicon 手动测试包](https://xuanxintest.oss-cn-beijing.aliyuncs.com/zaizai/updates/mac-arm64/zaizai-0.1.6-mac-arm64-test.zip)
 
 ## 运行应用
 
@@ -21,6 +21,8 @@ npm run dev
 ```
 
 底部输入内容后回车或点 `＋`，快捷新增当前查看日期的无时间待办，默认是今天；点击“周期”设置日期、时间或日/周/月计划。快捷栏的“紧急”和任务行的星标可切换优先级，紧急事项优先，同一优先级内按时间排序。任务行 `✎` 打开编辑，`×` 删除本次；重复实例的编辑入口打开所属计划。
+
+编辑任务或周期计划时可选「工作」或「生活」，快捷新增的任务和升级前的记录默认为「未分类」。周期任务沿用所属计划的分类，标签换行时任务卡片会随内容增高。在今天的「已完成」页点击「生成今日日报」，可以从当天实际完成的任务中挑选内容。工作任务默认勾选，生成的草稿可编辑并复制。
 
 顶栏日历图标用于查看历史待办和未来安排，悬停可见用途提示。点击后打开覆盖式月历，说明用途，并标点提示有历史记录的日期；选择某天自动关闭，清单与输入栏保持原位置。非今日日期和「回今天」合并在进度行。未来视图新增到那一天，历史页提供「移到今天」操作和提示。
 
@@ -52,7 +54,7 @@ macOS 本机应用包位于 `release/mac-arm64/zaizai.app`，压缩包为 `relea
 
 当前锁定的 `better-sqlite3@13.0.3` 自带 Node-API 10 各平台二进制，运行时按平台和架构加载。`pack:win` 关闭额外的原生模块重建，直接包含依赖自带的 Windows x64 模块，以支持 macOS 交叉打包；后续更换原生依赖时需重新核对。
 
-首次打开旧库会先生成同目录 `*.pre-v3-*.bak`，再执行事务迁移。失败时保留旧库、显示错误与数据目录入口，不会创建空库替代。数据位置与手动恢复方式见 [M1 验证记录](docs/m1-verification.md)。
+首次打开旧库会先生成同目录 `*.pre-v4-*.bak`，再执行事务迁移。失败时保留旧库、显示错误与数据目录入口，不会创建空库替代。数据位置与手动恢复方式见 [M1 验证记录](docs/m1-verification.md)。
 
 周计划可多选星期；月计划可多选 1～31 号，也可选“每月最后一天”。小月没有的日期跳过，月末选项与具体日期重合时只生成一次。修改、暂停和结束计划保留已到点、已完成与手动迁移的记录；任务行切换紧急只影响本次安排。
 

@@ -6,6 +6,8 @@ import { mkdtempSync, readdirSync, rmSync } from 'node:fs'
 import { tmpdir } from 'node:os'
 import { join } from 'node:path'
 import { Connection, MigrationError, schemaVersion } from '../src/main/database/connection'
+import { createTaskModel } from '../src/main/database/migrations/002-task-model'
+import { addSchedulingPreferences } from '../src/main/database/migrations/003-scheduling'
 import { fixture, saved } from './helpers'
 import { fitToWorkArea, petAnchor, placePetWindow, placeTaskPanel } from '../src/main/desktop/geometry'
 import { LARGE_SIZE, PET_AREA } from '../src/shared/window'
@@ -84,6 +86,30 @@ test('M0 migration backs up committed WAL data, keeps IDs, exact times, dispatch
     assert.equal(connection.db.prepare("SELECT name FROM sqlite_master WHERE name LIKE 'm0_%'").all().length, 0)
     assert.equal(JSON.parse((connection.db.prepare('SELECT value FROM app_settings').get() as { value: string }).value).displayMode, 'compact')
   } finally { connection?.close(); old.close(); rmSync(dir, { recursive: true }) }
+})
+
+test('v3 migration keeps completed tasks and plans, with no inferred categories', () => {
+  const dir = mkdtempSync(join(tmpdir(), 'buddy-v4-migrate-')), file = join(dir, 'data.sqlite3')
+  const old = new Database(file)
+  const completedAt = Date.parse('2026-11-02T03:30:00Z')
+  let f: ReturnType<typeof fixture> | undefined
+  try {
+    createTaskModel(old)
+    addSchedulingPreferences(old)
+    old.pragma('user_version=3')
+    old.exec(`INSERT INTO repeat_plans(id,creation_key,title,state,start_date,reminder_enabled,scene,effective_from_ms,version,created_at_ms,updated_at_ms)
+      VALUES('legacy-plan','legacy-plan-key','喝水','active','2026-11-02',0,'water',0,1,0,0);
+      INSERT INTO task_occurrences(id,creation_key,source_date,source_zone,scheduled_date,schedule_zone,title,scene,status,manual_override,
+        reminder_enabled,schedule_version,completed_at_ms,version,created_at_ms,updated_at_ms)
+      VALUES('legacy-task','legacy-task-key','2026-11-01','Asia/Shanghai','2026-11-01','Asia/Shanghai','拉伸','stretch','completed',
+        0,0,1,${completedAt},1,0,${completedAt});`)
+    old.close()
+    f = fixture(file)
+    assert.match(f.connection.backupPath ?? '', /\.pre-v4-.*\.bak$/)
+    assert.equal(f.tasks.listPlans()[0].category, null)
+    assert.deepEqual(f.tasks.getDailyReport().items, [{ id: 'legacy-task', title: '拉伸', category: null, completedAtMs: completedAt }])
+    assert.equal(f.connection.db.pragma('user_version', { simple: true }), schemaVersion)
+  } finally { f?.close(); if (old.open) old.close(); rmSync(dir, { recursive: true }) }
 })
 
 test('migration failure rolls back schema and version and leaves a restorable pre-migration backup', () => {

@@ -1,4 +1,4 @@
-import type { CompletionResult, CreateOnceInput, CreatePlanInput, DayView, Occurrence, OccurrenceRef, Priority, RepeatPlan, UpdateOnceInput, UpdatePlanInput } from './tasks'
+import type { CompletionResult, CreateOnceInput, CreatePlanInput, DailyReport, DayView, Occurrence, OccurrenceRef, Priority, RepeatPlan, UpdateOnceInput, UpdatePlanInput } from './tasks'
 import type { UpdateState } from './updates'
 import type { WindowDirection, WindowLayout } from './window'
 import type { PetAction } from './pet'
@@ -51,6 +51,7 @@ export interface DesktopAPI {
   }
   tasks: {
     getDay(date: string): Promise<AppResult<DayView>>
+    getDailyReport(): Promise<AppResult<DailyReport>>
     getHistoryDates(range: { from: string; to: string }): Promise<AppResult<string[]>>
     createOnce(input: CreateOnceInput): Promise<AppResult<Occurrence>>
     updateOnce(input: UpdateOnceInput): Promise<AppResult<Occurrence>>
@@ -89,6 +90,7 @@ export interface DesktopAPI {
 export const channels = {
   updateState: 'updates:state', updateCheck: 'updates:check', updateInstall: 'updates:install', updateChanged: 'updates:changed',
   bootstrap: 'app:bootstrap', day: 'tasks:get-day', history: 'tasks:history-dates', createOnce: 'tasks:create-once',
+  dailyReport: 'tasks:daily-report',
   updateOnce: 'tasks:update-once', complete: 'tasks:set-completed', remove: 'tasks:remove', move: 'tasks:move-today',
   priority: 'tasks:set-priority',
   plans: 'plans:list', createPlan: 'plans:create', updatePlan: 'plans:update', pausePlan: 'plans:set-paused', endPlan: 'plans:end',

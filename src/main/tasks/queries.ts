@@ -1,6 +1,6 @@
-import type { DayItem, DayView, Occurrence, Progress } from '../../shared/tasks'
+import type { DailyReport, DayItem, DayView, Occurrence, Progress } from '../../shared/tasks'
 import type { ClockSnapshot } from '../domain/time'
-import { validDate } from '../domain/time'
+import { dayStart, nextDayStart, validDate } from '../domain/time'
 import { candidate } from '../domain/recurrence'
 import { TaskRepository } from './repository'
 
@@ -11,6 +11,10 @@ export function progress(items: { status: Occurrence['status'] }[]): Progress {
 }
 export class TaskQueries {
   constructor(private readonly repository: TaskRepository) {}
+  getDailyReport(clock: ClockSnapshot): DailyReport {
+    return { date: clock.today, timeZone: clock.timeZone,
+      items: this.repository.completedBetween(dayStart(clock.today, clock.timeZone), nextDayStart(clock)) }
+  }
   getDay(input: unknown, clock: ClockSnapshot): DayView {
     const date = validDate(input)
     const kind = date < clock.today ? 'past' : date === clock.today ? 'today' : 'future'
@@ -23,7 +27,7 @@ export class TaskQueries {
         // Query by source identity, even if a saved exception was moved to another day or cancelled.
         if (due === null || this.repository.byIdentity(plan.id, date, slot.id)) continue
         items.push({ kind: 'preview', ref: { planId: plan.id, sourceDate: date, slotId: slot.id, expectedPlanVersion: plan.version },
-          title: plan.title, priority: plan.priority, scene: plan.scene, scheduledDate: date, scheduledTime: slot.localTime,
+          title: plan.title, category: plan.category, priority: plan.priority, scene: plan.scene, scheduledDate: date, scheduledTime: slot.localTime,
           scheduleZone: clock.timeZone, dueAtMs: due, reminderEnabled: plan.reminderEnabled })
       }
     }

@@ -46,6 +46,7 @@ export class TaskService {
     return result
   }
   getDay(date: unknown, clock = this.clock()) { return this.queries.getDay(date, clock) }
+  getDailyReport() { return this.queries.getDailyReport(this.clock()) }
   getHistoryDates(input: unknown): string[] {
     const value = object(input); fields(value, ['from', 'to'])
     const from = validDate(value.from), to = validDate(value.to)
@@ -56,7 +57,7 @@ export class TaskService {
 
   createOnce(input: unknown): Occurrence {
     const value = object(input)
-    fields(value, ['requestId', 'title', 'scheduledDate', 'scheduledTime', 'reminderEnabled', 'scene', 'priority'])
+    fields(value, ['requestId', 'title', 'scheduledDate', 'scheduledTime', 'reminderEnabled', 'scene', 'priority', 'category'])
     const key = identifier(value.requestId, 'requestId'), data = onceFields(value)
     return this.write(clock => {
       const existing = this.repository.byCreationKey(key)
@@ -64,7 +65,7 @@ export class TaskService {
       const item: Occurrence = { ...data, id: randomUUID(), creationKey: key, planId: null, slotId: null, planVersion: null,
         sourceDate: data.scheduledDate, sourceTime: data.scheduledTime, sourceZone: clock.timeZone,
         scheduleZone: clock.timeZone, dueAtMs: data.scheduledTime === null ? null : dueAt(data.scheduledDate, data.scheduledTime, clock.timeZone),
-        priority: data.priority ?? 'normal', priorityOverride: false,
+        category: data.category ?? null, priority: data.priority ?? 'normal', priorityOverride: false,
         status: 'pending', cancelReason: null, manualOverride: false, scheduleVersion: 1, completedAtMs: null,
         version: 1, createdAtMs: clock.nowMs, updatedAtMs: clock.nowMs }
       this.repository.insert(item)
@@ -73,7 +74,7 @@ export class TaskService {
   }
   updateOnce(input: unknown): Occurrence {
     const value = object(input)
-    fields(value, ['id', 'expectedVersion', 'title', 'scheduledDate', 'scheduledTime', 'reminderEnabled', 'scene', 'priority'])
+    fields(value, ['id', 'expectedVersion', 'title', 'scheduledDate', 'scheduledTime', 'reminderEnabled', 'scene', 'priority', 'category'])
     const id = identifier(value.id), expected = version(value.expectedVersion), data = onceFields(value)
     return this.write(clock => {
       const item = requireFound(this.repository.get(id))
@@ -137,7 +138,7 @@ export class TaskService {
 
   createPlan(input: unknown): RepeatPlan {
     const value = object(input)
-    fields(value, ['requestId', 'title', 'startDate', 'endDate', 'reminderEnabled', 'scene', 'times', 'priority', 'recurrence'])
+    fields(value, ['requestId', 'title', 'startDate', 'endDate', 'reminderEnabled', 'scene', 'times', 'priority', 'recurrence', 'category'])
     const key = identifier(value.requestId, 'requestId'), data = planFields(value)
     const times = this.validateTimes(value.times)
     return this.write(clock => {
@@ -145,7 +146,7 @@ export class TaskService {
       if (existing) return existing
       const id = randomUUID()
       const plan: RepeatPlan = { ...data, id, creationKey: key, state: 'active', version: 1,
-        priority: data.priority ?? 'normal', recurrence: data.recurrence ?? { type: 'daily' },
+        category: data.category ?? null, priority: data.priority ?? 'normal', recurrence: data.recurrence ?? { type: 'daily' },
         effectiveFromMs: data.startDate === clock.today ? dayStart(clock.today, clock.timeZone) : clock.nowMs,
         createdAtMs: clock.nowMs, updatedAtMs: clock.nowMs,
         slots: times.map((localTime, sortOrder) => ({ id: randomUUID(), planId: id, localTime, active: true, sortOrder })) }
@@ -156,7 +157,7 @@ export class TaskService {
   }
   updatePlan(input: unknown): RepeatPlan {
     const value = object(input)
-    fields(value, ['id', 'expectedVersion', 'title', 'startDate', 'endDate', 'reminderEnabled', 'scene', 'slots', 'priority', 'recurrence'])
+    fields(value, ['id', 'expectedVersion', 'title', 'startDate', 'endDate', 'reminderEnabled', 'scene', 'slots', 'priority', 'recurrence', 'category'])
     const id = identifier(value.id), expected = version(value.expectedVersion), data = planFields(value)
     if (!Array.isArray(value.slots)) throw new AppError('VALIDATION', '请设置时间槽。')
     const entries = value.slots.map(entry => {
@@ -226,7 +227,7 @@ export class TaskService {
     return { id: randomUUID(), creationKey: null, planId: plan.id, slotId: slot.id, planVersion: plan.version,
       sourceDate: date, sourceTime: slot.localTime, sourceZone: clock.timeZone,
       scheduledDate: date, scheduledTime: slot.localTime, scheduleZone: clock.timeZone, dueAtMs: due,
-      title: plan.title, priority: plan.priority, priorityOverride: false, scene: plan.scene, status: 'pending', cancelReason: null, manualOverride: false,
+      title: plan.title, category: plan.category, priority: plan.priority, priorityOverride: false, scene: plan.scene, status: 'pending', cancelReason: null, manualOverride: false,
       reminderEnabled: plan.reminderEnabled, scheduleVersion: 1, completedAtMs: null,
       version: 1, createdAtMs: clock.nowMs, updatedAtMs: clock.nowMs }
   }

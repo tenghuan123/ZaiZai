@@ -1,6 +1,7 @@
 import { useEffect, useRef, useState } from 'react'
 import type { AppResult } from '../../../../shared/contracts'
-import type { Occurrence, Priority, RepeatPlan, RepeatRule, Scene } from '../../../../shared/tasks'
+import type { Occurrence, Priority, RepeatPlan, RepeatRule, Scene, TaskCategory } from '../../../../shared/tasks'
+import { taskCategories } from '../tasks/TaskCategoryBadge'
 
 export type EditorTarget =
   | { kind: 'new'; requestId: string; title: string; date: string; reminderEnabled: boolean; type: 'once' | 'repeat'; priority: Priority }
@@ -24,6 +25,7 @@ export function TaskEditor({ target, now, command, onSaved, onClose, onReload }:
   const [endDate, setEndDate] = useState(plan?.endDate ?? '')
   const [reminderEnabled, setReminderEnabled] = useState(once?.reminderEnabled ?? plan?.reminderEnabled ?? (target.kind === 'new' && target.reminderEnabled))
   const [scene, setScene] = useState<Scene>(once?.scene ?? plan?.scene ?? 'generic')
+  const [category, setCategory] = useState<TaskCategory>(once?.category ?? plan?.category ?? null)
   const [priority, setPriority] = useState<Priority>(once?.priority ?? plan?.priority ?? (target.kind === 'new' ? target.priority : 'normal'))
   const [cycle, setCycle] = useState<RepeatRule['type']>(plan?.recurrence.type ?? 'daily')
   const [weekdays, setWeekdays] = useState(plan?.recurrence.type === 'weekly' ? plan.recurrence.weekdays : [1, 5])
@@ -61,7 +63,7 @@ export function TaskEditor({ target, now, command, onSaved, onClose, onReload }:
     inFlight.current = true; setSaving(true)
     try {
       if (type === 'once') {
-        const fields = { title, scheduledDate: date, scheduledTime: time || null, reminderEnabled, scene, priority }
+        const fields = { title, scheduledDate: date, scheduledTime: time || null, reminderEnabled, scene, priority, category }
         const result = await command(() => once
           ? window.desktop.tasks.updateOnce({ ...fields, id: once.id, expectedVersion: once.version })
           : window.desktop.tasks.createOnce({ ...fields, requestId: target.kind === 'new' ? target.requestId : '' }))
@@ -70,7 +72,7 @@ export function TaskEditor({ target, now, command, onSaved, onClose, onReload }:
       } else {
         const recurrence: RepeatRule = cycle === 'daily' ? { type: cycle } : cycle === 'weekly'
           ? { type: cycle, weekdays } : { type: cycle, days: monthDays, lastDay }
-        const fields = { title, startDate, endDate: endDate || null, reminderEnabled, scene, priority, recurrence }
+        const fields = { title, startDate, endDate: endDate || null, reminderEnabled, scene, priority, recurrence, category }
         const ordered = [...slots].sort((a, b) => a.localTime.localeCompare(b.localTime))
         const result = await command(() => plan
           ? window.desktop.plans.update({ ...fields, id: plan.id, expectedVersion: plan.version,
@@ -89,13 +91,17 @@ export function TaskEditor({ target, now, command, onSaved, onClose, onReload }:
         <div className="editor-types"><button type="button" disabled={target.kind !== 'new'} className={type === 'once' ? 'selected' : ''} onClick={() => setType('once')}>一次性任务</button>
           <button type="button" disabled={target.kind !== 'new'} className={type === 'repeat' ? 'selected' : ''} onClick={() => setType('repeat')}>周期重复计划</button></div>
         <label className="field-label">任务名称<input aria-label="任务名称" autoFocus required maxLength={120} value={title} onChange={event => setTitle(event.target.value)} placeholder="例如：起身运动 / 饭后吃药" /></label>
+        <label className="editor-reminder editor-category">分类（可选）<select aria-label="分类" value={category ?? ''}
+          onChange={event => setCategory(taskCategories.find(option => option.value === event.target.value)?.value ?? null)}>
+          {taskCategories.map(option => <option key={option.value ?? ''} value={option.value ?? ''}>{option.label}</option>)}
+        </select></label>
         <div className="field-label">任务优先级（紧急任务自动排在待办最前面）<div className="priority-options">
           <button type="button" aria-pressed={priority === 'normal'} onClick={() => setPriority('normal')}>📋 普通日常任务</button>
           <button type="button" className="urgent" aria-pressed={priority === 'urgent'} onClick={() => setPriority('urgent')}>🔥 紧急任务（置顶）</button></div></div>
         {type === 'once' ? <>
           <div className="editor-grid"><label className="field-label">执行日期<input aria-label="执行日期" type="date" required value={date} disabled={timingLocked} onChange={event => setDate(event.target.value)} /></label>
             <label className="field-label">提醒时间（可选）<input aria-label="提醒时间" type="time" value={time} disabled={timingLocked} onChange={event => setTime(event.target.value)} /></label></div>
-          {timingLocked ? <p className="editor-note">已到点或已完成的任务保留原时间，仍可修改名称与提醒开关。</p>
+          {timingLocked ? <p className="editor-note">已到点或已完成的任务保留原时间，仍可修改名称、分类与提醒设置。</p>
             : <p className="editor-note">时间留空就是无时间待办。</p>}
         </> : <>
           <div className="field-label">重复周期类型<div className="editor-types cycle-options">{(['daily', 'weekly', 'monthly'] as const).map((value, index) => <button key={value} type="button" className={cycle === value ? 'selected' : ''} onClick={() => setCycle(value)}>{['↻ 每天', '📆 每周计划', '🗓 每月计划'][index]}</button>)}</div></div>

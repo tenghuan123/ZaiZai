@@ -3,6 +3,7 @@ import type { CSSProperties, PointerEvent as ReactPointerEvent } from 'react'
 import type { DayItem, Priority, RepeatPlan } from '../../shared/tasks'
 import { useWorkspace } from './features/tasks/use-workspace'
 import { itemKey, TaskList } from './features/tasks/TaskList'
+import { DailyReportDialog } from './features/tasks/DailyReportDialog'
 import { DateNavigator, shiftDate } from './features/calendar/DateNavigator'
 import { PlanList } from './features/plans/PlanList'
 import { EndPlanDialog, TaskEditor } from './features/editor/TaskEditor'
@@ -36,6 +37,7 @@ export function App(): React.JSX.Element {
   const [showCalendar, setShowCalendar] = useState(false)
   const [showSettings, setShowSettings] = useState(false)
   const [showPet, setShowPet] = useState(false)
+  const [showReport, setShowReport] = useState(false)
   const [petPreview, setPetPreview] = useState<PetAction>('idle')
   const [editor, setEditor] = useState<EditorTarget | null>(null)
   const [ending, setEnding] = useState<RepeatPlan | null>(null)
@@ -72,6 +74,7 @@ export function App(): React.JSX.Element {
     lastPanelRequest.current = request.sequence
     setShowPet(false)
     setShowCalendar(false)
+    setShowReport(false)
     setShowSettings(request.target.kind === 'settings')
     if (request.target.kind === 'reminder') {
       setFocusedId(request.target.reminderId)
@@ -241,6 +244,10 @@ export function App(): React.JSX.Element {
           <button className={tab === 'done' ? 'selected' : ''} onClick={() => setTab('done')}>已完成 <span key={completionCount} className={completionCount ? 'completion-badge' : ''}>({done})</span></button>
           <button className={tab === 'plans' ? 'selected' : ''} onClick={() => { setTab('plans'); setShowCalendar(false) }}>周期计划 ({workspace.plans.filter(plan => plan.state !== 'ended').length})</button>
         </nav>
+        {tab === 'done' && date === snapshot.today.date && <div className="list-heading">
+          <span>整理今天完成的事项</span>
+          <button type="button" aria-haspopup="dialog" onClick={() => setShowReport(true)}>生成今日日报</button>
+        </div>}
         {tab === 'plans' ? <PlanList plans={workspace.plans} busy={busy} onCreate={() => openNew('repeat')} onEdit={plan => { setError(''); setEditor({ kind: 'plan', plan }) }}
           onPaused={plan => { void withBusy(plan.id, async () => { const result = await command(() => api.plans.setPaused(plan.id, plan.state !== 'paused')); if (result.ok) say(result.value.state === 'paused' ? '计划已暂停，历史仍保留' : '计划已恢复，从现在继续安排') }) }}
           onEnd={plan => { setError(''); setEnding(plan) }} />
@@ -265,6 +272,7 @@ export function App(): React.JSX.Element {
     <UpdateNotice visible={!compact} updates={updates} onDetails={() => { setShowSettings(true); setShowPet(false) }} />
     {showSettings && <SettingsDialog snapshot={snapshot} command={command} updates={updates} onClose={() => { setShowSettings(false); setError('') }} />}
     {showCalendar && <DateNavigator today={snapshot.today.date} selected={date} historyDates={workspace.historyDates} onSelect={selectDate} onClose={() => setShowCalendar(false)} />}
+    {showReport && <DailyReportDialog onClose={() => setShowReport(false)} />}
     {editor && <TaskEditor key={editorKey(editor)} target={editor} now={now} command={command} onClose={() => { setEditor(null); setError('') }} onReload={reloadEditor}
       onSaved={result => {
         const wasNew = editor.kind === 'new'

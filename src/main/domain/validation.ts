@@ -1,4 +1,4 @@
-import type { Priority, RepeatRule, Scene } from '../../shared/tasks'
+import type { Priority, RepeatRule, Scene, TaskCategory } from '../../shared/tasks'
 import { AppError } from './errors'
 import { validDate, validTime } from './time'
 
@@ -38,6 +38,10 @@ export function priority(value: unknown): Priority {
   if (value !== 'normal' && value !== 'urgent') throw new AppError('VALIDATION', '任务优先级不正确。', 'priority')
   return value
 }
+function taskCategory(value: unknown): TaskCategory {
+  if (value !== null && value !== 'work' && value !== 'life') throw new AppError('VALIDATION', '任务分类不正确。', 'category')
+  return value
+}
 export function repeatRule(input: unknown): RepeatRule {
   const value = object(input)
   if (value.type === 'daily') { fields(value, ['type']); return { type: 'daily' } }
@@ -65,6 +69,7 @@ export function onceFields(value: Record<string, unknown>) {
   return { title: title(value.title), scheduledDate: validDate(value.scheduledDate, 'scheduledDate'),
     scheduledTime: value.scheduledTime === null ? null : validTime(value.scheduledTime, 'scheduledTime'),
     reminderEnabled: boolean(value.reminderEnabled, 'reminderEnabled'), scene: scene(value.scene),
+    ...(value.category === undefined ? {} : { category: taskCategory(value.category) }),
     ...(value.priority === undefined ? {} : { priority: priority(value.priority) }) }
 }
 export function planFields(value: Record<string, unknown>) {
@@ -73,6 +78,7 @@ export function planFields(value: Record<string, unknown>) {
   if (endDate !== null && startDate > endDate) throw new AppError('VALIDATION', '结束日期不能早于开始日期。', 'endDate')
   return { title: title(value.title), startDate, endDate,
     reminderEnabled: boolean(value.reminderEnabled, 'reminderEnabled'), scene: scene(value.scene),
+    ...(value.category === undefined ? {} : { category: taskCategory(value.category) }),
     ...(value.priority === undefined ? {} : { priority: priority(value.priority) }),
     ...(value.recurrence === undefined ? {} : { recurrence: repeatRule(value.recurrence) }) }
 }
