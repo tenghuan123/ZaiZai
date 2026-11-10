@@ -15,13 +15,17 @@ delete env.ELECTRON_RUN_AS_NODE
 delete env.ELECTRON_RENDERER_URL
 const report = { directory, checks: [], errors: [], status: 'running' }
 let app
-try {
+async function launch() {
   app = await _electron.launch({ executablePath: executable ? resolve(executable) : require('electron'), args: executable ? [] : [resolve('.')], env, timeout: 30_000 })
   const { panel: page } = await desktopPages(app)
   page.setDefaultTimeout(10_000)
   page.on('pageerror', error => report.errors.push(error.message))
   await page.waitForSelector('.widget')
   await page.emulateMedia({ reducedMotion: 'reduce' })
+  return page
+}
+try {
+  let page = await launch()
   const button = name => page.getByRole('button', { name, exact: true })
   const row = name => page.getByRole('article', { name, exact: true })
   const dialog = () => page.getByRole('dialog', { name: '按日期查看任务', exact: true })
@@ -153,6 +157,39 @@ try {
   report.checks.push('month navigation handles leap February and a six-row month, keeps selection explicit, and fits inside the native window')
 
   await page.screenshot({ path: join(directory, 'today.png'), omitBackground: true })
+
+  const earlier = shifted(today, -7)
+  const fixtures = [
+    { title: '昨天未完成的资料整理', date: yesterday },
+    { title: '上周未完成的会议纪要', date: earlier }
+  ]
+  const initial = await snapshot()
+  for (const fixture of fixtures) {
+    const result = await page.evaluate(({ title, date }) => window.desktop.tasks.createOnce({ requestId: crypto.randomUUID(),
+      title, scheduledDate: date, scheduledTime: null, reminderEnabled: false }), fixture)
+    assert.equal(result.ok, true)
+    fixture.id = result.value.id
+  }
+  await choose(yesterday)
+  await row(fixtures[0].title).waitFor()
+  await app.close()
+  page = await launch()
+  for (const { title, date, id } of fixtures) {
+    await row(title).getByText(`原 ${date.slice(5)}`, { exact: true }).waitFor()
+    assert.equal(await row(title).count(), 1)
+    assert.equal(await row(title).getAttribute('data-occurrence-id'), id)
+    const history = await page.evaluate(date => window.desktop.tasks.getDay(date), date)
+    assert.equal(history.ok, true)
+    assert.equal(history.value.items.some(item => item.occurrence?.id === id), false)
+  }
+  const reopened = await snapshot()
+  assert.notEqual(reopened.sessionId, initial.sessionId)
+  assert.equal(reopened.today.progress.total, initial.today.progress.total + fixtures.length)
+  assert.equal(reopened.today.progress.completed, initial.today.progress.completed)
+  assert.equal(await button('一键移到今天').count(), 0)
+  await page.screenshot({ path: join(directory, 'automatic-carryover.png'), omitBackground: true })
+  report.checks.push('startup automatically carries pending one-off tasks across skipped dates into today with their original dates and IDs')
+
   assert.deepEqual(report.errors, [])
   report.status = 'passed'
 } catch (error) {

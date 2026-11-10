@@ -50,7 +50,7 @@ test('daily report uses local completion dates across scheduled days and exclude
   try {
     const yesterday = '2026-11-01', today = '2026-11-02', tomorrow = '2026-11-03'
     const previous = f.once({ scheduledDate: today })
-    const work = f.once({ scheduledDate: yesterday, category: 'work' })
+    const work = f.once({ scheduledDate: tomorrow, category: 'work' })
     const life = f.once({ category: 'life' })
     const uncategorized = f.once()
     f.setTime(yesterday, '23:59')
@@ -71,7 +71,7 @@ test('daily report uses local completion dates across scheduled days and exclude
     f.tasks.setCompleted({ id: life.id }, false)
     f.tasks.removeOccurrence({ id: uncategorized.id })
     assert.deepEqual(f.tasks.getDailyReport().items.map(item => item.id), [work.id])
-    const fields = { id: first.id, title: first.title, scheduledDate: yesterday, scheduledTime: null, reminderEnabled: false }
+    const fields = { id: first.id, title: first.title, scheduledDate: first.scheduledDate, scheduledTime: null, reminderEnabled: false }
     const saved = f.tasks.updateOnce({ ...fields, expectedVersion: first.version })
     assert.equal(saved.category, 'work')
     f.tasks.updateOnce({ ...fields, expectedVersion: saved.version, category: null })
@@ -146,6 +146,62 @@ test('removing and moving recurring occurrences never recreates a source; dates 
     f.tasks.ensureToday()
     assert.equal(f.tasks.getDay('2026-11-02').items.length, 0)
     assert.equal(f.tasks.getDay('2026-11-03').items.length, 3)
+  } finally { f.close() }
+})
+
+test('day rollover carries only pending one-off tasks forward and retires old reminder times', () => {
+  const f = fixture()
+  try {
+    const yesterday = f.clock().today
+    f.plan()
+    const recurring = saved(f.tasks.getDay(yesterday))[0]
+    const timed = f.once({ scheduledTime: '10:00', category: 'work', priority: 'urgent' })
+    const earlier = f.once({ scheduledDate: '2026-10-20' })
+    const completed = f.tasks.setCompleted({ id: f.once().id }, true).occurrence
+    const removed = f.tasks.removeOccurrence({ id: f.once().id })
+    const today = '2026-11-03'
+    const current = f.once({ scheduledDate: today })
+    const future = f.once({ scheduledDate: '2026-11-04' })
+    const claim = f.records.claimDue(f.clock()).find(item => item.id === timed.id)!
+
+    f.setTime(today)
+    assert.equal(f.tasks.coordinateDay(), true)
+    assert.equal(f.tasks.coordinateDay(), false)
+    f.tasks.ensureToday()
+
+    for (const original of [timed, earlier]) {
+      assert.deepEqual(f.repository.get(original.id), { ...original, scheduledDate: today, scheduledTime: null,
+        dueAtMs: null, manualOverride: true, scheduleVersion: 2, version: 2, updatedAtMs: f.clock().nowMs })
+    }
+    for (const original of [recurring, completed, removed, current, future]) {
+      assert.deepEqual(f.repository.get(original.id), original)
+    }
+    assert.deepEqual(f.connection.db.prepare('SELECT acknowledged_at_ms FROM reminder_dispatches WHERE id=?').get(claim.dispatchId),
+      { acknowledged_at_ms: f.clock().nowMs })
+    assert.equal(f.records.claimDue(f.clock()).some(item => item.id === timed.id), false)
+
+    f.setTime(yesterday)
+    f.tasks.coordinateDay()
+    assert.equal(f.repository.get(timed.id)?.scheduledDate, today)
+  } finally { f.close() }
+})
+
+test('failed automatic carryover rolls back earlier moves and day activation, then retries', () => {
+  const f = fixture()
+  try {
+    const tasks = [f.once({ scheduledDate: '2026-10-31' }), f.once({ scheduledDate: '2026-11-01' })]
+    const today = '2026-11-03'
+    f.setTime(today)
+    f.connection.db.exec(`CREATE TRIGGER fail_second_move BEFORE UPDATE OF scheduled_date ON task_occurrences
+      WHEN NEW.scheduled_date = '${today}' AND (SELECT COUNT(*) FROM task_occurrences WHERE scheduled_date = '${today}') = 1
+      BEGIN SELECT RAISE(ABORT, 'second move failed'); END`)
+    assert.throws(() => f.tasks.coordinateDay(), /second move failed/)
+    assert.deepEqual(tasks.map(item => f.repository.get(item.id)), tasks)
+    assert.equal(f.repository.isActivated(today), false)
+
+    f.connection.db.exec('DROP TRIGGER fail_second_move')
+    assert.equal(f.tasks.coordinateDay(), true)
+    assert.deepEqual(new Set(saved(f.tasks.getDay(today)).map(item => item.id)), new Set(tasks.map(item => item.id)))
   } finally { f.close() }
 })
 

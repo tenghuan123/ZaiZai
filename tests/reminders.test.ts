@@ -48,18 +48,22 @@ test('claim restart becomes uncertain and preserves the same reminder ID without
   } finally { f.close(); rmSync(dir, { recursive: true }) }
 })
 
-test('resume only submits current day and leaves old tasks incomplete without fabricated dispatch records', async () => {
+test('resume carries overdue one-off tasks forward without resending their reminders', async () => {
   const f = fixture()
   const submitted: string[][] = []
   const service = new ReminderService(f.records, f.tasks, async items => {
     submitted.push(items.map(item => item.id)); return { state: 'submitted' }
   }, () => {}, error => { throw error }, f.clock)
   try {
-    const old = f.once({ scheduledDate: '2026-11-01', scheduledTime: '11:00' })
-    const today = f.once({ scheduledTime: '11:00' })
+    f.setTime('2026-11-01')
+    const old = f.once({ scheduledTime: '11:00' })
+    const today = f.once({ scheduledDate: '2026-11-02', scheduledTime: '11:00' })
+    f.setTime('2026-11-02')
     await service.checkNow('resume')
     assert.deepEqual(submitted, [[today.id]])
     assert.equal(f.repository.get(old.id)?.status, 'pending')
+    assert.equal(f.repository.get(old.id)?.scheduledDate, f.clock().today)
+    assert.equal(f.repository.get(old.id)?.dueAtMs, null)
     assert.equal(f.connection.db.prepare('SELECT id FROM reminder_dispatches WHERE occurrence_id=?').get(old.id), undefined)
     assert.equal(f.records.nextDue(f.clock().today), null)
   } finally { service.dispose(); f.close() }

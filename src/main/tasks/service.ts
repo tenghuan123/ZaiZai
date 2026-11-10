@@ -33,6 +33,10 @@ export class TaskService {
   private ensureTodayInTransaction(clock: ClockSnapshot): void {
     for (const plan of this.repository.plans()) this.reconcilePlan(plan, clock)
     this.repository.activate(clock.today, clock.timeZone, clock.nowMs)
+    // Carry over on startup or a forward date change, including days skipped while the app was closed.
+    if (this.coordinatedDate === undefined || clock.today > this.coordinatedDate) {
+      for (const item of this.repository.pastOneOffTodos(clock.today)) this.rescheduleToToday(item, clock)
+    }
   }
   private write<T>(action: (clock: ClockSnapshot) => T): T {
     const clock = this.clock()
@@ -126,14 +130,14 @@ export class TaskService {
     })
   }
   moveToToday(ref: unknown): Occurrence {
-    return this.write(clock => {
-      const item = this.resolve(ref, clock)
-      if (item.status !== 'pending') throw new AppError('CONFLICT', '只能移动未完成的任务。')
-      if (item.scheduledDate === clock.today) return item
-      this.reminderRecords.acknowledge(item.id, clock.nowMs)
-      return this.saveOccurrence({ ...item, scheduledDate: clock.today, scheduledTime: null, dueAtMs: null,
-        scheduleZone: clock.timeZone, manualOverride: true, scheduleVersion: item.scheduleVersion + 1 }, clock)
-    })
+    return this.write(clock => this.rescheduleToToday(this.resolve(ref, clock), clock))
+  }
+  private rescheduleToToday(item: Occurrence, clock: ClockSnapshot): Occurrence {
+    if (item.status !== 'pending') throw new AppError('CONFLICT', '只能移动未完成的任务。')
+    if (item.scheduledDate === clock.today) return item
+    this.reminderRecords.acknowledge(item.id, clock.nowMs)
+    return this.saveOccurrence({ ...item, scheduledDate: clock.today, scheduledTime: null, dueAtMs: null,
+      scheduleZone: clock.timeZone, manualOverride: true, scheduleVersion: item.scheduleVersion + 1 }, clock)
   }
 
   createPlan(input: unknown): RepeatPlan {

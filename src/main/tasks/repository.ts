@@ -46,6 +46,11 @@ export class TaskRepository {
     return (this.db.prepare(`SELECT ${occurrenceSelect} FROM task_occurrences WHERE scheduled_date=?`).all(date) as Occurrence[])
       .map(row => occurrence(row)!)
   }
+  pastOneOffTodos(today: string): Occurrence[] {
+    return (this.db.prepare(`SELECT ${occurrenceSelect} FROM task_occurrences
+      WHERE scheduled_date<? AND plan_id IS NULL AND status='pending'`).all(today) as Occurrence[])
+      .map(row => occurrence(row)!)
+  }
   completedBetween(startMs: number, endMs: number): DailyReport['items'] {
     return this.db.prepare(`SELECT id,title,${occurrenceCategory} AS category,completed_at_ms AS completedAtMs
       FROM task_occurrences WHERE status='completed' AND completed_at_ms>=? AND completed_at_ms<?
