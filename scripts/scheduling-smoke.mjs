@@ -104,22 +104,29 @@ try {
   report.checks.push('settings presets change actual native bounds; settings/header layer toggles agree with BrowserWindow')
 
   // Transparent windows use app-controlled bounds; inject screen cursor positions at the native boundary.
-  await app.evaluate(({ screen }) => {
-    globalThis.__originalCursor = screen.getCursorScreenPoint
-    globalThis.__cursor = { x: 700, y: 300 }
-    screen.getCursorScreenPoint = () => globalThis.__cursor
-  })
+  const beforeResize = (await snapshot()).window
+  const { panel: { bounds: panelBounds, direction } } = beforeResize
   const handle = button('调整窗口尺寸'), box = await handle.boundingBox()
-  await page.mouse.move(box.x + box.width / 2, box.y + box.height / 2); await page.mouse.down()
-  await page.mouse.move(box.x + box.width / 2 - 5, box.y + box.height / 2 - 5)
+  const handleCenter = { x: box.x + box.width / 2, y: box.y + box.height / 2 }
+  const startCursor = { x: panelBounds.x + handleCenter.x, y: panelBounds.y + handleCenter.y }
+  await app.evaluate(({ screen }, cursor) => {
+    globalThis.__originalCursor = screen.getCursorScreenPoint
+    globalThis.__cursor = cursor
+    screen.getCursorScreenPoint = () => globalThis.__cursor
+  }, startCursor)
+  await page.mouse.move(handleCenter.x, handleCenter.y); await page.mouse.down()
   await page.waitForTimeout(80)
-  await app.evaluate(() => { globalThis.__cursor = { x: 740, y: 350 } })
+  await app.evaluate((_electron, cursor) => { globalThis.__cursor = cursor }, {
+    x: startCursor.x + (direction.horizontal === 'left' ? -40 : 40),
+    y: startCursor.y + (direction.vertical === 'up' ? -50 : 50)
+  })
   await until(async () => (await snapshot()).window.panel.bounds.width === 480, 'resize changes native width')
   await page.mouse.up()
   await until(async () => (await snapshot()).settings.expandedSize.width === 480, 'resize saved')
   await app.evaluate(({ screen }) => { screen.getCursorScreenPoint = globalThis.__originalCursor; delete globalThis.__originalCursor; delete globalThis.__cursor })
   const resized = (await snapshot()).settings.expandedSize
   assert.deepEqual(resized, { width: 480, height: 660 })
+  assert.deepEqual((await snapshot()).window.bounds, beforeResize.bounds)
   await button('仅显示桌宠').click(); await until(async () => !(await snapshot()).window.panel.visible, 'compact')
   await pet.getByRole('button', { name: '展开清单', exact: true }).click(); await until(async () => (await snapshot()).window.panel.visible, 'restore size after compact')
   assert.equal((await snapshot()).window.panel.bounds.width, 480)
