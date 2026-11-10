@@ -55,10 +55,11 @@ export function PetSprite({ pack: petPack, playback, paused, onFinished }: {
     const current: AnimationClock = { elapsed: 0, previous: null, frame: -1, raf: null, finished: false, tick: () => {} }
     clock.current = current
     const draw = (index: number): void => {
+      const tile = state.frameIndices?.[index] ?? index
       context.clearRect(0, 0, petPack.frameWidth, petPack.frameHeight)
       for (const slice of spriteSlices(petPack.frameWidth, petPack.frameHeight, index, state.proportions)) {
-        context.drawImage(image, index % state.cols * petPack.frameWidth,
-          Math.floor(index / state.cols) * petPack.frameHeight + slice.sourceY,
+        context.drawImage(image, tile % state.cols * petPack.frameWidth,
+          Math.floor(tile / state.cols) * petPack.frameHeight + slice.sourceY,
           petPack.frameWidth, slice.sourceHeight, slice.x, slice.y, slice.width, slice.height)
       }
       current.frame = index
@@ -87,7 +88,8 @@ export function PetSprite({ pack: petPack, playback, paused, onFinished }: {
     }
     image.onload = () => {
       if (cancelled) return
-      const rows = Math.ceil(state.frames / state.cols)
+      const tiles = state.frameIndices ? Math.max(...state.frameIndices) + 1 : state.frames
+      const rows = Math.ceil(tiles / state.cols)
       if (image.naturalWidth !== state.cols * petPack.frameWidth || image.naturalHeight !== rows * petPack.frameHeight) {
         failed(); return
       }

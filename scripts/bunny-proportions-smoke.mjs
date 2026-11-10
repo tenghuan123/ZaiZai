@@ -93,8 +93,9 @@ try {
       for (let frame = 0; frame < state.frames; frame++) {
         ctx.clearRect(0, 0, 320, 320);
         outside.clearRect(0, 0, 640, 640);
-        const sx = frame % state.cols * 320,
-          sy = Math.floor(frame / state.cols) * 320;
+        const tile = state.frameIndices[frame];
+        const sx = tile % state.cols * 320,
+          sy = Math.floor(tile / state.cols) * 320;
         for (const s of slices[frame]) {
           ctx.drawImage(source, sx, sy + s.sourceY, 320, s.sourceHeight, s.x, s.y, s.width, s.height);
           outside.drawImage(source, sx, sy + s.sourceY, 320, s.sourceHeight, s.x + 160, s.y + 160, s.width, s.height);

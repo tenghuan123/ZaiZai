@@ -36,6 +36,7 @@ import zhuZhuStretch from '../../../../../resources/pets/zhu-zhu/stretch.png?url
 
 export interface PetSpriteState {
   src: string; frames: number; cols: number; fps: number; loop: boolean; url: string; proportions?: PetProportions
+  frameIndices?: number[]
 }
 export interface PetPack {
   id: string; name: string; version: string; frameWidth: number; frameHeight: number

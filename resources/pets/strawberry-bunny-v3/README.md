@@ -13,11 +13,13 @@ V3.1 以现有待机原图为角色外观基准，使用内置 image_gen 重绘�
 ## 查看与使用
 
 - preview.html：当前 V3 的本地预览，可切换七组动作，带面部放大、逐帧、慢放与每组的“跳到眨眼”；需与本目录图片一起打开。
-- manifest.json 与根目录 <动作>.png：8 列、每帧 320 × 320，24 FPS 的普通精灵图；曝光节奏已烘焙。
+- `manifest.json` 与根目录的动作 PNG 是应用使用的图集。每格 320 × 320，8 列，重复的画面只存一份。`frames` 与 `fps` 定义播放时长，`frameIndices` 把每个播放帧映射到图集中的格子。
 - animations/<动作>.png：APNG，与精灵图一致，帧时长精确为 1/24 秒；单次/循环遵循 manifest。
 - previews/react-loop.png：用于展示自然挥手与眨眼的循环 APNG；应用动作仍遵循 manifest 的单次播放规则。
 - keyframes/<动作>/00.png 至 23.png：候选绘制帧，播放顺序见 source/timelines.json。本包省略重复曝光帧的独立副本。
 - source/reference.png、source/prompts.md、source/generation.json：参考图、完整提示词与制作记录。
+
+重新导出动作时，先在临时目录生成逐播放帧排列的 PNG，再从本目录运行 `python3 source/compact-atlases.py /path/to/exports/idle.png`（需要 Pillow，可一次传入多个动作）。脚本更新图集、`manifest.json` 和离线预览内嵌的动作配置。
 
 | 动作 | 眨眼所在阶段 | 主要表情变化 |
 | --- | --- | --- |

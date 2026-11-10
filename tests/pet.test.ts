@@ -43,8 +43,16 @@ for (const id of BUILT_IN_PET_IDS) test(`${id}: all seven bundled sheets match t
     const png = readFileSync(resolve(folder, state.src))
     assert.equal(png.subarray(1, 4).toString(), 'PNG')
     assert.equal(png.readUInt32BE(16), state.cols * manifest.canvasSize[0])
-    assert.equal(png.readUInt32BE(20), Math.ceil(state.frames / state.cols) * manifest.canvasSize[1])
     assert.ok(state.fps > 0 && state.frames > 0)
+    let tiles = state.frames
+    if (id === BUILT_IN_PET_ID) {
+      const indices = state.frameIndices as number[]
+      assert.equal(indices.length, state.frames)
+      tiles = new Set(indices).size
+      assert.ok(tiles < state.frames)
+      assert.ok(indices.every(index => Number.isInteger(index) && index >= 0 && index < tiles))
+    }
+    assert.equal(png.readUInt32BE(20), Math.ceil(tiles / state.cols) * manifest.canvasSize[1])
   }
 })
 
