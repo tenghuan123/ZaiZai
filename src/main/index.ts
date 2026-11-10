@@ -94,7 +94,7 @@ if (!app.requestSingleInstanceLock()) {
   })
   void app.whenReady().then(async () => {
     const databasePath = join(dataPath, 'm0.sqlite3')
-    const existingInstall = existsSync(databasePath)
+    const existingInstall = existsSync(databasePath) || process.argv.includes('--updated')
     const database = new Connection(databasePath)
     connection = database
     const preferences = new SettingsRepository(database.db)
@@ -161,7 +161,7 @@ if (!app.requestSingleInstanceLock()) {
             updateNotification.show()
           }
         } catch (error) { reportError(error) }
-      }, log, release)
+      }, log, { release, silentInstall: process.platform === 'win32' })
     const humorContent = loadHumorContent(dataPath, error => {
       log('humor-pack-invalid', { message: error instanceof Error ? error.message : String(error) })
     })

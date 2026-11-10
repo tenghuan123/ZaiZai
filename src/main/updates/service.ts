@@ -18,7 +18,8 @@ export class UpdateService {
 
   constructor(private readonly driver: UpdateDriver | null, private readonly currentVersion: string,
     disabledReason: string, private readonly changed: (state: UpdateState) => void,
-    private readonly log: (event: string, details?: object) => void, private readonly release?: InstalledRelease) {
+    private readonly log: (event: string, details?: object) => void,
+    private readonly options: { release?: InstalledRelease; silentInstall?: boolean } = {}) {
     this.status = driver ? { phase: 'idle' } : { phase: 'disabled', reason: disabledReason }
     if (!driver) return
     driver.autoDownload = false
@@ -34,11 +35,11 @@ export class UpdateService {
   }
 
   getState(): UpdateState {
-    return { currentVersion: this.currentVersion, status: this.status, whatsNew: this.release?.whatsNew ?? null }
+    return { currentVersion: this.currentVersion, status: this.status, whatsNew: this.options.release?.whatsNew ?? null }
   }
 
   acknowledgeWhatsNew(): void {
-    this.release?.acknowledge()
+    this.options.release?.acknowledge()
     this.changed(this.getState())
   }
 
@@ -74,7 +75,7 @@ export class UpdateService {
     // Let the IPC acknowledgement reach the renderer before the updater quits the app.
     setImmediate(() => {
       if (this.disposed) return
-      try { this.driver!.quitAndInstall(false, true) }
+      try { this.driver!.quitAndInstall(this.options.silentInstall ?? false, true) }
       catch (error) { this.failed(error instanceof Error ? error : new Error(String(error))) }
     })
   }

@@ -3,7 +3,7 @@ import { _electron } from 'playwright'
 import { createRequire } from 'node:module'
 import { createServer } from 'node:http'
 import { createHash } from 'node:crypto'
-import { mkdir, writeFile, cp } from 'node:fs/promises'
+import { mkdir, writeFile, cp, readFile, rm } from 'node:fs/promises'
 import { resolve, join } from 'node:path'
 import assert from 'node:assert/strict'
 
@@ -46,6 +46,7 @@ autoUpdater.quitAndInstall = (...args) => globalThis.__updateInstallCalls.push(a
 require(${JSON.stringify(join(root, 'out/main/index.js'))});
 `)
 const env = { ...process.env, TIA_M0_DATA_DIR: join(directory, 'data') }
+const versionMarker = join(env.TIA_M0_DATA_DIR, 'last-seen-version')
 delete env.ELECTRON_RUN_AS_NODE; delete env.ELECTRON_RENDERER_URL
 const report = { directory, checks: [], errors: [], status: 'running' }
 let app, page
@@ -64,6 +65,7 @@ try {
   page = panelPage; page.setDefaultTimeout(15_000)
   page.on('pageerror', error => report.errors.push(error.message))
   await page.waitForSelector('.widget')
+  assert.equal(await readFile(versionMarker, 'utf8'), '0.1.0')
   assert.equal(await page.getByRole('dialog', { name: '本版本新功能', exact: true }).count(), 0)
   await page.getByLabel('新增待办', { exact: true }).fill('更新期间保留的任务')
   await page.getByRole('button', { name: '快捷新增任务', exact: true }).click()
@@ -118,18 +120,22 @@ try {
   await page.getByRole('button', { name: '仅显示桌宠', exact: true }).click()
   await pet.getByRole('button', { name: '展开清单', exact: true }).waitFor()
   await app.close()
+  await rm(versionMarker)
   app = await launch('0.2.0')
   page = (await desktopPages(app)).panel
   page.on('pageerror', error => report.errors.push(error.message))
   let whatsNew = page.getByRole('dialog', { name: '本版本新功能', exact: true })
   await whatsNew.getByText('已更新到 v0.2.0', { exact: true }).waitFor()
-  await whatsNew.getByText(/透明留白可以点穿/).waitFor()
+  const firstReleaseNote = (await readFile('docs/releases/latest.md', 'utf8')).trim().split(/\r?\n/)[0].replace(/^[-*]\s+/, '')
+  await whatsNew.getByText(firstReleaseNote, { exact: true }).waitFor()
+  assert.equal((await page.evaluate(async () => (await window.desktop.bootstrap()).value)).settings.displayMode, 'compact')
   await page.screenshot({ path: join(directory, 'whats-new.png'), omitBackground: true })
   await whatsNew.getByRole('button', { name: '知道了', exact: true }).click()
   await until(() => page.evaluate(async () => {
     const result = await window.desktop.bootstrap()
     return result.ok && result.value.window.mode === 'compact' && !result.value.window.panel.visible
   }), 'restoring compact mode after first-open notes')
+  assert.equal(await readFile(versionMarker, 'utf8'), '0.2.0')
   await app.close()
   app = await launch('0.2.0')
   const reopened = await desktopPages(app)

@@ -1,7 +1,7 @@
 import { test } from 'node:test'
 import assert from 'node:assert/strict'
 import { EventEmitter } from 'node:events'
-import { mkdtempSync, rmSync } from 'node:fs'
+import { mkdirSync, mkdtempSync, readFileSync, rmSync } from 'node:fs'
 import { tmpdir } from 'node:os'
 import { join } from 'node:path'
 import type { UpdateCheckResult, UpdateInfo } from 'electron-updater'
@@ -26,10 +26,10 @@ class FakeUpdater extends EventEmitter {
     this.emit('update-downloaded', { ...info, downloadedFile: '/cache/test.exe' })
     return ['/cache/test.exe']
   }
-  installAction = (): void => {}
+  installAction = (_silent: boolean, _relaunch: boolean): void => {}
   checkForUpdates(): Promise<UpdateCheckResult | null> { this.checks++; return this.checkAction() }
   downloadUpdate(): Promise<string[]> { this.downloads++; return this.downloadAction() }
-  quitAndInstall(): void { this.installs++; this.installAction() }
+  quitAndInstall(silent: boolean, relaunch: boolean): void { this.installs++; this.installAction(silent, relaunch) }
   offer(): void {
     this.checkAction = async () => {
       this.emit('update-available', info)
@@ -37,9 +37,9 @@ class FakeUpdater extends EventEmitter {
     }
   }
 }
-function fixture(driver: FakeUpdater | null = new FakeUpdater()) {
+function fixture(driver: FakeUpdater | null = new FakeUpdater(), options?: ConstructorParameters<typeof UpdateService>[5]) {
   const states: UpdateState[] = [], logs: string[] = []
-  const service = new UpdateService(driver, '0.1.0', '此安装包未配置更新。', state => states.push(state), event => logs.push(event))
+  const service = new UpdateService(driver, '0.1.0', '此安装包未配置更新。', state => states.push(state), event => logs.push(event), options)
   return { driver: driver!, service, states, logs }
 }
 
@@ -63,6 +63,37 @@ test('existing installs see release notes once and downgrading does not reset th
     assert.equal(open('0.9.9').whatsNew?.pending, false)
     assert.equal(open('0.10.0').whatsNew?.pending, false)
     assert.equal(open('0.10.1').whatsNew?.pending, true)
+  } finally { rmSync(directory, { recursive: true, force: true }) }
+})
+
+test('Windows restart-update requests a silent install and relaunch', async () => {
+  const f = fixture(new FakeUpdater(), { silentInstall: true })
+  const installs: [boolean, boolean][] = []
+  f.driver.installAction = (silent, relaunch) => { installs.push([silent, relaunch]) }
+  try {
+    f.driver.offer()
+    f.service.check()
+    await tick()
+    assert.deepEqual(installs, [])
+    f.service.install()
+    await tick()
+    assert.deepEqual(installs, [[true, true]])
+  } finally { f.service.dispose() }
+})
+
+test('a failed acknowledgment keeps release notes pending and allows a retry', () => {
+  const directory = mkdtempSync(join(tmpdir(), 'zaizai-release-'))
+  const marker = join(directory, 'last-seen-version')
+  try {
+    const release = new InstalledRelease(marker, '0.1.7', '升级内容', true, error => { throw error })
+    const f = fixture(null, { release })
+    mkdirSync(marker + '.tmp')
+    assert.throws(() => f.service.acknowledgeWhatsNew())
+    assert.deepEqual(f.service.getState().whatsNew, { notes: '升级内容', pending: true })
+    rmSync(marker + '.tmp', { recursive: true })
+    f.service.acknowledgeWhatsNew()
+    assert.equal(readFileSync(marker, 'utf8'), '0.1.7')
+    assert.deepEqual(f.states.at(-1)?.whatsNew, { notes: '升级内容', pending: false })
   } finally { rmSync(directory, { recursive: true, force: true }) }
 })
 

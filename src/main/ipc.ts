@@ -75,7 +75,7 @@ export function registerIPC(context: Context): void {
   handle(channels.updateAcknowledge, (_input, event) => {
     if (event.sender !== desktop.panel.webContents) throw new AppError('UNAVAILABLE', '请在清单中确认新功能。')
     context.updates.acknowledgeWhatsNew()
-    desktop.finishWhatsNew()
+    sideEffect(() => desktop.finishWhatsNew())
   })
   ipcMain.on(channels.hitRegions, (event, input: unknown) => {
     const frame = event.senderFrame
