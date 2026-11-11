@@ -6,10 +6,10 @@
 
 已在 M1 正式数据基础上接入 M2 任务界面：一次性任务编辑、日/周/月多时间计划管理、日期历史、未来预览与周期任务补做。全部操作复用主进程任务服务和六张核心表。macOS Apple Silicon 已执行本机验证，尚未完成双平台验收。
 
-## 下载 v0.1.7
+## 下载 v0.1.8
 
-- [Windows x64 测试安装包](https://xuanxintest.oss-cn-beijing.aliyuncs.com/zaizai/updates/windows-x64/zaizai-0.1.7-win-x64.exe)
-- [macOS Apple Silicon 手动测试包](https://xuanxintest.oss-cn-beijing.aliyuncs.com/zaizai/updates/mac-arm64/zaizai-0.1.7-mac-arm64-test.zip)
+- [Windows x64 测试安装包](https://xuanxintest.oss-cn-beijing.aliyuncs.com/zaizai/updates/windows-x64/zaizai-0.1.8-win-x64.exe)
+- [macOS Apple Silicon 手动测试包](https://xuanxintest.oss-cn-beijing.aliyuncs.com/zaizai/updates/mac-arm64/zaizai-0.1.8-mac-arm64-test.zip)
 
 ## 运行应用
 
