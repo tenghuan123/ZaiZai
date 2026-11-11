@@ -332,7 +332,7 @@ export class DesktopWindow {
     const resize = this.resize
     if (!resize) return
     const cursor = screen.getCursorScreenPoint()
-    // The grip stays at the lower right. Toward the free side is growth even at the screen edge.
+    // Dragging the grip away from the pet grows the panel along its opening direction.
     const dx = (cursor.x - resize.cursor.x) * (resize.direction.horizontal === 'left' ? -1 : 1)
     const dy = (cursor.y - resize.cursor.y) * (resize.direction.vertical === 'up' ? -1 : 1)
     if (!resize.moved && Math.hypot(dx, dy) < 3) return

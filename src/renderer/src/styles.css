@@ -285,8 +285,10 @@ details { color: #8b9eae; font-size: 10px; }
 .plan-meta-actions .task-tags .plan-slot-summary { flex-shrink: 1; min-width: 0; background: none; padding: 0; overflow: hidden; text-overflow: ellipsis; }
 .paused-plan header strong { color: #a2afb8; text-decoration: line-through; }
 .resize-handle { position: absolute; right: 6px; bottom: 4px; width: 20px; height: 20px; display: flex; align-items: flex-end; justify-content: flex-end; padding: 2px; background: none; color: #64748bcc; cursor: nwse-resize; touch-action: none; transition: color .15s; }
-.resize-handle svg { width: 12px; height: 12px; pointer-events: none; }
+.resize-handle svg { width: 12px; height: 12px; pointer-events: none; scale: var(--grip-flip-x, 1) var(--grip-flip-y, 1); }
 .resize-handle:hover { color: #6f9bb6; }
+.panel-window[data-horizontal=left] .resize-handle { left: 6px; right: auto; justify-content: flex-start; --grip-flip-x: -1; }
+.panel-window[data-vertical=up] .resize-handle { top: 4px; bottom: auto; align-items: flex-start; --grip-flip-y: -1; }
 .panel-window[data-horizontal=left][data-vertical=down] .resize-handle,
 .panel-window[data-horizontal=right][data-vertical=up] .resize-handle { cursor: nesw-resize; }
 .editor-types button { white-space: nowrap; }

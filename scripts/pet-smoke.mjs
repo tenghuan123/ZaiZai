@@ -315,6 +315,12 @@ try {
     assert.deepEqual(await screenPet(), target)
     const cardBox = await card.boundingBox()
     assert.ok(cardBox.x >= 0 && cardBox.y >= 0 && cardBox.x + cardBox.width <= panel.bounds.width && cardBox.y + cardBox.height <= panel.bounds.height)
+    const grip = page.getByRole('button', { name: '调整窗口尺寸', exact: true })
+    const gripBox = await grip.boundingBox()
+    assert.equal(gripBox.x + gripBox.width / 2 < cardBox.x + cardBox.width / 2, horizontal === 'left')
+    assert.equal(gripBox.y + gripBox.height / 2 < cardBox.y + cardBox.height / 2, vertical === 'up')
+    assert.equal(await grip.evaluate(element => getComputedStyle(element).cursor),
+      (horizontal === 'left') === (vertical === 'up') ? 'nwse-resize' : 'nesw-resize')
     const petTop = target.y
     const panelTop = panel.bounds.y + cardBox.y
     const panelBottom = panelTop + cardBox.height
@@ -322,7 +328,7 @@ try {
     assert.ok(gap >= 3 && gap <= 5, `visible card-to-pet gap: ${gap}px`)
     assert.ok(vertical === 'up' ? panel.bounds.y + panel.bounds.height > bounds.y : panel.bounds.y < bounds.y + bounds.height)
   }
-  report.checks.push('drag stops on release outside the window, even when pointerup is lost; all four corners still expand around the pet')
+  report.checks.push('drag stops on release outside the window, even when pointerup is lost; the panel and resize grip follow all four opening directions')
 
   const below = await screenPet()
   const stableBounds = (await snapshot()).window.bounds
