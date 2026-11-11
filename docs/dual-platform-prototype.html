@@ -114,6 +114,23 @@
     .list-heading > button { flex-shrink: 0; padding: 4px 12px; border-radius: 999px; background: #6f9bb6; color: white; font-size: 11px; font-weight: 500; white-space: nowrap; cursor: pointer; }
     .list-heading > button:hover { opacity: .9; }
 
+    .todo-date-group { display: grid; gap: 8px; }
+    .todo-date-group + .todo-date-group { padding-top: 4px; }
+    .todo-date-divider {
+      display: flex;
+      align-items: center;
+      gap: 9px;
+      color: #53677a;
+      font-size: 11px;
+      font-weight: 500;
+      line-height: 1.5;
+    }
+    .todo-date-divider::before, .todo-date-divider::after {
+      content: '';
+      flex: 1;
+      border-top: 1px solid #d8e1e9;
+    }
+
     #main-task-card {
       position: absolute;
       display: flex;
@@ -271,7 +288,7 @@
           <h1 class="text-base font-semibold text-[var(--foreground)]">桌面任务助手与互动宠物 · 双平台交互原型</h1>
         </div>
         <p class="text-xs text-[var(--muted-foreground)] mt-1">
-          已完整纳入用户 6 项试用反馈：<strong>开机自启动</strong>、<strong>仅显示在桌面（打开其他软件遮挡）</strong>、<strong>框框自由拉大记忆尺寸</strong>、<strong>🔥 紧急任务自动排最前</strong>、<strong>周计划 / 月计划</strong>、<strong>🔔 提醒摇铃声音</strong>。
+          已完整纳入用户 6 项试用反馈：<strong>开机自启动</strong>、<strong>仅显示在桌面（打开其他软件遮挡）</strong>、<strong>框框自由拉大记忆尺寸</strong>、<strong>🔥 紧急任务在组内优先</strong>、<strong>周计划 / 月计划</strong>、<strong>🔔 提醒摇铃声音</strong>。
         </p>
       </div>
 
@@ -310,7 +327,7 @@
         ↘️ 拉大框框尺寸 (或拖拽右下角) (A17)
       </button>
       <button onclick="demoQuickUrgentTask()" class="px-2.5 py-1 rounded-md text-xs bg-rose-500 text-white hover:bg-rose-600 transition font-medium shadow-2xs">
-        🔥 新增「紧急任务」排最前 (A15)
+        🔥 新增「紧急任务」组内优先 (A15)
       </button>
       <button onclick="demoWeeklyMonthlyPlanModal()" class="px-2.5 py-1 rounded-md text-xs bg-violet-600 text-white hover:bg-violet-700 transition font-medium shadow-2xs">
         📆 周计划 / 月计划 (A16)
@@ -323,7 +340,7 @@
         🔼 仅留桌宠
       </button>
       <button onclick="toggleHistoryDate()" id="btn-sim-history" class="px-2.5 py-1 rounded-md text-xs bg-[var(--secondary)] text-[var(--secondary-foreground)] hover:opacity-90 transition">
-        📅 昨日移到今天 (A05)
+        📅 查看昨日记录
       </button>
       <button onclick="openModal('settings')" class="px-2.5 py-1 rounded-md text-xs bg-[var(--secondary)] text-[var(--secondary-foreground)] hover:opacity-90 transition font-medium">
         🚀 自启动与设置 (A20)
@@ -816,7 +833,7 @@
                   id="quick-urgent-btn"
                   onclick="toggleQuickUrgent()"
                   class="text-[11px] text-slate-500 hover:text-rose-600 px-2 py-0.5 rounded-full bg-slate-100/90 hover:bg-rose-50 transition font-medium whitespace-nowrap cursor-pointer focus:outline-none"
-                  title="标记为「紧急任务」，添加后自动排到待办最前面"
+                  title="标记为「紧急任务」，添加后在所属分组优先显示"
                 >
                   🔥 紧急
                 </button>
@@ -910,7 +927,7 @@
 
             <!-- Priority Selector -->
             <div>
-              <label class="block text-slate-600 mb-1 font-medium">任务优先级（紧急任务自动排在待办最前面）</label>
+              <label class="block text-slate-600 mb-1 font-medium">任务优先级（紧急任务在组内优先）</label>
               <div class="grid grid-cols-2 gap-1.5">
                 <button type="button" id="prio-btn-normal" onclick="setEditorPriority('normal')" class="py-1.5 px-2.5 rounded-xl border border-slate-300 bg-slate-100 text-slate-800 font-medium flex items-center justify-center gap-1 transition whitespace-nowrap cursor-pointer">
                   <span>📋 普通日常任务</span>
@@ -1317,7 +1334,7 @@
           <div class="p-2.5 rounded-lg bg-[var(--background)] border border-[var(--border)]">
             <div class="font-medium text-[var(--foreground)]">2. 紧急优先排序 + 周计划/月计划 (A15/A16)</div>
             <ul class="mt-1 list-disc list-inside space-y-0.5">
-              <li><strong>🔥 紧急任务</strong>自动排在普通日常任务最前面，支持行内一键切换</li>
+              <li><strong>🔥 紧急任务</strong>在同组的普通任务前显示，支持行内一键切换</li>
               <li>重复计划扩展支持 <strong>每天 / 每周几 / 每月几号</strong> 三种周期</li>
               <li>内置<strong>🔔 提醒摇铃清脆音效</strong>（Web Audio 合成）与<strong>🚀 开机自启动</strong></li>
             </ul>
@@ -1383,6 +1400,7 @@
     // STATE DATA (Aligned with docs/requirements.md v0.3 & docs/prototype-design.md)
     // =========================================================================
     const TODAY_DATE = '2026-11-02'; // 2026-11-02 is Monday (周一) & 2nd day of month (2号)
+    const YESTERDAY_DATE = '2026-11-01';
     const DEMO_INSTALLED_VERSION = '0.1.0';
     const DEMO_NEW_VERSION = '0.1.1';
     let updatePhase = 'available';
@@ -1436,9 +1454,10 @@
       { id: 't_report_other', scheduledDate: TODAY_DATE, title: '整理评审资料', time: null, priority: 'normal', remind: false, done: true, doneDate: TODAY_DATE, doneAt: '11:15', isRepeat: false, planId: null, originDate: null },
 
       // Yesterday (2026-11-01): For F05 / A04 / A05 verification
-      { id: 'y1', scheduledDate: '2026-11-01', title: '核对上周报销单据', time: '16:00', priority: 'urgent', remind: true, done: false, doneAt: null, isRepeat: false, planId: null, originDate: '11-01', movedToToday: false },
-      { id: 'y2', scheduledDate: '2026-11-01', title: '准备早饭与维生素', time: '08:30', priority: 'normal', remind: true, done: true, doneDate: '2026-11-01', doneAt: '08:35', isRepeat: true, planId: 'p2', originDate: '11-01', movedToToday: false },
-      { id: 'y3', scheduledDate: '2026-11-01', title: '起身运动拉伸 5 分钟', time: '15:00', priority: 'normal', remind: true, done: true, doneDate: '2026-11-01', doneAt: '15:10', isRepeat: true, planId: 'p1', originDate: '11-01', movedToToday: false },
+      { id: 't_carryover_demo', scheduledDate: YESTERDAY_DATE, title: '整理发布方案', category: 'work', time: '16:00', priority: 'normal', remind: true, done: false, doneAt: null, isRepeat: false, planId: null, originDate: null },
+      { id: 'y1', scheduledDate: YESTERDAY_DATE, title: '起身运动拉伸 5 分钟', category: 'life', time: '10:00', priority: 'normal', remind: true, done: false, doneAt: null, isRepeat: true, planId: 'p1', originDate: null },
+      { id: 'y2', scheduledDate: YESTERDAY_DATE, title: '准备早饭与维生素', time: '08:30', priority: 'normal', remind: true, done: true, doneDate: YESTERDAY_DATE, doneAt: '08:35', isRepeat: true, planId: 'p2', originDate: null },
+      { id: 'y3', scheduledDate: YESTERDAY_DATE, title: '起身运动拉伸 5 分钟', time: '15:00', priority: 'normal', remind: true, done: true, doneDate: YESTERDAY_DATE, doneAt: '15:10', isRepeat: true, planId: 'p1', originDate: null },
       { id: 'y_report_work', scheduledDate: '2026-11-01', title: '核对送审清单', category: 'work', time: null, priority: 'normal', remind: false, done: true, doneDate: TODAY_DATE, doneAt: '09:20', isRepeat: false, planId: null, originDate: null }
     ];
 
@@ -1487,7 +1506,7 @@
 
     function openDailyReport() {
       const tasks = allTasks
-        .filter(task => task.done && task.doneDate === TODAY_DATE && !task.removedOccurrence && !task.movedToToday)
+        .filter(task => task.done && task.doneDate === TODAY_DATE && !task.removedOccurrence)
         .sort((a, b) => a.doneAt.localeCompare(b.doneAt));
       document.getElementById('report-date').textContent = formatShortDateLabel(TODAY_DATE);
       document.getElementById('report-groups').innerHTML = tasks.length
@@ -1578,6 +1597,7 @@
     }
 
     function syncRepeatPlanInstancesForDate(dateStr) {
+      if (dateStr < TODAY_DATE) return;
       repeatPlans.forEach(plan => {
         const inRange = isDateWithinPlan(dateStr, plan);
         if (inRange) {
@@ -1585,8 +1605,7 @@
             const exists = allTasks.some(t =>
               t.scheduledDate === dateStr &&
               t.planId === plan.id &&
-              t.time === slot &&
-              !t.removedOccurrence
+              t.time === slot
             );
             if (!exists) {
               allTasks.push({
@@ -1607,19 +1626,16 @@
             }
           });
         }
-        // Remove unfinished occurrences on >=TODAY_DATE if slot was removed or date fell out of cycle/range
-        if (dateStr >= TODAY_DATE) {
-          for (let i = allTasks.length - 1; i >= 0; i--) {
-            const t = allTasks[i];
-            if (t.scheduledDate === dateStr && t.planId === plan.id && !t.done) {
-              if (!inRange || !plan.slots.includes(t.time)) {
-                allTasks.splice(i, 1);
-              } else {
-                t.title = plan.title;
-                t.priority = plan.priority || 'normal';
-                t.remind = plan.remind !== false;
-              }
-            }
+        // Only generated arrangements follow plan changes. Completed, removed and made-up instances keep their own state.
+        for (let i = allTasks.length - 1; i >= 0; i--) {
+          const t = allTasks[i];
+          if (t.scheduledDate !== dateStr || t.planId !== plan.id || t.done || t.removedOccurrence || t.originDate) continue;
+          if (!inRange || !plan.slots.includes(t.time)) {
+            allTasks.splice(i, 1);
+          } else {
+            t.title = plan.title;
+            t.priority = plan.priority || 'normal';
+            t.remind = plan.remind !== false;
           }
         }
       });
@@ -1627,7 +1643,7 @@
 
     function getTasksForDate(dateStr) {
       syncRepeatPlanInstancesForDate(dateStr);
-      return allTasks.filter(t => t.scheduledDate === dateStr && !t.movedToToday && !t.removedOccurrence);
+      return allTasks.filter(t => t.scheduledDate === dateStr && !t.removedOccurrence);
     }
 
     function formatShortDateLabel(dateStr) {
@@ -1641,12 +1657,114 @@
     // =========================================================================
     // RENDER & PROGRESS LOGIC (With Urgent Priority Auto-Top Sorting A15)
     // =========================================================================
+    function renderTodayTodoGroups(container, tasks) {
+      const carryovers = new Map();
+      const today = [];
+      const recurring = [];
+      for (const task of tasks) {
+        if (task.isRepeat) {
+          recurring.push(task);
+        } else if (task.originDate) {
+          if (!carryovers.has(task.originDate)) carryovers.set(task.originDate, []);
+          carryovers.get(task.originDate).push(task);
+        } else {
+          today.push(task);
+        }
+      }
+
+      const groups = [...carryovers]
+        .sort(([a], [b]) => b.localeCompare(a))
+        .map(([date, items]) => ({ label: date === YESTERDAY_DATE ? '昨日' : '遗留待办', date, items }));
+      groups.push(
+        { label: '今日', date: TODAY_DATE, items: today },
+        { label: '周期计划', date: TODAY_DATE, items: recurring }
+      );
+
+      for (const { label, date, items } of groups) {
+        if (!items.length) continue;
+        const [year, month, day] = date.split('-').map(Number);
+        const displayDate = `${year !== Number(TODAY_DATE.slice(0, 4)) ? year + '年' : ''}${month}月${day}日`;
+        const section = document.createElement('section');
+        section.className = 'todo-date-group';
+        const heading = document.createElement('h3');
+        heading.className = 'todo-date-divider';
+        const caption = document.createElement('span');
+        caption.textContent = label + ' · ';
+        const time = document.createElement('time');
+        time.dateTime = date;
+        time.textContent = displayDate;
+        caption.append(time);
+        heading.append(caption);
+        section.append(heading);
+        for (const item of items) section.append(createTodoRow(item, TODAY_DATE));
+        container.append(section);
+      }
+    }
+
+    function createTodoRow(item, viewDate) {
+      const isUrgent = item.priority === 'urgent';
+      const planObj = item.planId ? repeatPlans.find(p => p.id === item.planId) : null;
+      const repeatBadgeText = item.isRepeat ? formatPlanCycleBadge(planObj) : '';
+      const repeatBadgeColor = planObj?.repeatType === 'weekly'
+        ? 'bg-violet-50 text-violet-600 border border-violet-200/60'
+        : planObj?.repeatType === 'monthly'
+        ? 'bg-amber-50 text-amber-700 border border-amber-200/60'
+        : 'bg-sky-50 text-sky-600 border border-sky-200/60';
+
+      const row = document.createElement('div');
+      row.id = 'task-row-' + item.id;
+      row.className = `task-row-item rounded-2xl px-3.5 py-2.5 flex items-center justify-between shadow-2xs border group ${
+        isUrgent
+          ? 'bg-white border-rose-200/80 hover:border-rose-300'
+          : 'bg-white border-slate-100 hover:border-slate-200'
+      }`;
+      const isHistorical = viewDate < TODAY_DATE;
+      row.innerHTML = `
+        <div class="flex items-center gap-2.5 min-w-0 flex-1" ondblclick="openEditTaskModal('${item.id}')" title="双击可编辑该任务">
+          <button
+            id="check-btn-${item.id}"
+            onclick="toggleTaskDone('${item.id}', event)"
+            class="relative w-[18px] h-[18px] rounded-full border-[1.8px] ${isUrgent ? 'border-rose-300 hover:border-rose-500' : 'border-slate-300 hover:border-[#6f9bb6]'} hover:scale-110 flex items-center justify-center shrink-0 transition-all cursor-pointer focus:outline-none"
+            title="点击完成任务（动画期间再次点击可取消）"
+          ></button>
+          <div class="min-w-0 flex-1">
+            <div class="flex items-center min-w-0">
+              <span id="title-span-${item.id}" class="strike-line text-[12.5px] ${isUrgent ? 'font-semibold text-slate-800' : 'font-medium text-slate-700'} truncate leading-snug transition-colors duration-200">${escapeHtml(item.title)}</span>
+            </div>
+            <div class="flex items-center gap-1.5 mt-1 flex-wrap">
+              ${categoryBadge(item.category)}
+              ${isUrgent ? `<span class="inline-flex items-center gap-0.5 text-[10px] leading-none px-1.5 py-0.5 rounded-md bg-rose-50 text-rose-500 border border-rose-200/70 font-medium shrink-0 whitespace-nowrap">🔥 紧急</span>` : ''}
+              ${item.time ? `<span class="inline-flex items-center text-[10.5px] leading-none px-1.5 py-0.5 rounded-md bg-slate-100/90 text-slate-500 shrink-0 whitespace-nowrap">${item.time}</span>` : ''}
+              ${item.isRepeat ? `<span class="inline-flex items-center text-[10px] leading-none px-1.5 py-0.5 rounded-md ${repeatBadgeColor} shrink-0 whitespace-nowrap" title="周期重复计划生成的实例">${repeatBadgeText}</span>` : ''}
+              ${item.originDate && (item.isRepeat || viewDate !== TODAY_DATE) ? `<span class="inline-flex items-center text-[10px] leading-none px-1.5 py-0.5 rounded-md bg-amber-50 text-amber-700 shrink-0 whitespace-nowrap" title="从历史未完成迁移至今天">原 ${item.originDate.slice(5)}</span>` : ''}
+            </div>
+          </div>
+        </div>
+        <div class="flex items-center gap-0.5 shrink-0 ml-2">
+          <span id="stamp-slot-${item.id}" class="hidden text-xs font-semibold px-2 py-0.5 rounded-full bg-sky-100/90 text-[#5282a1] whitespace-nowrap">🐾 完成!</span>
+          ${isHistorical && item.isRepeat ? `
+            <button onclick="makeUpOccurrence('${item.id}')" class="px-2 py-0.5 rounded-lg bg-indigo-50 text-indigo-700 hover:bg-indigo-100 text-xs font-medium transition whitespace-nowrap cursor-pointer">
+              补做这次
+            </button>
+          ` : ''}
+          ${!isHistorical ? `
+            <button onclick="toggleTaskPriority('${item.id}')" class="w-6 h-6 rounded-lg flex items-center justify-center transition cursor-pointer focus:outline-none ${isUrgent ? 'text-rose-500 bg-rose-50/70 hover:bg-rose-100/80' : 'text-slate-300 hover:text-rose-500 hover:bg-slate-100 opacity-0 group-hover:opacity-100'}" title="${isUrgent ? '当前为紧急任务，点击改为普通' : '标为「紧急任务」，在所属分组优先显示'}">
+              <svg viewBox="0 0 16 16" class="w-3.5 h-3.5 fill-current"><path d="M8 1.5l1.85 3.75 4.15.6-3 2.92.71 4.13L8 10.95l-3.71 1.95.71-4.13-3-2.92 4.15-.6L8 1.5z"/></svg>
+            </button>
+          ` : ''}
+          <button id="edit-btn-${item.id}" onclick="openEditTaskModal('${item.id}')" class="w-6 h-6 rounded-lg flex items-center justify-center text-slate-400 hover:text-sky-600 hover:bg-slate-100 text-xs leading-none transition opacity-75 group-hover:opacity-100 cursor-pointer focus:outline-none" title="${item.isRepeat ? '编辑所属周期重复计划' : '编辑任务名称/优先级/日期/时间'}">✎</button>
+          <button id="del-btn-${item.id}" onclick="deleteTaskInstance('${item.id}')" class="w-6 h-6 rounded-lg flex items-center justify-center text-slate-400 hover:text-rose-500 hover:bg-rose-50 text-sm leading-none transition opacity-75 group-hover:opacity-100 cursor-pointer focus:outline-none" title="${item.isRepeat ? '仅删除今天本次安排，不影响后续重复计划' : '删除任务'}">×</button>
+        </div>
+      `;
+      return row;
+    }
+
     function renderAll() {
       viewingYesterday = (selectedDate === '2026-11-01');
       const sourceList = getTasksForDate(selectedDate);
       const todayList = getTasksForDate(TODAY_DATE);
 
-      // Sort Todo: 1st by priority ('urgent' before 'normal'), 2nd by timed ascending, untimed after (Rule 4.1 & A15)
+      // Each group keeps the priority and time order from this list.
       const todoItems = sourceList
         .filter(t => !t.done)
         .sort((a, b) => {
@@ -1744,62 +1862,11 @@
             </div>`;
           return;
         }
-        todoItems.forEach(item => {
-          const isUrgent = item.priority === 'urgent';
-          const planObj = item.planId ? repeatPlans.find(p => p.id === item.planId) : null;
-          const repeatBadgeText = item.isRepeat ? formatPlanCycleBadge(planObj) : '';
-          const repeatBadgeColor = planObj?.repeatType === 'weekly'
-            ? 'bg-violet-50 text-violet-600 border border-violet-200/60'
-            : planObj?.repeatType === 'monthly'
-            ? 'bg-amber-50 text-amber-700 border border-amber-200/60'
-            : 'bg-sky-50 text-sky-600 border border-sky-200/60';
-
-          const row = document.createElement('div');
-          row.id = 'task-row-' + item.id;
-          row.className = `task-row-item rounded-2xl px-3.5 py-2.5 flex items-center justify-between shadow-2xs border group ${
-            isUrgent
-              ? 'bg-white border-rose-200/80 hover:border-rose-300'
-              : 'bg-white border-slate-100 hover:border-slate-200'
-          }`;
-          const isHistorical = selectedDate < TODAY_DATE;
-          row.innerHTML = `
-            <div class="flex items-center gap-2.5 min-w-0 flex-1" ondblclick="openEditTaskModal('${item.id}')" title="双击可编辑该任务">
-              <button
-                id="check-btn-${item.id}"
-                onclick="toggleTaskDone('${item.id}', event)"
-                class="relative w-[18px] h-[18px] rounded-full border-[1.8px] ${isUrgent ? 'border-rose-300 hover:border-rose-500' : 'border-slate-300 hover:border-[#6f9bb6]'} hover:scale-110 flex items-center justify-center shrink-0 transition-all cursor-pointer focus:outline-none"
-                title="点击完成任务（动画期间再次点击可取消）"
-              ></button>
-              <div class="min-w-0 flex-1">
-                <div class="flex items-center min-w-0">
-                  <span id="title-span-${item.id}" class="strike-line text-[12.5px] ${isUrgent ? 'font-semibold text-slate-800' : 'font-medium text-slate-700'} truncate leading-snug transition-colors duration-200">${escapeHtml(item.title)}</span>
-                </div>
-                  <div class="flex items-center gap-1.5 mt-1 flex-wrap">
-                    ${categoryBadge(item.category)}
-                    ${isUrgent ? `<span class="inline-flex items-center gap-0.5 text-[10px] leading-none px-1.5 py-0.5 rounded-md bg-rose-50 text-rose-500 border border-rose-200/70 font-medium shrink-0 whitespace-nowrap">🔥 紧急</span>` : ''}
-                    ${item.time ? `<span class="inline-flex items-center text-[10.5px] leading-none px-1.5 py-0.5 rounded-md bg-slate-100/90 text-slate-500 shrink-0 whitespace-nowrap">${item.time}</span>` : ''}
-                    ${item.isRepeat ? `<span class="inline-flex items-center text-[10px] leading-none px-1.5 py-0.5 rounded-md ${repeatBadgeColor} shrink-0 whitespace-nowrap" title="周期重复计划生成的实例">${repeatBadgeText}</span>` : ''}
-                    ${item.originDate ? `<span class="inline-flex items-center text-[10px] leading-none px-1.5 py-0.5 rounded-md bg-amber-50 text-amber-700 shrink-0 whitespace-nowrap" title="从历史未完成迁移至今天">原 ${item.originDate}</span>` : ''}
-                  </div>
-              </div>
-            </div>
-            <div class="flex items-center gap-0.5 shrink-0 ml-2">
-              <span id="stamp-slot-${item.id}" class="hidden text-xs font-semibold px-2 py-0.5 rounded-full bg-sky-100/90 text-[#5282a1] whitespace-nowrap">🐾 完成!</span>
-              ${isHistorical ? `
-                <button onclick="moveYesterdayTaskToToday('${item.id}')" class="px-2 py-0.5 rounded-lg bg-indigo-50 text-indigo-700 hover:bg-indigo-100 text-xs font-medium transition whitespace-nowrap cursor-pointer">
-                  移到今天
-                </button>
-              ` : `
-                <button onclick="toggleTaskPriority('${item.id}')" class="w-6 h-6 rounded-lg flex items-center justify-center transition cursor-pointer focus:outline-none ${isUrgent ? 'text-rose-500 bg-rose-50/70 hover:bg-rose-100/80' : 'text-slate-300 hover:text-rose-500 hover:bg-slate-100 opacity-0 group-hover:opacity-100'}" title="${isUrgent ? '当前为紧急置顶，点击改为普通日常任务' : '标为「紧急任务」并自动排到最前'}">
-                  <svg viewBox="0 0 16 16" class="w-3.5 h-3.5 fill-current"><path d="M8 1.5l1.85 3.75 4.15.6-3 2.92.71 4.13L8 10.95l-3.71 1.95.71-4.13-3-2.92 4.15-.6L8 1.5z"/></svg>
-                </button>
-              `}
-              <button id="edit-btn-${item.id}" onclick="openEditTaskModal('${item.id}')" class="w-6 h-6 rounded-lg flex items-center justify-center text-slate-400 hover:text-sky-600 hover:bg-slate-100 text-xs leading-none transition opacity-75 group-hover:opacity-100 cursor-pointer focus:outline-none" title="${item.isRepeat ? '编辑所属周期重复计划' : '编辑任务名称/优先级/日期/时间'}">✎</button>
-              <button id="del-btn-${item.id}" onclick="deleteTaskInstance('${item.id}')" class="w-6 h-6 rounded-lg flex items-center justify-center text-slate-400 hover:text-rose-500 hover:bg-rose-50 text-sm leading-none transition opacity-75 group-hover:opacity-100 cursor-pointer focus:outline-none" title="${item.isRepeat ? '仅删除今天本次安排，不影响后续重复计划' : '删除任务'}">×</button>
-            </div>
-          `;
-          container.appendChild(row);
-        });
+        if (selectedDate === TODAY_DATE) {
+          renderTodayTodoGroups(container, todoItems);
+        } else {
+          for (const item of todoItems) container.append(createTodoRow(item, selectedDate));
+        }
       } else if (currentTab === 'done') {
         if (selectedDate === TODAY_DATE) {
           container.innerHTML = `
@@ -1911,7 +1978,7 @@
       renderAll();
       if (item.priority === 'urgent') {
         setPetState('happy', `🔥 已将「${item.title.slice(0, 8)}」设为紧急，自动排到最前面！`);
-        appendLog(`任务「${item.title}」切换为【🔥 紧急任务】-> 待办列表自动置顶排到最前面 (A15)`);
+        appendLog(`任务「${item.title}」标记为紧急，在所属分组优先显示 (A15)`);
       } else {
         appendLog(`任务「${item.title}」恢复为【普通日常任务】-> 按时间顺序排列 (A15)`);
       }
@@ -1924,7 +1991,7 @@
       const urgentTask = {
         id: 't_urg_' + Date.now(),
         scheduledDate: TODAY_DATE,
-        title: '紧急修复线上反馈问题（自动排最前）',
+        title: '紧急修复线上反馈问题',
         time: '18:00',
         priority: 'urgent',
         remind: true,
@@ -1943,7 +2010,7 @@
         row.classList.add('task-highlight');
         setTimeout(() => row.classList.remove('task-highlight'), 2400);
       }
-      setPetState('happy', '🔥 紧急任务已添加，已自动帮你排到待办最前面啦！');
+      setPetState('happy', '🔥 已添加，紧急任务会在同组优先显示。');
       appendLog('演练 [A15 紧急任务优先]：新增 18:00 的紧急任务，虽然时间较晚，仍自动排在普通日常任务最前面');
     }
 
@@ -2161,6 +2228,7 @@
       item.done = done;
       item.doneAt = done ? formatClockHHMM() : null;
       item.doneDate = done ? TODAY_DATE : null;
+      if (!done && !item.isRepeat && item.scheduledDate < TODAY_DATE) rescheduleTaskToToday(item);
     }
 
     function collapseTaskRow(row) {
@@ -2238,26 +2306,20 @@
       }
     }
 
-    function moveYesterdayTaskToToday(taskId) {
+    function rescheduleTaskToToday(item) {
+      item.originDate ??= item.scheduledDate;
+      item.scheduledDate = TODAY_DATE;
+      item.time = null;
+    }
+
+    function makeUpOccurrence(taskId) {
       const item = allTasks.find(t => t.id === taskId);
-      if (!item || item.movedToToday) return;
-      const origShort = item.scheduledDate.slice(5);
-      item.movedToToday = true;
-
-      // Rule 4.4: Keep instance identity & original date badge, do not duplicate
-      allTasks.push({
-        ...item,
-        id: item.id + '_moved',
-        scheduledDate: TODAY_DATE,
-        originDate: item.originDate || origShort,
-        movedToToday: false
-      });
-
-      switchSelectedDate(TODAY_DATE, true);
+      if (!item?.isRepeat || item.done || item.removedOccurrence || item.scheduledDate >= TODAY_DATE) return;
+      rescheduleTaskToToday(item);
       currentTab = 'todo';
-      renderAll();
-      setPetState('happy', '已将历史未完成任务移到今天 📋');
-      appendLog(`将历史任务「${item.title}」移到今天，保留原计划日期标签 [原 ${origShort}] (A05)`);
+      switchSelectedDate(TODAY_DATE, true);
+      setPetState('happy', '已把这次安排移到今天 🐾');
+      appendLog(`补做「${item.title}」，原日期为 ${item.originDate} (A05)`);
     }
 
     function switchSelectedDate(dateStr, hideBarIfToday = false) {
@@ -2276,9 +2338,9 @@
       }
 
       if (simBtn) {
-        simBtn.textContent = selectedDate === '2026-11-01'
+        simBtn.textContent = selectedDate === YESTERDAY_DATE
           ? '📅 返回今日清单'
-          : '📅 昨日移到今天 (A05)';
+          : '📅 查看昨日记录';
       }
 
       appendLog(`切换日期视图至：${formatShortDateLabel(selectedDate)}`);
@@ -2287,7 +2349,7 @@
 
     function toggleHistoryDate() {
       if (!dateBarVisible && selectedDate === TODAY_DATE) {
-        switchSelectedDate('2026-11-01');
+        switchSelectedDate(YESTERDAY_DATE);
       } else {
         switchSelectedDate(TODAY_DATE, true);
       }
@@ -2310,7 +2372,7 @@
       const plan = repeatPlans[idx];
       repeatPlans.splice(idx, 1);
       for (let i = allTasks.length - 1; i >= 0; i--) {
-        if (allTasks[i].planId === planId && !allTasks[i].done && allTasks[i].scheduledDate >= TODAY_DATE) {
+        if (allTasks[i].planId === planId && !allTasks[i].done && !allTasks[i].originDate && allTasks[i].scheduledDate >= TODAY_DATE) {
           allTasks.splice(i, 1);
         }
       }
@@ -2548,44 +2610,30 @@
       if (editorTaskType === 'once') {
         const scheduledDate = document.getElementById('editor-date').value || TODAY_DATE;
         const time = document.getElementById('editor-time').value || null;
-
-        if (editingTargetId && !editingTargetId.startsWith('p')) {
-          const existing = allTasks.find(t => t.id === editingTargetId);
-          if (existing) {
-            existing.title = title;
-            existing.category = category;
-            existing.priority = editorPriority;
-            existing.scheduledDate = scheduledDate;
-            existing.time = time;
-            existing.remind = remind;
-            appendLog(`已更新一次性任务：「${title}」（优先级：${editorPriority === 'urgent' ? '🔥紧急' : '普通'}，日期：${scheduledDate}）`);
-          }
-        } else {
-          allTasks.push({
-            id: 't_' + Date.now(),
-            scheduledDate,
-            title,
-            category,
-            time,
-            priority: editorPriority,
-            remind,
-            done: false,
-            doneAt: null,
-            isRepeat: false,
-            planId: null,
-            originDate: null,
-            scene: 'bell'
-          });
-          appendLog(`新增一次性任务：「${title}」（优先级：${editorPriority === 'urgent' ? '🔥紧急' : '普通'}，执行日期：${scheduledDate}）`);
+        const fields = { scheduledDate, title, category, time, priority: editorPriority, remind };
+        const existing = allTasks.find(t => t.id === editingTargetId && !t.isRepeat);
+        const item = existing || {
+          id: 't_' + Date.now(), done: false, doneAt: null, isRepeat: false, planId: null, originDate: null, scene: 'bell'
+        };
+        const carryover = !item.done && scheduledDate < TODAY_DATE;
+        Object.assign(item, fields);
+        if (carryover) {
+          item.originDate = scheduledDate;
+          rescheduleTaskToToday(item);
         }
+        if (!existing) allTasks.push(item);
+        appendLog(`${existing ? '更新' : '新增'}一次性任务「${title}」（执行日期：${item.scheduledDate}）`);
 
         currentTab = 'todo';
-        if (scheduledDate !== selectedDate) {
-          switchSelectedDate(scheduledDate);
-          setPetState('happy', `已安排至 ${formatShortDateLabel(scheduledDate)} ✨`);
+        if (carryover) {
+          switchSelectedDate(TODAY_DATE, true);
+          setPetState('happy', '已保存到今天的遗留待办 🐾');
+        } else if (item.scheduledDate !== selectedDate) {
+          switchSelectedDate(item.scheduledDate);
+          setPetState('happy', `已安排至 ${formatShortDateLabel(item.scheduledDate)} ✨`);
         } else {
           renderAll();
-          setPetState('happy', editorPriority === 'urgent' ? '🔥 紧急任务已排到最前面 ✨' : '新任务已安排好啦 ✨');
+          setPetState('happy', editorPriority === 'urgent' ? '🔥 紧急任务已在同组优先显示 ✨' : '新任务已安排好啦 ✨');
         }
       } else {
         if (editorSlots.length === 0) {
@@ -4188,6 +4236,9 @@
     }
 
     // Initial render
+    for (const item of allTasks) {
+      if (!item.done && !item.isRepeat && item.scheduledDate < TODAY_DATE) rescheduleTaskToToday(item);
+    }
     renderSoftwareUpdate();
     renderEditorTimeSlots();
     updateCountdownDisplay();

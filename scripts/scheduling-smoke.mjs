@@ -58,7 +58,7 @@ try {
   await dialog().getByRole('button', { name: '周期重复计划', exact: true }).click()
   await dialog().getByLabel('任务名称', { exact: true }).fill('每周复盘')
   await dialog().getByRole('button', { name: '📆 每周计划', exact: true }).click()
-  await dialog().getByRole('button', { name: '🔥 紧急任务（置顶）', exact: true }).click()
+  await dialog().getByRole('button', { name: '🔥 紧急任务', exact: true }).click()
   await dialog().getByLabel('到点提醒', { exact: true }).uncheck()
   await page.screenshot({ path: join(directory, 'weekly-editor.png'), omitBackground: true })
   await saveEditor()

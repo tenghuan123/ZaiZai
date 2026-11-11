@@ -9,6 +9,10 @@ import { ReminderRepository } from '../reminders/repository'
 import { TaskRepository } from './repository'
 import { TaskQueries } from './queries'
 
+function untimedScheduleToday(clock: ClockSnapshot) {
+  return { scheduledDate: clock.today, scheduledTime: null, dueAtMs: null, scheduleZone: clock.timeZone, manualOverride: true }
+}
+
 export class TaskService {
   readonly queries: TaskQueries
   private coordinatedDate: string | undefined
@@ -66,11 +70,15 @@ export class TaskService {
     return this.write(clock => {
       const existing = this.repository.byCreationKey(key)
       if (existing) return existing
+      const schedule = data.scheduledDate < clock.today ? untimedScheduleToday(clock) : {
+        scheduleZone: clock.timeZone, dueAtMs: data.scheduledTime === null ? null : dueAt(data.scheduledDate, data.scheduledTime, clock.timeZone),
+        manualOverride: false
+      }
       const item: Occurrence = { ...data, id: randomUUID(), creationKey: key, planId: null, slotId: null, planVersion: null,
         sourceDate: data.scheduledDate, sourceTime: data.scheduledTime, sourceZone: clock.timeZone,
-        scheduleZone: clock.timeZone, dueAtMs: data.scheduledTime === null ? null : dueAt(data.scheduledDate, data.scheduledTime, clock.timeZone),
+        ...schedule,
         category: data.category ?? null, priority: data.priority ?? 'normal', priorityOverride: false,
-        status: 'pending', cancelReason: null, manualOverride: false, scheduleVersion: 1, completedAtMs: null,
+        status: 'pending', cancelReason: null, scheduleVersion: 1, completedAtMs: null,
         version: 1, createdAtMs: clock.nowMs, updatedAtMs: clock.nowMs }
       this.repository.insert(item)
       return item
@@ -86,9 +94,17 @@ export class TaskService {
       if (item.planId !== null || item.status === 'cancelled') throw new AppError('CONFLICT', '只能编辑未删除的一次性任务。')
       const rescheduled = data.scheduledDate !== item.scheduledDate || data.scheduledTime !== item.scheduledTime
       if (rescheduled && (item.status === 'completed' || (item.dueAtMs !== null && item.dueAtMs <= clock.nowMs))) {
-        throw new AppError('CONFLICT', '已经发生的任务保留原时间，可使用移到今天。')
+        throw new AppError('CONFLICT', '已经到点或已完成的任务保留原时间。')
       }
       const next = { ...item, ...data }
+      if (item.status === 'pending' && data.scheduledDate < clock.today) {
+        if (rescheduled) {
+          next.sourceDate = data.scheduledDate
+          next.sourceTime = data.scheduledTime
+          next.sourceZone = clock.timeZone
+        }
+        return this.rescheduleToToday(next, clock)
+      }
       if (rescheduled) {
         this.reminderRecords.acknowledge(id, clock.nowMs)
         next.scheduleZone = clock.timeZone
@@ -112,11 +128,16 @@ export class TaskService {
     return this.write(clock => {
       const item = this.resolve(ref, clock)
       if (item.status === 'cancelled') throw new AppError('CONFLICT', '已取消的任务不能修改完成状态。')
-      const before = this.getDay(item.scheduledDate, clock).progress
       const changed = (item.status === 'completed') !== desired
-      const next = changed ? this.saveOccurrence({ ...item, status: desired ? 'completed' : 'pending', completedAtMs: desired ? clock.nowMs : null }, clock) : item
+      const carryover = changed && !desired && item.planId === null && item.scheduledDate < clock.today
+      const date = carryover ? clock.today : item.scheduledDate
+      const before = this.getDay(date, clock).progress
+      const updated: Occurrence = { ...item, status: desired ? 'completed' : 'pending', completedAtMs: desired ? clock.nowMs : null }
+      let next = item
+      if (carryover) next = this.rescheduleToToday(updated, clock)
+      else if (changed) next = this.saveOccurrence(updated, clock)
       if (desired) this.reminderRecords.acknowledge(item.id, clock.nowMs)
-      const after = this.getDay(item.scheduledDate, clock).progress
+      const after = this.getDay(date, clock).progress
       return { occurrence: next, changed, before, after,
         allCompleted: changed && desired && item.scheduledDate === clock.today && before.total > before.completed && after.total > 0 && after.completed === after.total }
     })
@@ -136,8 +157,7 @@ export class TaskService {
     if (item.status !== 'pending') throw new AppError('CONFLICT', '只能移动未完成的任务。')
     if (item.scheduledDate === clock.today) return item
     this.reminderRecords.acknowledge(item.id, clock.nowMs)
-    return this.saveOccurrence({ ...item, scheduledDate: clock.today, scheduledTime: null, dueAtMs: null,
-      scheduleZone: clock.timeZone, manualOverride: true, scheduleVersion: item.scheduleVersion + 1 }, clock)
+    return this.saveOccurrence({ ...item, ...untimedScheduleToday(clock), scheduleVersion: item.scheduleVersion + 1 }, clock)
   }
 
   createPlan(input: unknown): RepeatPlan {

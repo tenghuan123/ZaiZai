@@ -10,8 +10,8 @@ export type EditorTarget =
 type SavedEditor = { kind: 'once'; occurrence: Occurrence } | { kind: 'plan'; plan: RepeatPlan }
 interface DraftSlot { key: string; id?: string; localTime: string }
 
-export function TaskEditor({ target, now, command, onSaved, onClose, onReload }: {
-  target: EditorTarget; now: number
+export function TaskEditor({ target, now, today, command, onSaved, onClose, onReload }: {
+  target: EditorTarget; now: number; today: string
   command: <T>(action: () => Promise<AppResult<T>>) => Promise<AppResult<T>>
   onSaved: (result: SavedEditor) => void; onClose: () => void; onReload: () => Promise<string | undefined>
 }): React.JSX.Element {
@@ -95,14 +95,14 @@ export function TaskEditor({ target, now, command, onSaved, onClose, onReload }:
           onChange={event => setCategory(taskCategories.find(option => option.value === event.target.value)?.value ?? null)}>
           {taskCategories.map(option => <option key={option.value ?? ''} value={option.value ?? ''}>{option.label}</option>)}
         </select></label>
-        <div className="field-label">任务优先级（紧急任务自动排在待办最前面）<div className="priority-options">
+        <div className="field-label">任务优先级（紧急任务在同组优先显示）<div className="priority-options">
           <button type="button" aria-pressed={priority === 'normal'} onClick={() => setPriority('normal')}>📋 普通日常任务</button>
-          <button type="button" className="urgent" aria-pressed={priority === 'urgent'} onClick={() => setPriority('urgent')}>🔥 紧急任务（置顶）</button></div></div>
+          <button type="button" className="urgent" aria-pressed={priority === 'urgent'} onClick={() => setPriority('urgent')}>🔥 紧急任务</button></div></div>
         {type === 'once' ? <>
           <div className="editor-grid"><label className="field-label">执行日期<input aria-label="执行日期" type="date" required value={date} disabled={timingLocked} onChange={event => setDate(event.target.value)} /></label>
             <label className="field-label">提醒时间（可选）<input aria-label="提醒时间" type="time" value={time} disabled={timingLocked} onChange={event => setTime(event.target.value)} /></label></div>
           {timingLocked ? <p className="editor-note">已到点或已完成的任务保留原时间，仍可修改名称、分类与提醒设置。</p>
-            : <p className="editor-note">时间留空就是无时间待办。</p>}
+            : <p className="editor-note">{date && date < today ? '保存后会进入今天的遗留待办，原提醒时间会清除。' : '时间留空就是无时间待办。'}</p>}
         </> : <>
           <div className="field-label">重复周期类型<div className="editor-types cycle-options">{(['daily', 'weekly', 'monthly'] as const).map((value, index) => <button key={value} type="button" className={cycle === value ? 'selected' : ''} onClick={() => setCycle(value)}>{['↻ 每天', '📆 每周计划', '🗓 每月计划'][index]}</button>)}</div></div>
           {cycle === 'weekly' && <div className="cycle-picker weekly-picker"><strong>选择每周几执行（可多选）</strong><div className="weekday-pills">{[1, 2, 3, 4, 5, 6, 7].map(day => <button key={day} type="button" aria-pressed={weekdays.includes(day)} onClick={() => setWeekdays(current => current.includes(day) ? current.filter(value => value !== day) : [...current, day].sort((a, b) => a - b))}>周{'一二三四五六日'[day - 1]}</button>)}</div></div>}
@@ -141,7 +141,7 @@ export function EndPlanDialog({ plan, busy, error, onConfirm, onClose }: {
   useEffect(() => { const element = dialog.current; element?.showModal(); return () => element?.close() }, [])
   return <dialog ref={dialog} className="task-editor confirm-dialog" aria-labelledby="end-heading" onCancel={event => { event.preventDefault(); if (!busy) onClose() }}>
     <h2 id="end-heading">结束重复计划？</h2><p className="confirm-plan-title">{plan.title}</p>
-    <p>取消尚未到点的安排，保留已到点、已完成及手动移到今天的记录。结束后不能恢复。</p>
+    <p>取消尚未到点的安排，保留已到点、已完成及补做的记录。结束后不能恢复。</p>
     {error && <p className="editor-error" role="alert">{error}</p>}
     <footer className="editor-actions"><button className="secondary" disabled={busy} onClick={onClose}>取消</button>
       <button className="danger-button" disabled={busy} onClick={onConfirm}>{busy ? '处理中…' : '确认结束'}</button></footer>

@@ -30,7 +30,7 @@ Windows 从应用内重启更新时会静默覆盖原安装并重新启动应用
 ## Windows 发布
 
 1. 递增 `package.json` 的 `version`，并同步锁文件。每个正式版本只构建和发布一次，已发布安装包不以相同版本重新覆盖。
-2. 更新 `docs/releases/latest.md`。这些更新内容会同时写入下载清单和安装包，供升级前查看和升级后回看。
+2. 将 [待发布说明](releases/unreleased.md) 中纳入本次发布的条目移到 `docs/releases/latest.md`。这些更新内容会同时写入下载清单和安装包，供升级前查看和升级后回看。
 3. 构建和核对上传计划：
 
 ```sh

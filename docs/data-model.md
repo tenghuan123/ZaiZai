@@ -68,7 +68,7 @@ erDiagram
 | `creation_key` | 一次性创建的唯一请求键；重复生成时可空 |
 | `plan_id`、`slot_id` | 一次性任务都为空，重复实例都非空 |
 | `plan_version` | 最近一次生成或调整时的来源版本；历史快照不依赖计划当前值 |
-| `source_date`、`source_time`、`source_zone` | 首次生成的计划日期、时间与时区，作为来源信息保留 |
+| `source_date`、`source_time`、`source_zone` | 首次生成的计划日期、时间与时区。一次性待办显式改期到过去时，记录用户选定的日期、时间与时区作为本次结转的来源 |
 | `scheduled_date`、`scheduled_time` | 当前执行日期与时间，时间可空 |
 | `schedule_zone`、`due_at_ms` | 当前执行时间的时区与 UTC 解析值；无时间时到期值为空 |
 | `title`、`scene` | 实例内容快照，不动态联表覆盖历史 |

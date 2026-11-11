@@ -156,7 +156,8 @@ test('day rollover carries only pending one-off tasks forward and retires old re
     f.plan()
     const recurring = saved(f.tasks.getDay(yesterday))[0]
     const timed = f.once({ scheduledTime: '10:00', category: 'work', priority: 'urgent' })
-    const earlier = f.once({ scheduledDate: '2026-10-20' })
+    const earlier = { ...f.once(), sourceDate: '2026-10-20', scheduledDate: '2026-10-20' }
+    f.repository.save(earlier)
     const completed = f.tasks.setCompleted({ id: f.once().id }, true).occurrence
     const removed = f.tasks.removeOccurrence({ id: f.once().id })
     const today = '2026-11-03'
@@ -180,6 +181,11 @@ test('day rollover carries only pending one-off tasks forward and retires old re
       { acknowledged_at_ms: f.clock().nowMs })
     assert.equal(f.records.claimDue(f.clock()).some(item => item.id === timed.id), false)
 
+    const restored = f.tasks.setCompleted({ id: completed.id }, false).occurrence
+    assert.equal(restored.status, 'pending')
+    assert.equal(restored.scheduledDate, today)
+    assert.equal(restored.sourceDate, yesterday)
+
     f.setTime(yesterday)
     f.tasks.coordinateDay()
     assert.equal(f.repository.get(timed.id)?.scheduledDate, today)
@@ -189,7 +195,8 @@ test('day rollover carries only pending one-off tasks forward and retires old re
 test('failed automatic carryover rolls back earlier moves and day activation, then retries', () => {
   const f = fixture()
   try {
-    const tasks = [f.once({ scheduledDate: '2026-10-31' }), f.once({ scheduledDate: '2026-11-01' })]
+    f.setTime('2026-10-31')
+    const tasks = [f.once(), f.once({ scheduledDate: '2026-11-01' })]
     const today = '2026-11-03'
     f.setTime(today)
     f.connection.db.exec(`CREATE TRIGGER fail_second_move BEFORE UPDATE OF scheduled_date ON task_occurrences
@@ -285,6 +292,35 @@ test('one-off edits use optimistic versions and change reminder versions only fo
       scheduledDate: item.scheduledDate, scheduledTime: '16:00', reminderEnabled: true, scene: 'generic' })
     assert.equal(scheduled.scheduleVersion, 2)
     assert.equal(scheduled.sourceTime, '15:00')
+  } finally { f.close() }
+})
+
+test('saving a one-off task for a past date immediately puts it in today without its old reminder', () => {
+  const f = fixture()
+  try {
+    const today = f.clock().today
+    const yesterday = '2026-11-01'
+    const requestId = randomUUID()
+    const created = f.once({ requestId, scheduledDate: yesterday, scheduledTime: '09:00' })
+    assert.equal(f.once({ requestId, scheduledDate: yesterday }).id, created.id)
+    assert.equal(created.sourceDate, yesterday)
+    assert.equal(created.sourceTime, '09:00')
+    assert.equal(created.scheduledDate, today)
+    assert.equal(created.scheduledTime, null)
+    assert.equal(created.dueAtMs, null)
+
+    const future = f.once({ scheduledDate: '2026-11-03', scheduledTime: '14:00' })
+    const edited = f.tasks.updateOnce({ id: future.id, expectedVersion: future.version, title: future.title,
+      scheduledDate: yesterday, scheduledTime: '10:00', reminderEnabled: true, scene: 'generic' })
+    assert.equal(edited.id, future.id)
+    assert.equal(edited.sourceDate, yesterday)
+    assert.equal(edited.sourceTime, '10:00')
+    assert.equal(edited.scheduledDate, today)
+    assert.equal(edited.scheduledTime, null)
+    assert.equal(edited.dueAtMs, null)
+    assert.deepEqual(saved(f.tasks.getDay(yesterday)), [])
+    assert.deepEqual(saved(f.tasks.getDay('2026-11-03')), [])
+    assert.equal(f.tasks.getDay(today).progress.total, 2)
   } finally { f.close() }
 })
 

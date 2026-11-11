@@ -57,7 +57,7 @@ try {
   async function layout() {
     return page.evaluate(() => {
       const list = document.querySelector('.reminder-list').getBoundingClientRect()
-      const footer = document.querySelector('.quick-add, .history-note').getBoundingClientRect()
+      const footer = document.querySelector('.quick-add').getBoundingClientRect()
       const card = document.querySelector('.card').getBoundingClientRect()
       return { listTop: list.top, listHeight: list.height, listBottom: list.bottom, footerTop: footer.top, footerBottom: footer.bottom, cardBottom: card.bottom }
     })
@@ -98,6 +98,7 @@ try {
   const before = (await snapshot()).today.progress
   await page.getByLabel('新增待办', { exact: true }).fill('明天快捷新增')
   await button('快捷新增任务').click(); await row('明天快捷新增').waitFor()
+  assert.equal(await page.locator('.task-date-divider').count(), 0)
   const future = await page.evaluate(date => window.desktop.tasks.getDay(date), tomorrow)
   assert.equal(future.value.items.length, 1)
   assert.equal(future.value.items[0].occurrence.scheduledDate, tomorrow)
@@ -124,22 +125,6 @@ try {
   assert.equal((await page.evaluate(date => window.desktop.tasks.getDay(date), tomorrow)).value.items.length, 2)
   report.checks.push('a failed future quick add keeps the draft and selected day; retry creates one task on that day')
 
-  const old = await page.evaluate(date => window.desktop.tasks.createOnce({ requestId: crypto.randomUUID(), title: '历史待办', scheduledDate: date,
-    scheduledTime: null, reminderEnabled: false }), yesterday)
-  assert.equal(old.ok, true)
-  await choose(yesterday); await row('历史待办').waitFor()
-  assert.equal(await page.getByLabel('新增待办', { exact: true }).count(), 0)
-  await page.getByText('历史待办可点「移到今天」继续处理', { exact: true }).waitFor()
-  await open()
-  assert.equal(await button(yesterday).locator('.calendar-record-dot').count(), 1)
-  await button(yesterday).click(); await dialog().waitFor({ state: 'hidden' })
-  await page.screenshot({ path: join(directory, 'history.png'), omitBackground: true })
-  await row('历史待办').getByRole('button', { name: '移到今天', exact: true }).click()
-  await row('历史待办').waitFor({ state: 'hidden' })
-  await button('返回今天').click(); await row('历史待办').waitFor()
-  assert.equal((await snapshot()).today.items.find(item => item.occurrence?.id === old.value.id).occurrence.sourceDate, yesterday)
-  report.checks.push('historical dates show a recorded dot; history replaces new-task controls with a short explanation and still moves the same task to today')
-
   await choose('2024-02-29'); await open()
   assert.equal(await page.locator('.calendar-grid button').count(), 29)
   assert.equal(await button('2024-02-29').getAttribute('aria-pressed'), 'true')
@@ -165,17 +150,27 @@ try {
   ]
   const initial = await snapshot()
   for (const fixture of fixtures) {
-    const result = await page.evaluate(({ title, date }) => window.desktop.tasks.createOnce({ requestId: crypto.randomUUID(),
-      title, scheduledDate: date, scheduledTime: null, reminderEnabled: false }), fixture)
+    const result = await page.evaluate(({ title, today }) => window.desktop.tasks.createOnce({ requestId: crypto.randomUUID(),
+      title, scheduledDate: today, scheduledTime: null, reminderEnabled: false }), { title: fixture.title, today })
     assert.equal(result.ok, true)
     fixture.id = result.value.id
+    // Reproduce pending rows saved on earlier dates before this app launch.
+    sql(`UPDATE task_occurrences SET source_date='${fixture.date}', scheduled_date='${fixture.date}' WHERE id='${fixture.id}'`)
   }
   await choose(yesterday)
   await row(fixtures[0].title).waitFor()
+  assert.equal(await page.getByLabel('新增待办', { exact: true }).count(), 0)
+  assert.equal(await button('补做这次').count(), 0)
+  await open()
+  assert.equal(await button(yesterday).locator('.calendar-record-dot').count(), 1)
+  await button(yesterday).click(); await dialog().waitFor({ state: 'hidden' })
+  await page.screenshot({ path: join(directory, 'history.png'), omitBackground: true })
   await app.close()
   page = await launch()
   for (const { title, date, id } of fixtures) {
-    await row(title).getByText(`原 ${date.slice(5)}`, { exact: true }).waitFor()
+    const group = page.getByRole('region', { name: date === yesterday ? /^昨日 · / : /^遗留待办 · / })
+    await group.getByRole('article', { name: title, exact: true }).waitFor()
+    assert.equal(await group.locator('time').getAttribute('datetime'), date)
     assert.equal(await row(title).count(), 1)
     assert.equal(await row(title).getAttribute('data-occurrence-id'), id)
     const history = await page.evaluate(date => window.desktop.tasks.getDay(date), date)
@@ -189,6 +184,27 @@ try {
   assert.equal(await button('一键移到今天').count(), 0)
   await page.screenshot({ path: join(directory, 'automatic-carryover.png'), omitBackground: true })
   report.checks.push('startup automatically carries pending one-off tasks across skipped dates into today with their original dates and IDs')
+
+  const todayTasks = await page.evaluate(async date => {
+    const tasks = []
+    for (const [title, priority] of [['普通待办', 'normal'], ['紧急待办', 'urgent']]) {
+      tasks.push(await window.desktop.tasks.createOnce({ requestId: crypto.randomUUID(), title,
+        scheduledDate: date, scheduledTime: null, reminderEnabled: false, priority }))
+    }
+    tasks.push(await window.desktop.plans.create({ requestId: crypto.randomUUID(), title: '每日拉伸',
+      startDate: date, endDate: null, times: ['15:00'], reminderEnabled: false, priority: 'urgent' }))
+    return tasks
+  }, today)
+  assert.ok(todayTasks.every(result => result.ok))
+  const todayGroup = page.getByRole('region', { name: /^今日 · / })
+  const recurringGroup = page.getByRole('region', { name: /^周期计划 · / })
+  await todayGroup.getByRole('article', { name: '普通待办', exact: true }).waitFor()
+  await recurringGroup.getByRole('article', { name: '每日拉伸', exact: true }).waitFor()
+  assert.deepEqual(await page.locator('.task-date-divider time').evaluateAll(nodes => nodes.map(node => node.dateTime)),
+    [yesterday, earlier, today, today])
+  assert.equal(await todayGroup.getByRole('article').first().getAttribute('aria-label'), '紧急待办')
+  await page.screenshot({ path: join(directory, 'today-groups.png'), omitBackground: true })
+  report.checks.push('today separates carryover dates, one-off tasks, and repeating occurrences while keeping urgent priority within each group')
 
   assert.deepEqual(report.errors, [])
   report.status = 'passed'

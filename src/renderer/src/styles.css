@@ -85,6 +85,10 @@ input, select { user-select: auto; }
 .tabs button { flex: 1; background: none; padding: 6px 4px; border-radius: 15px; color: #8497aa; font-size: 11px; }
 .tabs button.selected { color: white; background: #77a2bb; box-shadow: 0 1px 3px #799db14a; }
 .reminder-list { flex: 1; min-height: 0; overflow-y: auto; overflow-x: hidden; display: flex; flex-direction: column; padding: 2px 3px 2px 0; }
+.task-date-group { flex-shrink: 0; }
+.task-date-group + .task-date-group { margin-top: 3px; }
+.task-date-divider { display: flex; align-items: center; gap: 8px; margin: 0 0 6px; color: #53677a; font-size: 11px; font-weight: 500; line-height: 1.5; }
+.task-date-divider::before, .task-date-divider::after { content: ''; flex: 1; border-top: 1px solid #d8e1e9; }
 .task-row-shell { flex-shrink: 0; display: grid; grid-template-rows: 1fr; margin-bottom: 8px; transition: grid-template-rows .26s ease, margin-bottom .26s ease; }
 .task-row-shell.leaving { grid-template-rows: 0fr; margin-bottom: 0; }
 .task-row-clip { min-height: 0; overflow: hidden; }
@@ -190,7 +194,6 @@ details { color: #8b9eae; font-size: 10px; }
 .calendar-jump label { display: flex; flex: 1; min-width: 0; flex-direction: column; gap: 5px; font-size: 10px; color: #8a9fad; }
 .calendar-jump input { width: 100%; min-width: 0; border: 1px solid #dce6ee; border-radius: 7px; padding: 6px; color: #5c7f96; background: #fff; font-size: 11px; }
 .calendar-jump button { border-radius: 8px; padding: 7px 10px; background: #eaf1f6; color: #6289a2; font-size: 11px; }
-.history-note { display: flex; align-items: center; justify-content: center; min-height: 40px; flex-shrink: 0; margin: 3px 0 0; color: #8ca1b0; font-size: 10px; }
 .row-actions { display: flex; align-items: center; flex-shrink: 0; gap: 0; }
 .row-actions button { background: none; color: #91a6b5; padding: 0; width: 24px; height: 24px; border-radius: 8px; font-size: 14px; line-height: 1; }
 .row-actions button:hover { color: #628ba6; }

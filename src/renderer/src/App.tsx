@@ -162,7 +162,9 @@ export function App(): React.JSX.Element {
       const result = await command(() => api.tasks.setCompleted(item.ref, completed))
       saved = result.ok
       if (result.ok && result.value.changed) {
-        say(result.value.allCompleted ? petPack.quotes.allDone : completed ? petPack.quotes.celebrate : '已恢复到待办清单',
+        const restoredToToday = item.kind === 'saved' && item.occurrence.scheduledDate !== result.value.occurrence.scheduledDate
+        const feedback = restoredToToday ? '已恢复到今天的遗留待办' : '已恢复到待办清单'
+        say(result.value.allCompleted ? petPack.quotes.allDone : completed ? petPack.quotes.celebrate : feedback,
           completed ? (result.value.allCompleted ? 'all_done' : 'celebrate') : null)
         if (completed) setCompletionCount(count => count + 1)
       }
@@ -178,7 +180,7 @@ export function App(): React.JSX.Element {
   async function move(item: DayItem): Promise<void> {
     await withBusy(itemKey(item), async () => {
       const result = await command(() => api.tasks.moveToToday(item.ref))
-      if (result.ok) say('已移到今天，原日期会保留 🐾')
+      if (result.ok) say('已把这次安排移到今天 🐾')
     })
   }
   async function togglePriority(item: DayItem): Promise<void> {
@@ -261,7 +263,7 @@ export function App(): React.JSX.Element {
           : day && !loading ? <TaskList day={day} plans={workspace.plans} tab={tab} busy={busy} pending={completion.pending} focusedId={focusedId}
             onComplete={(item, desired, button) => { if (desired) completion.toggle(item, button); else void complete(item, false) }} onEdit={editItem}
             onPriority={item => { void togglePriority(item) }} onRemove={item => { void remove(item) }} onMove={item => { void move(item) }} /> : <div className="empty-state"><p>{loading ? '正在读取这一天…' : '这一天暂时无法读取'}</p><button onClick={() => { void refresh() }}>重新读取</button></div>}
-        {past ? <p className="history-note">历史待办可点「移到今天」继续处理</p> : <form className="quick-add" onSubmit={event => { event.preventDefault(); void quickAdd() }}>
+        {!past && <form className="quick-add" onSubmit={event => { event.preventDefault(); void quickAdd() }}>
           <div><input aria-label="新增待办" maxLength={120} placeholder={date === snapshot.today.date ? '添加新待办…' : '添加这一天的待办…'} value={title} disabled={busy.has('quick')} onChange={event => setTitle(event.target.value)} />
             <button type="button" className={`quick-urgent ${quickPriority === 'urgent' ? 'selected' : ''}`} aria-label="紧急任务" aria-pressed={quickPriority === 'urgent'} onClick={() => setQuickPriority(value => value === 'urgent' ? 'normal' : 'urgent')}>🔥 紧急</button>
             <button type="button" aria-label="定时或重复" onClick={() => openNew(tab === 'plans' ? 'repeat' : 'once')}>◷ 周期</button></div>
@@ -282,7 +284,7 @@ export function App(): React.JSX.Element {
       onClose={() => { setShowSettings(false); setError('') }} />}
     {showCalendar && <DateNavigator today={snapshot.today.date} selected={date} historyDates={workspace.historyDates} onSelect={selectDate} onClose={() => setShowCalendar(false)} />}
     {showReport && <DailyReportDialog onClose={() => setShowReport(false)} />}
-    {editor && <TaskEditor key={editorKey(editor)} target={editor} now={now} command={command} onClose={() => { setEditor(null); setError('') }} onReload={reloadEditor}
+    {editor && <TaskEditor key={editorKey(editor)} target={editor} now={now} today={snapshot.today.date} command={command} onClose={() => { setEditor(null); setError('') }} onReload={reloadEditor}
       onSaved={result => {
         const wasNew = editor.kind === 'new'
         setEditor(null); setTitle(''); setQuickPriority('normal'); setError('')
